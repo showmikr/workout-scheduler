@@ -1,5 +1,6 @@
 {
   "expo": {
+    "scheme":"myapp",
     "name": "workout-scheduler",
     "slug": "workout-scheduler",
     "version": "1.0.0",
