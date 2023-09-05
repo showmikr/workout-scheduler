@@ -35,6 +35,7 @@
     "owner": "showmikr",
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "scheme": "workoutscheduler"
   }
 }
