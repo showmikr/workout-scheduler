@@ -79,13 +79,6 @@ export default function App() {
             Authorization: authString,
           },
         }
-        // const params = "?client_id=" + CLIENT_ID_TEST_WEB + "&client_secret=" + CLIENT_SECRET_TEST_WEB + "&code=" + token;
-        // const response = await fetch("https://github.com/login/oauth/access_token" + params, {
-        //   method: "POST",
-        //   headers: {
-        //     "Accept": "application/json"
-        //   },
-        // }
       );
         const user = await response.json();
         console.log(response)
@@ -96,6 +89,33 @@ export default function App() {
     }
     
   }
+
+  //////////////////////////////////////////////////////////
+  // Test Data Base Calls Methods Below, Real Stuff Above //
+  //////////////////////////////////////////////////////////
+
+
+const [TDB_Value, TDBsetValue] = React.useState("Hello Mom");
+async function TDB_SendRequest() {
+  console.log("TDB Request Received")
+  //TDBsetValue("Hello Dad")
+  try {
+    const TDB_Response = await fetch("http://localhost:8080/whatisforlunch",
+    {
+      headers: {
+        method: 'get'
+      },
+    }
+    );
+      const TDB_Meal = await TDB_Response.json()
+      TDBsetValue(TDB_Meal.Meal)
+  } catch(error){
+    console.log("TDB_SendRequest Error | " + error)
+  }
+}
+
+
+
 
   return (
     <View style={styles.container}>
@@ -109,6 +129,22 @@ export default function App() {
       />
       <Text>Open up App.js to start working on your app!</Text>
       <Button title="Delete Local Storage" onPress={async () => await AsyncStorage.removeItem("@user")}></Button>
+
+      <Text> </Text>
+      <Text> </Text>
+      
+      <Text>Send Test DB Request</Text>
+      <Button
+        title="Send TDB Request"
+        onPress={() => {TDB_SendRequest()}}
+      />
+      <Text>{TDB_Value}</Text>
+      <Button
+      title="Reset TDB Request"
+      onPress={() => {TDBsetValue("Hello Mom")}}/>
+      
+      
+      
     </View>
   );
 }
