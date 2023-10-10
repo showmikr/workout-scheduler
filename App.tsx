@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const CLIENT_ID = "8a308561f3aeb41d9969";
 const CLIENT_ID_TEST_MOBILE = "c836d33329427d2050f6";
 const CLIENT_ID_TEST_WEB = "ca1743b472e63f27cefe";
-const CLIENT_SECRET_TEST_WEB = "" 
+const CLIENT_SECRET_TEST_WEB = ""
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -95,7 +95,8 @@ export default function App() {
   //////////////////////////////////////////////////////////
 
 
-const [TDB_Value, TDBsetValue] = React.useState("Hello Mom");
+const [TDB_Value, TDBsetValue] = React.useState("null");
+
 async function TDB_SendRequest() {
   console.log("TDB Request Received")
   //TDBsetValue("Hello Dad")
@@ -103,7 +104,7 @@ async function TDB_SendRequest() {
     const TDB_Response = await fetch("http://localhost:8080/whatisforlunch",
     {
       headers: {
-        method: 'get'
+        method: 'get',
       },
     }
     );
@@ -116,32 +117,98 @@ async function TDB_SendRequest() {
 
 
 
+const [payloadInput, setpayloadInput] = React.useState("null");
+const [Payload, setPayloadData] = React.useState("null");
+
+async function SendPayload() {
+  try {
+    const Response = await fetch("http://localhost:8080/payload?payload=" + payloadInput,
+    {
+      headers: {
+        method: 'get',
+      },
+    }
+    );
+      const result = await Response.json()
+      setPayloadData(result.Payload)
+  } catch(error){
+    console.log("SendPayload Error | " + error)
+  }
+}
+
+
+  
 
   return (
     <View style={styles.container}>
+      
+      {/* Auth Buttons*/}
+      <div style={{display: "flex"}}>
+        <div style={{paddingRight: "10px"}}>
+        <Button disabled={!request} title="Sign in with GitHub" onPress={() => {promptAsync();}}/>
+        </div>
+        <div style={{paddingLeft: "10px"}}>
+          <Button title="Delete Local Storage" onPress={async () => await AsyncStorage.removeItem("@user")}/>
+        </div>
+      </div>
       <Text>{JSON.stringify(userInfo)}</Text>
-      <Button 
-        disabled={!request}
-        title="Sign in with GitHub"
-        onPress={() => {
-          promptAsync();
-        }}
-      />
-      <Text>Open up App.js to start working on your app!</Text>
-      <Button title="Delete Local Storage" onPress={async () => await AsyncStorage.removeItem("@user")}></Button>
 
       <Text> </Text>
       <Text> </Text>
-      
-      <Text>Send Test DB Request</Text>
-      <Button
-        title="Send TDB Request"
-        onPress={() => {TDB_SendRequest()}}
-      />
+
+      {/* Request Buttons*/}
+      <div style={{display: "flex"}}>
+        <div style={{paddingRight: "10px"}}>
+          <Button
+            title="Send TDB Request"
+            onPress={() => {TDB_SendRequest()}}
+          />
+        </div>
+
+        <div style={{paddingLeft: "10px"}}>
+          <Button
+          title="Reset TDB Request"
+          onPress={() => {TDBsetValue("null")}}/>
+        </div>
+      </div>
       <Text>{TDB_Value}</Text>
-      <Button
-      title="Reset TDB Request"
-      onPress={() => {TDBsetValue("Hello Mom")}}/>
+
+      <Text> </Text>
+      <Text> </Text>
+
+
+      {/* Payload Buttons*/}
+      <div style={{display: "flex"}}>
+        <div style={{paddingLeft: "20px"}}>
+          <Button
+            title="Send Payload"
+            onPress={() => {SendPayload()}}
+          />
+        </div>
+
+        <div style={{paddingLeft: "20px"}}>
+          <Button
+          title="Reset Data"
+          onPress={() => {setPayloadData("null")}}/>
+        </div>
+
+        <div style={{paddingLeft: "20px"}}>
+        <label>
+        <label>
+          Payload: 
+          <input
+            value={payloadInput}
+            onChange={e => setpayloadInput(e.target.value)}
+          />
+        </label>
+        </label>
+        </div>
+      </div>
+      <Text>{Payload}</Text>
+
+      
+
+      
       
       
       
