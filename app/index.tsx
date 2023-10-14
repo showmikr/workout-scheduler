@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import * as WebBrowser from "expo-web-browser";
 import { StyleSheet, Text, View, Platform, Button } from "react-native";
+import { Link } from "expo-router";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -39,7 +40,7 @@ const GitHubLoginBtn = () => {
       }
       const { code } = response.params;
       console.log("params" + JSON.stringify(response.params));
-      fetch(`localhost:8080/g`);
+      fetch(`localhost:8080/`);
     })();
   }, [response]);
   return (
@@ -55,9 +56,11 @@ const GitHubLoginBtn = () => {
 
 export default function Page() {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container]}>
       <Text>Open up your Mother index.tsx to start working on your app!</Text>
-      <GitHubLoginBtn />
+      <Link style={[{ fontSize: 20 }]} href="/hello">
+        Real GitHub Login Button
+      </Link>
       <StatusBar style="auto" />
     </View>
   );

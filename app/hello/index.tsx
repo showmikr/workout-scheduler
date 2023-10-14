@@ -1,11 +1,14 @@
 import * as WebBrowser from "expo-web-browser";
 import { makeRedirectUri, useAuthRequest } from "expo-auth-session";
-import { Text, View } from "react-native";
+import { Button, Text, View } from "react-native";
 import { useEffect, useState } from "react";
 import { styles } from "../index";
+import { Link } from "expo-router";
+import * as Linking from "expo-linking";
+
+const springLocalServer = "http://localhost:8080/hello";
 
 const GreetingText = () => {
-  const springLocalServer = "http://localhost:8080/hello";
   const [msg, setMsg] = useState<string | null>();
   useEffect(() => {
     (async () => {
@@ -28,8 +31,29 @@ const GreetingText = () => {
     <View style={[{ alignItems: "center", justifyContent: "center", flex: 1 }]}>
       <Text>Hello</Text>
       <Text>{msg}</Text>
+      <Link style={[{ fontSize: 20 }]} href="/">
+        HomePage
+      </Link>
     </View>
   );
 };
 
-export default GreetingText;
+const MobileGreeting = () => {
+  const _handlePressButtonAsync = async () => {
+    let result = await WebBrowser.openBrowserAsync("https://expo.dev");
+  };
+  return (
+    <View style={[{ alignItems: "center", justifyContent: "center", flex: 1 }]}>
+      <Button
+        title="Try Opening Mobile Browser"
+        onPress={_handlePressButtonAsync}
+      />
+      <Text>Hello on Mobile</Text>
+      <Link style={[{ fontSize: 20 }]} href="/">
+        HomePage
+      </Link>
+    </View>
+  );
+};
+
+export default MobileGreeting;
