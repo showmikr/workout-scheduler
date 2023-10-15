@@ -57,7 +57,7 @@ const GitHubLoginBtn = () => {
 export default function Page() {
   return (
     <View style={[styles.container]}>
-      <Text>Open up your Mother index.tsx to start working on your app!</Text>
+      <Text>Open up index.tsx to start working on your app!</Text>
       <Link style={[{ fontSize: 20 }]} href="/hello">
         Real GitHub Login Button
       </Link>
