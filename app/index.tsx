@@ -1,66 +1,114 @@
-import { makeRedirectUri, useAuthRequest } from "expo-auth-session";
+import {
+  useAuthRequest,
+  exchangeCodeAsync,
+  revokeAsync,
+  ResponseType,
+  makeRedirectUri,
+  TokenResponse,
+  AccessTokenRequestConfig,
+} from "expo-auth-session";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import * as WebBrowser from "expo-web-browser";
-import { StyleSheet, Text, View, Platform, Button } from "react-native";
+import { StyleSheet, Text, View, Platform, Button, Alert } from "react-native";
 import { Link } from "expo-router";
 
 WebBrowser.maybeCompleteAuthSession();
 
-const GitHubLoginBtn = () => {
-  const gitHubClientId = Platform.select({
-    ios: "c836d33329427d2050f6",
-    android: "c836d33329427d2050f6",
-    default: "ca1743b472e63f27cefe",
-  });
-  console.log("Platform: " + Platform.OS);
-  console.log("gitHubClientId: " + gitHubClientId);
+const clientId = process.env.EXPO_PUBLIC_AWS_COGNITO_CLIENT_ID!;
+const userPoolUrl = process.env.EXPO_PUBLIC_AWS_COGNITO_USER_POOL!;
 
-  // Endpoint
-  const discovery = {
-    authorizationEndpoint: "https://github.com/login/oauth/authorize",
-    tokenEndpoint: "https://github.com/login/oauth/access_token",
-    revocationEndpoint: `https://github.com/settings/connections/applications/${gitHubClientId}`,
-  };
-  const [request, response, promptAsync] = useAuthRequest(
-    {
-      clientId: gitHubClientId,
-      scopes: ["identity"],
-      redirectUri: makeRedirectUri({
-        scheme: "workoutscheduler",
-      }),
-    },
-    discovery
-  );
-  React.useEffect(() => {
-    (async () => {
-      if (response?.type !== "success") {
-        console.log("Unsuccessful response, response type: " + response?.type);
-        return;
-      }
-      const { code } = response.params;
-      console.log("params" + JSON.stringify(response.params));
-      fetch(`localhost:8080/`);
-    })();
-  }, [response]);
-  return (
-    <Button
-      disabled={!request}
-      title="Login w/ GitHub"
-      onPress={() => {
-        promptAsync();
-      }}
-    />
-  );
-};
+const redirectUri = makeRedirectUri();
 
 export default function Page() {
+  const [authTokens, setAuthTokens] = React.useState<TokenResponse | null>(
+    null
+  );
+  const discoveryDocument = React.useMemo(
+    () => ({
+      authorizationEndpoint: userPoolUrl + "/oauth2/authorize",
+      tokenEndpoint: userPoolUrl + "/oauth2/token",
+      revocationEndpoint: userPoolUrl + "/oauth2/revoke",
+    }),
+    []
+  );
+
+  const [request, response, promptAsync] = useAuthRequest(
+    {
+      clientId,
+      responseType: ResponseType.Code,
+      redirectUri,
+      usePKCE: true,
+    },
+    discoveryDocument
+  );
+
+  React.useEffect(() => {
+    const exchangeFn = async (exchangeTokenReq: AccessTokenRequestConfig) => {
+      try {
+        const exchangeTokenResponse = await exchangeCodeAsync(
+          exchangeTokenReq,
+          discoveryDocument
+        );
+        setAuthTokens(exchangeTokenResponse);
+        console.log(exchangeTokenResponse);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    if (response && request) {
+      if (response?.type === "error") {
+        Alert.alert(
+          "Authentication error",
+          response.params.error_description || "something went wrong"
+        );
+        return;
+      }
+      if (response.type === "success" && request.codeVerifier) {
+        exchangeFn({
+          clientId,
+          code: response.params.code,
+          redirectUri,
+          extraParams: {
+            code_verifier: request.codeVerifier,
+          },
+        });
+      } else {
+        console.log("Code Verifier query parameter is null");
+        console.log("can't exchange authorization code for token without it");
+      }
+    }
+  }, [discoveryDocument, request, response]);
+
+  const logout = async () => {
+    if (!authTokens || !authTokens.refreshToken) {
+      console.log("Can't logout b/c refreshToken doesn't exist. idk how tho");
+      return;
+    }
+    const revokeResponse = await revokeAsync(
+      {
+        clientId: clientId,
+        token: authTokens.refreshToken,
+      },
+      discoveryDocument
+    );
+    if (revokeResponse) {
+      setAuthTokens(null);
+    }
+  };
+  console.log("authTokens: " + JSON.stringify(authTokens));
   return (
     <View style={[styles.container]}>
       <Text>Open up index.tsx to start working on your app!</Text>
-      <Link style={[{ fontSize: 20 }]} href="/hello">
-        Real GitHub Login Button
-      </Link>
+      {authTokens ? (
+        <Button title="Logout" onPress={() => logout()} />
+      ) : (
+        <Button
+          disabled={!request}
+          title="Login"
+          onPress={() => promptAsync()}
+        />
+      )}
       <StatusBar style="auto" />
     </View>
   );
