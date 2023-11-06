@@ -2,7 +2,6 @@ import * as WebBrowser from "expo-web-browser";
 import { makeRedirectUri, useAuthRequest } from "expo-auth-session";
 import { Button, Text, View } from "react-native";
 import { useEffect, useState } from "react";
-import { styles } from "../index";
 import { Link } from "expo-router";
 import * as Linking from "expo-linking";
 
