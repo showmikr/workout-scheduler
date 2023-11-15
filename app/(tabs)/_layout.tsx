@@ -19,7 +19,7 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
-  // Kinda gross, but it works. useSession either gives a full object wiht properties is full-blast null, so this is the workaround...
+  // Kinda gross, but it works. useSession object is either a ful object with all properties defined or is completely null, so this is the workaround...
   const { session, isLoading } = useSession() ?? {
     session: null,
     isLoading: true,
