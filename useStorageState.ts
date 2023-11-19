@@ -11,7 +11,7 @@ function useAsyncState<T>(
     (
       state: [boolean, T | null],
       action: T | null = null
-    ): [boolean, T | null] => [false, action],
+    ): [boolean, T | null] => [!state, action],
     initialValue
   ) as UseStateHook<T>;
 }
@@ -60,8 +60,14 @@ export function useStorageState(key: string): UseStateHook<string> {
   // Set
   const setValue = React.useCallback(
     (value: string | null) => {
+      console.log(
+        `setValue triggered: [isLoading: ${state[0]}, string: ${
+          state[1] ?? "null"
+        }]`
+      );
       setStorageItemAsync(key, value).then(() => {
         setState(value);
+        console.log("value: " + value);
       });
     },
     [key]

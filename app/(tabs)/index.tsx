@@ -1,9 +1,12 @@
-import { StyleSheet } from "react-native";
-
+import { Pressable, StyleSheet } from "react-native";
 import EditScreenInfo from "../../components/EditScreenInfo";
 import { Text, View } from "../../components/Themed";
+import { useColorScheme } from "nativewind";
+import { useSession } from "../../ctx";
 
 export default function TabOneScreen() {
+  const { colorScheme, setColorScheme } = useColorScheme();
+  const { signOut, session } = useSession()!;
   return (
     <View
       //style={styles.container}
@@ -11,11 +14,32 @@ export default function TabOneScreen() {
     >
       <Text style={styles.title}>Tab One</Text>
       <View
-        style={styles.separator}
+        className="my-8 h-px w-4/5" // Replaces styles.separator native styling
+        //style={styles.separator}
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
       <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <Pressable
+        onPress={() =>
+          setColorScheme(colorScheme === "dark" ? "light" : "dark")
+        }
+      >
+        <Text className="text-xl">{"Toggle Color Scheme: " + colorScheme}</Text>
+      </Pressable>
+      <Text />
+      <Text className="text-xl dark:text-white">
+        Session: {session ?? "null"}
+      </Text>
+      <View
+        className="my-8 h-px w-4/5" // Replaces styles.separator native styling
+        //style={styles.separator}
+        lightColor="#eee"
+        darkColor="rgba(255,255,255,0.1)"
+      />
+      <Pressable onPress={signOut}>
+        <Text className="text-3xl">Sign Me Out!</Text>
+      </Pressable>
     </View>
   );
 }

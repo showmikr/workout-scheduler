@@ -25,6 +25,9 @@ export default function TabLayout() {
     isLoading: true,
   };
 
+  console.log("index: " + isLoading);
+  console.log("index session: " + session);
+
   // You can keep the splash screen open, or render a loading screen like we do here.
   if (isLoading) {
     return (
