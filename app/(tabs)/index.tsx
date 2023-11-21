@@ -3,6 +3,7 @@ import EditScreenInfo from "../../components/EditScreenInfo";
 import { Text, View } from "../../components/Themed";
 import { useColorScheme } from "nativewind";
 import { useSession } from "../../ctx";
+import * as AuthSession from "expo-auth-session";
 
 export default function TabOneScreen() {
   const { colorScheme, setColorScheme } = useColorScheme();
@@ -29,7 +30,12 @@ export default function TabOneScreen() {
       </Pressable>
       <Text />
       <Text className="text-xl dark:text-white">
-        Session: {session ?? "null"}
+        Session:{" "}
+        {session
+          ? (
+              JSON.parse(session) as AuthSession.TokenResponse
+            ).idToken?.substring(0, 10)
+          : null}
       </Text>
       <View
         className="my-8 h-px w-4/5" // Replaces styles.separator native styling

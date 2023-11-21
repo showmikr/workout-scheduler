@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from "react-native";
 import { useSession } from "../ctx";
 import { Redirect } from "expo-router";
+import { TokenResponse } from "expo-auth-session";
 
 export default function SignIn() {
   const { signIn, session, isLoading } = useSession() ?? {
@@ -14,7 +15,8 @@ export default function SignIn() {
   return !session ? (
     <View className="flex-1 items-center justify-center dark:bg-black">
       <Text className="text-3xl dark:text-white">
-        Session: {session ?? "null"}
+        Session:{" "}
+        {session ? (JSON.parse(session) as TokenResponse).idToken : "null"}
       </Text>
       <Text />
       <Text className="dark:text-white">
