@@ -4,12 +4,23 @@ import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { Alert } from "react-native";
 
+// This represents the default initialized AuthContext
+// This initial version is always supposed to be overriden with properties/functions that actually do something.
 const AuthContext = React.createContext<{
   signIn: () => void;
   signOut: () => void;
-  session?: string | null;
+  session: string | null; // session will need to be an object with multiple properties such as {username, idToken, email, etc} in the future
   isLoading: boolean;
-} | null>(null);
+}>({
+  signIn: () => {
+    // No behavior initialized
+  },
+  signOut: () => {
+    // No behavior initialized
+  },
+  session: null,
+  isLoading: true,
+});
 
 // This hook can be used to access the user info.
 export function useSession() {
@@ -19,7 +30,6 @@ export function useSession() {
       throw new Error("useSession must be wrapped in a <SessionProvider />");
     }
   }
-
   return value;
 }
 
@@ -68,7 +78,11 @@ export function SessionProvider(props: React.PropsWithChildren) {
           exchangeTokenReq,
           discoveryDocument
         );
-        setSession(JSON.stringify(exchangeTokenResponse));
+        console.log("session is loading");
+        setTimeout(
+          () => setSession(JSON.stringify(exchangeTokenResponse)),
+          4000
+        );
       } catch (error) {
         console.error(error);
       }
@@ -99,7 +113,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
     <AuthContext.Provider
       value={{
         signIn: promptAsync,
-        signOut: async () => {
+        signOut: () => {
           const authTokens = session
             ? (JSON.parse(session) as AuthSession.TokenResponse)
             : null;
@@ -110,18 +124,6 @@ export function SessionProvider(props: React.PropsWithChildren) {
             );
             return;
           }
-          // Look at readme for why this is commented out
-          //const revokeResponse = await AuthSession.revokeAsync(
-          //  {
-          //    clientId: clientId,
-          //    token: authTokens.refreshToken,
-          //  },
-          //  discoveryDocument
-          //);
-          //if (revokeResponse) {
-          //  setSession(null);
-          //  console.log("session is null");
-          //}
           WebBrowser.openAuthSessionAsync(
             `${userPoolUrl}/logout?client_id=${clientId}&logout_uri=${redirectUri}`
           )
@@ -133,7 +135,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
             });
         },
         session,
-        isLoading,
+        isLoading: isLoading,
       }}
     >
       {props.children}

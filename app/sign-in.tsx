@@ -4,15 +4,13 @@ import { Redirect } from "expo-router";
 import { TokenResponse } from "expo-auth-session";
 
 export default function SignIn() {
-  const { signIn, session, isLoading } = useSession() ?? {
-    signIn: () => {
-      console.error(
-        "Hey, there is no sign-in function. Did you forget to implement it (or maybe useSession was null), you dummy?"
-      );
-    },
-  };
+  const { signIn, session, isLoading } = useSession();
 
-  return !session ? (
+  return isLoading ? (
+    <View className="flex-1 items-center justify-center">
+      <Text className="text-3xl dark:text-white">Loading...</Text>
+    </View>
+  ) : !session ? (
     <View className="flex-1 items-center justify-center dark:bg-black">
       <Text className="text-3xl dark:text-white">
         Session:{" "}

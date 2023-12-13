@@ -1,7 +1,6 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Link, Redirect, Tabs } from "expo-router";
-import { Pressable, View, useColorScheme } from "react-native";
-import { Text as ThemedText } from "../../components/Themed";
+import { Pressable, View, Text, useColorScheme } from "react-native";
 
 import Colors from "../../constants/Colors";
 import { useSession } from "../../ctx";
@@ -19,24 +18,15 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
-  // Kinda gross, but it works. useSession object is either a ful object with all properties defined or is completely null, so this is the workaround...
-  const { session, isLoading } = useSession() ?? {
-    session: null,
-    isLoading: true,
-  };
-
-  console.log("index: " + isLoading);
-  console.log("index session: " + session);
-
-  // You can keep the splash screen open, or render a loading screen like we do here.
+  // Kinda gross, but it works. useSession object is either a full object with all properties defined or is completely null, so this is the workaround...
+  const { session, isLoading } = useSession();
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center">
-        <ThemedText>Loading...</ThemedText>
+        <Text className="text-3xl dark:text-white">Loading...</Text>
       </View>
     );
   }
-
   // Only require authentication within the (app) group's layout as users
   // need to be able to access the (auth) group and sign in again.
   if (!session) {
