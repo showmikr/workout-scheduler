@@ -127,8 +127,16 @@ export function SessionProvider(props: React.PropsWithChildren) {
           WebBrowser.openAuthSessionAsync(
             `${userPoolUrl}/logout?client_id=${clientId}&logout_uri=${redirectUri}`
           )
-            .then(() => {
-              setSession(null);
+            .then((authSessionResult) => {
+              if (
+                authSessionResult.type === "cancel" ||
+                authSessionResult.type === "dismiss"
+              ) {
+                // Since the user is cancelling the logout flow, we do nothing
+                return;
+              } else if (authSessionResult.type === "success") {
+                setSession(null);
+              }
             })
             .catch((err) => {
               console.error("browser problem: " + err);
