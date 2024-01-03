@@ -11,6 +11,9 @@ const AuthContext = React.createContext<{
   signOut: () => void;
   session: string | null; // session will need to be an object with multiple properties such as {username, idToken, email, etc} in the future
   isLoading: boolean;
+  // delete fakeSignIn and fakeSignOut once you no longer need them
+  fakeSignIn: () => void;
+  fakeSignOut: () => void;
 }>({
   signIn: () => {
     // No behavior initialized
@@ -20,6 +23,12 @@ const AuthContext = React.createContext<{
   },
   session: null,
   isLoading: true,
+  fakeSignIn: () => {
+    // No behavior initialized
+  },
+  fakeSignOut: () => {
+    // No behavior initialized
+  },
 });
 
 // This hook can be used to access the user info.
@@ -144,6 +153,18 @@ export function SessionProvider(props: React.PropsWithChildren) {
         },
         session,
         isLoading: isLoading,
+        fakeSignIn: () => {
+          setSession(
+            JSON.stringify({
+              accessToken: "fake_access_token",
+              tokenType: "bearer",
+              issuedAt: Math.floor(Date.now() / 1000),
+            })
+          );
+        },
+        fakeSignOut: () => {
+          setSession(null);
+        },
       }}
     >
       {props.children}

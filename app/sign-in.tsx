@@ -4,7 +4,7 @@ import { Redirect } from "expo-router";
 import { TokenResponse } from "expo-auth-session";
 
 export default function SignIn() {
-  const { signIn, session, isLoading } = useSession();
+  const { fakeSignIn, signIn, session, isLoading } = useSession();
 
   return isLoading ? (
     <View className="flex-1 items-center justify-center">
@@ -22,7 +22,9 @@ export default function SignIn() {
       </Text>
       <Pressable
         onPress={() => {
-          signIn();
+          // Uncomment signIn when ready to use real AWS Cognito sign-in functionality
+          //signIn();
+          fakeSignIn();
           // Navigate after signing in. You may want to tweak this to ensure sign-in is
           // successful before navigating.
           //router.replace("/"); // Not really working, read the readme

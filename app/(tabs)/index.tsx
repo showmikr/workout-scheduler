@@ -7,7 +7,7 @@ import * as AuthSession from "expo-auth-session";
 
 export default function TabOneScreen() {
   const { colorScheme, setColorScheme } = useColorScheme();
-  const { signOut, session } = useSession()!;
+  const { fakeSignOut, signOut, session } = useSession()!;
   return (
     <View
       //style={styles.container}
@@ -43,7 +43,7 @@ export default function TabOneScreen() {
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
-      <Pressable onPress={signOut}>
+      <Pressable onPress={fakeSignOut}>
         <Text className="text-3xl">Sign Me Out!</Text>
       </Pressable>
     </View>
