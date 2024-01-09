@@ -1,58 +1,80 @@
-import { StyleSheet } from "react-native";
+import { Pressable, Button, StyleSheet } from "react-native";
 import EditScreenInfo from "../../components/EditScreenInfo";
 import { Text, View } from "../../components/Themed";
 import * as FileSystem from "expo-file-system";
 import * as SQLite from "expo-sqlite";
-import { Asset } from "expo-asset";
+import sqlite_ddl from "../../pgdb-ddl";
 
-// function for opening sample database
-// sqlite database on mobile disk is called sample.db while database in codebase is called test-db.db
-async function openDatabase() {
-  if (
-    !(
-      await FileSystem.getInfoAsync(
-        FileSystem.documentDirectory + "SQLite/sample.db"
-      )
-    ).exists
-  ) {
-    await FileSystem.makeDirectoryAsync(
-      FileSystem.documentDirectory + "SQLite"
-    );
-  } else {
-    return SQLite.openDatabase("sample.db");
+const dbName = "pg-sqlite.db";
+
+async function doesLocalDbExist() {
+  const dbExists = (
+    await FileSystem.getInfoAsync(
+      FileSystem.documentDirectory + "SQLite/" + dbName
+    )
+  ).exists;
+  return dbExists;
+}
+
+// function for opening sqlite version of our postgresDB
+async function openDB() {
+  if (await doesLocalDbExist()) {
+    return SQLite.openDatabase(dbName);
   }
-  console.log(Asset.fromModule(require("../../assets/sqlite/test-db.db")).uri);
-  await FileSystem.downloadAsync(
-    Asset.fromModule(require("../../assets/sqlite/test-db.db")).uri,
-    FileSystem.documentDirectory + "SQLite/sample.db"
+
+  // otherwise, we need to initialize the db before returning it
+  const db = SQLite.openDatabase(
+    dbName,
+    undefined,
+    undefined,
+    undefined,
+    () => {
+      for (const queryString of sqlite_ddl) {
+        db.transaction((transaction) => {
+          transaction.executeSql(queryString);
+        });
+      }
+    }
   );
-  return SQLite.openDatabase("sample.db");
+  return db;
 }
 
 export default function TabTwoScreen() {
-  // Console log database contents on render of tab two
-  openDatabase().then((db) => {
-    db.transaction(
-      (rtx) => {
-        rtx.executeSql("SELECT * FROM exercise", undefined, (_, rs) => {
-          console.log("Database Contents:");
-          for (const { muscle_group, title } of rs.rows._array) {
-            console.log(title + ", " + muscle_group);
-          }
-        }),
-          null,
-          () => {
-            console.log("Hooray!");
-          };
-      },
-      (err) => {
-        console.log(err);
-      },
-      () => {
-        console.log("transaction successful");
+  const readDB = () => {
+    openDB().then((db) => {
+      console.log("Reading from DB");
+      db.transaction(
+        (transaction) => {
+          transaction.executeSql(
+            "select day from days_of_week",
+            undefined,
+            (_trx, rs) => {
+              for (const row of rs.rows._array) {
+                console.log(row.day);
+              }
+            }
+          );
+        },
+        (err) => {
+          console.log(err);
+        }
+      );
+    });
+  };
+
+  const deleteDB = () => {
+    doesLocalDbExist().then((dbExists) => {
+      if (!dbExists) {
+        console.log("db doesn't exist, quitting deletion");
+        return;
       }
-    );
-  });
+      openDB().then((db) => {
+        db.closeAsync();
+        db.deleteAsync();
+        console.log("DB deleted successfully");
+      });
+    });
+  };
 
   return (
     <View
@@ -60,7 +82,18 @@ export default function TabTwoScreen() {
       //style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
     >
       <Text style={styles.title}>Tab Two</Text>
-      <Text className="text-xl/10 font-bold underline">Exercises</Text>
+      <Pressable
+        className="m-10 p-1 bg-slate-600 border-solid border-2 border-slate-400"
+        onPress={() => deleteDB()}
+      >
+        <Text className="text-lg/10">Delete Database</Text>
+      </Pressable>
+      <Pressable
+        className="p-1 bg-slate-600 border-solid border-2 border-slate-400"
+        onPress={() => readDB()}
+      >
+        <Text className="text-lg/10">Read From Database</Text>
+      </Pressable>
       <View
         style={styles.separator}
         lightColor="#eee"
