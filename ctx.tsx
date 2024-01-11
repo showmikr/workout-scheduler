@@ -154,8 +154,10 @@ export function SessionProvider(props: React.PropsWithChildren) {
         session,
         isLoading: isLoading,
         fakeSignIn: () => {
+          // putting fake info into setSession
           setSession(
             JSON.stringify({
+              subjectClaim: "c8bf7e34-7dcf-11ee-b962-0242ac120002",
               accessToken: "fake_access_token",
               tokenType: "bearer",
               issuedAt: Math.floor(Date.now() / 1000),

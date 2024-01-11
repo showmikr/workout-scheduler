@@ -228,6 +228,11 @@ const sqlite_ddl = [
   ('Friday'), 
   ('Saturday'), 
   ('Sunday');`,
+
+  `INSERT INTO app_user (aws_cognito_sub, first_name, last_name, user_name, email, email_verified, image_url, creation_date, last_signed_in, avg_daily_calorie_goal, bodyweight_goal)
+  VALUES
+	('c8bf7e34-7dcf-11ee-b962-0242ac120002', 'David', 'Shcherbina', 'kalashnikov', 'davidshcherbina@gmail.com', true, null, '2022-05-07 09:12:34-05:00', '2023-11-07 14:12:34-05:00', 150, 270);
+  `,
 ];
 
 export default sqlite_ddl;
