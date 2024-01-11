@@ -1,3 +1,9 @@
+# Commit 0ae21f2333c0d7f44fc1ecda2e05f579dab325af
+
+### Date: Thurs Jan 11
+
+- Currently have an sqlite database with all necessary tables for app (however, I've only inserted data for the app_user and days_of_week tables). I (as in future me) can insert data for the other tables in a later commit btw, the insert table queries are already available in [workout-scheduler-v2.sql](./workout-scheduler-v2.sql), you just have to copy-pasta them into [pgdb-ddl.ts](./pgdb-ddl.ts), which is the current file I use to execute all of the queries for creating the local database.
+
 # Commit a3cbed136a7120fa80b6774e4520e6b91f28a375
 
 - Date: Mon Nov 20
