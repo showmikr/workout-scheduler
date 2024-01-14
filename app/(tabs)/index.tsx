@@ -18,7 +18,7 @@ type User = {
 export default function TabOneScreen() {
   const { colorScheme, setColorScheme } = useColorScheme();
   const { fakeSignOut, signOut, session } = useSession()!;
-  const [userData, setUserData] = useState(null as User | null);
+  const [userData, setUserData] = useState<User | null>(null);
 
   if (session && !userData) {
     openDB().then((db) => {
