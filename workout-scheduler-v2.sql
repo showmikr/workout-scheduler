@@ -1,5 +1,5 @@
 CREATE TABLE "days_of_week" (
-  "day" text CHECK (day IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'))
+  "day" text CHECK (day IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')) NOT NULL
 );
 
 CREATE TABLE "app_user" (
@@ -78,7 +78,7 @@ CREATE TABLE "exercise" (
   FOREIGN KEY ("standard_exercise_category_id") REFERENCES "standard_exercise_category" ("id") ON DELETE SET NULL
 );
 
-CREATE TABLE "set" (
+CREATE TABLE "exercise_set" (
   "id" INTEGER PRIMARY KEY,
   "exercise_id" bigint NOT NULL,
   "title" text,
@@ -90,18 +90,18 @@ CREATE TABLE "set" (
 
 CREATE TABLE "resistance_set" (
   "id" INTEGER PRIMARY KEY,
-  "set_id" bigint UNIQUE NOT NULL,
+  "exercise_set_id" bigint UNIQUE NOT NULL,
   "total_weight" real,
-  FOREIGN KEY ("set_id") REFERENCES "set" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY ("exercise_set_id") REFERENCES "exercise_set" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE "cardio_set" (
   "id" INTEGER PRIMARY KEY,
-  "set_id" bigint UNIQUE NOT NULL,
+  "exercise_set_id" bigint UNIQUE NOT NULL,
   "target_distance" real,
   "target_speed" real,
   "target_time" int,
-  FOREIGN KEY ("set_id") REFERENCES "set" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY ("exercise_set_id") REFERENCES "exercise_set" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE "workout_session" (
@@ -360,7 +360,7 @@ INSERT INTO exercise (standard_exercise_category_id, custom_exercise_category_id
 
     
 
-INSERT INTO "set" (exercise_id, title, list_order, reps, rest_time)
+INSERT INTO "exercise_set" (exercise_id, title, list_order, reps, rest_time)
     VALUES
     
     (1,     'Warm-Up',      1,  5,      180),
@@ -405,7 +405,7 @@ INSERT INTO "set" (exercise_id, title, list_order, reps, rest_time)
     (27,    'Cool-Down',    1,  1,    0);
 
 
-INSERT INTO resistance_set (set_id, total_weight)
+INSERT INTO resistance_set (exercise_set_id, total_weight)
     VALUES
     (1,     125),
     (2,     175),
@@ -439,7 +439,7 @@ INSERT INTO resistance_set (set_id, total_weight)
     (31,    135),
     (32,    225);
 
-INSERT INTO cardio_set (set_id, target_distance, target_speed, target_time)
+INSERT INTO cardio_set (exercise_set_id, target_distance, target_speed, target_time)
     VALUES
     (15,    NULL,   NULL,   500),
     (16,    NULL,   NULL,   120),
