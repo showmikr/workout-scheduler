@@ -1,8 +1,8 @@
-CREATE TABLE "days_of_week" (
+CREATE TABLE IF NOT EXISTS "days_of_week" (
   "day" text CHECK (day IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')) NOT NULL
 );
 
-CREATE TABLE "app_user" (
+CREATE TABLE IF NOT EXISTS "app_user" (
   "id" INTEGER PRIMARY KEY,
   "aws_cognito_sub" uuid UNIQUE NOT NULL,
   "first_name" text,
@@ -17,24 +17,24 @@ CREATE TABLE "app_user" (
   "bodyweight_goal" real
 );
 
-CREATE TABLE "exercise_type" (
+CREATE TABLE IF NOT EXISTS "exercise_type" (
   "id" INTEGER PRIMARY KEY,
   "title" text NOT NULL
 );
 
-CREATE TABLE "exercise_equipment" (
+CREATE TABLE IF NOT EXISTS "exercise_equipment" (
   "id" INTEGER PRIMARY KEY,
   "title" text UNIQUE NOT NULL
 );
 
-CREATE TABLE "workout_tag" (
+CREATE TABLE IF NOT EXISTS "workout_tag" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
   "title" text NOT NULL,
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "link_tag_workout" (
+CREATE TABLE IF NOT EXISTS "link_tag_workout" (
   "id" INTEGER PRIMARY KEY,
   "workout_tag_id" bigint NOT NULL,
   "workout_id" bigint NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE "link_tag_workout" (
   FOREIGN KEY ("workout_tag_id") REFERENCES "workout_tag" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "workout" (
+CREATE TABLE IF NOT EXISTS "workout" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
   "training_day_id" bigint,
@@ -53,14 +53,14 @@ CREATE TABLE "workout" (
   FOREIGN KEY ("training_day_id") REFERENCES "training_day" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "workout_days" (
+CREATE TABLE IF NOT EXISTS "workout_days" (
   "id" INTEGER PRIMARY KEY,
   "workout_id" bigint,
   "day" days_of_week NOT NULL,
   FOREIGN KEY ("workout_id") REFERENCES "workout" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "exercise" (
+CREATE TABLE IF NOT EXISTS "exercise" (
   "id" INTEGER PRIMARY KEY,
   "standard_exercise_category_id" bigint,
   "custom_exercise_category_id" bigint,
@@ -78,7 +78,7 @@ CREATE TABLE "exercise" (
   FOREIGN KEY ("standard_exercise_category_id") REFERENCES "standard_exercise_category" ("id") ON DELETE SET NULL
 );
 
-CREATE TABLE "exercise_set" (
+CREATE TABLE IF NOT EXISTS "exercise_set" (
   "id" INTEGER PRIMARY KEY,
   "exercise_id" bigint NOT NULL,
   "title" text,
@@ -88,14 +88,14 @@ CREATE TABLE "exercise_set" (
   FOREIGN KEY ("exercise_id") REFERENCES "exercise" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "resistance_set" (
+CREATE TABLE IF NOT EXISTS "resistance_set" (
   "id" INTEGER PRIMARY KEY,
   "exercise_set_id" bigint UNIQUE NOT NULL,
   "total_weight" real,
   FOREIGN KEY ("exercise_set_id") REFERENCES "exercise_set" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "cardio_set" (
+CREATE TABLE IF NOT EXISTS "cardio_set" (
   "id" INTEGER PRIMARY KEY,
   "exercise_set_id" bigint UNIQUE NOT NULL,
   "target_distance" real,
@@ -104,7 +104,7 @@ CREATE TABLE "cardio_set" (
   FOREIGN KEY ("exercise_set_id") REFERENCES "exercise_set" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "workout_session" (
+CREATE TABLE IF NOT EXISTS "workout_session" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
   "title" text NOT NULL,
@@ -114,7 +114,7 @@ CREATE TABLE "workout_session" (
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "exercise_session" (
+CREATE TABLE IF NOT EXISTS "exercise_session" (
   "id" INTEGER PRIMARY KEY,
   "workout_session_id" bigint NOT NULL,
   "pr_history_id" bigint,
@@ -128,7 +128,7 @@ CREATE TABLE "exercise_session" (
   FOREIGN KEY ("pr_history_id") REFERENCES "pr_history" ("id") ON DELETE SET NULL
 );
 
-CREATE TABLE "cardio_set_session" (
+CREATE TABLE IF NOT EXISTS "cardio_set_session" (
   "id" INTEGER PRIMARY KEY,
   "set_session_id" bigint NOT NULL,
   "target_distance" real,
@@ -140,7 +140,7 @@ CREATE TABLE "cardio_set_session" (
   FOREIGN KEY ("set_session_id") REFERENCES "set_session" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "set_session" (
+CREATE TABLE IF NOT EXISTS "set_session" (
   "id" INTEGER PRIMARY KEY,
   "exercise_session_id" bigint NOT NULL,
   "title" text,
@@ -151,14 +151,14 @@ CREATE TABLE "set_session" (
   FOREIGN KEY ("exercise_session_id") REFERENCES "exercise_session" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "resistance_set_session" (
+CREATE TABLE IF NOT EXISTS "resistance_set_session" (
   "id" INTEGER PRIMARY KEY,
   "set_session_id" bigint NOT NULL,
   "total_weight" real,
   FOREIGN KEY ("set_session_id") REFERENCES "set_session" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "user_bodyweight" (
+CREATE TABLE IF NOT EXISTS "user_bodyweight" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
   "weight" real NOT NULL,
@@ -166,14 +166,14 @@ CREATE TABLE "user_bodyweight" (
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "custom_exercise_category" (
+CREATE TABLE IF NOT EXISTS "custom_exercise_category" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
   "title" text NOT NULL,
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "pr_history" (
+CREATE TABLE IF NOT EXISTS "pr_history" (
   "id" INTEGER PRIMARY KEY,
   "weight" real,
   "reps" int,
@@ -183,7 +183,7 @@ CREATE TABLE "pr_history" (
   "date" timestamp NOT NULL
 );
 
-CREATE TABLE "custom_category_pr" (
+CREATE TABLE IF NOT EXISTS "custom_category_pr" (
   "id" INTEGER PRIMARY KEY,
   "custom_category_pr_id" bigint NOT NULL,
   "pr_history_id" bigint UNIQUE NOT NULL,
@@ -191,7 +191,7 @@ CREATE TABLE "custom_category_pr" (
   FOREIGN KEY ("custom_category_pr_id") REFERENCES "custom_exercise_category" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "standard_category_pr" (
+CREATE TABLE IF NOT EXISTS "standard_category_pr" (
   "id" INTEGER PRIMARY KEY,
   "standard_category_pr_id" bigint NOT NULL,
   "pr_history_id" bigint UNIQUE NOT NULL,
@@ -199,7 +199,7 @@ CREATE TABLE "standard_category_pr" (
   FOREIGN KEY ("standard_category_pr_id") REFERENCES "standard_exercise_category" ("id")
 );
 
-CREATE TABLE "training_cycle" (
+CREATE TABLE IF NOT EXISTS "training_cycle" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
   "title" text NOT NULL,
@@ -207,14 +207,14 @@ CREATE TABLE "training_cycle" (
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "training_day" (
+CREATE TABLE IF NOT EXISTS "training_day" (
   "id" INTEGER PRIMARY KEY,
   "training_cycle_id" bigint NOT NULL,
   "list_order" int NOT NULL,
   FOREIGN KEY ("training_cycle_id") REFERENCES "training_cycle" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "standard_exercise_category" (
+CREATE TABLE IF NOT EXISTS "standard_exercise_category" (
   "id" INTEGER PRIMARY KEY,
   "title" text NOT NULL
 );
