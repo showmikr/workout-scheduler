@@ -219,7 +219,9 @@ const sqlite_ddl = [
     "id" INTEGER PRIMARY KEY,
     "title" text NOT NULL
   );`,
+];
 
+const sqlite_dml = [
   `INSERT INTO days_of_week values 
   ('Monday'), 
   ('Tuesday'), 
@@ -233,6 +235,316 @@ const sqlite_ddl = [
   VALUES
 	('c8bf7e34-7dcf-11ee-b962-0242ac120002', 'David', 'Shcherbina', 'kalashnikov', 'davidshcherbina@gmail.com', true, null, '2022-05-07 09:12:34-05:00', '2023-11-07 14:12:34-05:00', 150, 270);
   `,
+
+  `INSERT INTO training_cycle (app_user_id, title, list_order) VALUES
+    (1, 'Weekly Workout Cycle', 1);
+  `,
+
+  `INSERT INTO training_day (training_cycle_id, list_order) VALUES
+    (1, 1),
+    (1, 2),
+    (1, 3),
+    (1, 4),
+    (1, 5),
+    (1, 6),
+    (1, 7);
+  `,
+
+  `INSERT INTO workout (app_user_id, training_day_id, title, list_order, last_session)
+    VALUES
+    (1, NULL,   'Upperbody',                1,  '2023-11-28 17:40:00-05:00'),
+    (1, NULL,   'Legday workout + core',    2,  '2023-12-02 12:15:00-05:00'),
+    (1, NULL,   'Warmup Stretches',         3,  '2022-11-28 17:40:00-05:00'),
+
+    (1, 2,      'Warmup Stretches',         1,  '2022-11-28 17:40:00-05:00'),
+    (1, 2,      'Upperbody',                2,  '2023-11-28 17:40:00-05:00'),
+    (1, 6,      'Warmup Stretches',         1,  '2022-11-28 17:40:00-05:00'),
+    (1, 6,      'Legday workout + core',    2,  '2023-12-02 12:15:00-05:00');
+  `,
+
+  `INSERT INTO workout_tag (app_user_id, title)
+      VALUES
+      (1, 'UpperBody'),
+      (1, 'LowerBody');
+  `,
+
+  `INSERT INTO link_tag_workout (workout_tag_id, workout_id)
+      VALUES
+      (1, 1),
+      (1, 3),
+      (2, 2),
+      (2, 3),
+      (2, 4);
+  `,
+
+  `INSERT INTO exercise_type (title)
+      VALUES
+      ('Resistance'),
+      ('Cardiovascular');
+  `,
+
+  `INSERT INTO exercise_equipment (title)
+      VALUES
+      ('Dumbbell'),
+      ('Adjustable Barbell'),
+      ('Fixed-Weight Barbell'),
+      ('Machine'),
+      ('Bodyweight');
+  `,
+
+  `INSERT INTO standard_exercise_category (title)
+      VALUES
+      ('Bench'),
+      ('Squat'),
+      ('Deadlift');
+  `,
+
+  `INSERT INTO custom_exercise_category (app_user_id, title)
+      VALUES
+      (1, 'Tricep Extensions');
+  `,
+
+  `INSERT INTO pr_history (weight, reps, distance, speed, time, date)
+      VALUES
+      (220, 1, NULL, NULL, NULL, '2022-11-07 09:12:34-05:00'),
+      (240, 1, NULL, NULL, NULL, '2023-11-07 14:12:34-05:00'),
+
+      (255, 1, NULL, NULL, NULL, '2022-11-07 09:12:34-05:00'),
+      (285, 1, NULL, NULL, NULL, '2023-11-07 14:12:34-05:00'),
+
+      (355, 1, NULL, NULL, NULL, '2022-11-07 09:12:34-05:00'),
+      (395, 1, NULL, NULL, NULL, '2023-11-07 14:12:34-05:00'),
+
+      (30, 12, NULL, NULL, NULL, '2022-11-07 09:12:34-05:00');
+  `,
+
+  `INSERT INTO standard_category_pr (standard_category_pr_id, pr_history_id)
+      VALUES
+      (1, 1),
+      (1, 2),
+
+      (2, 3),
+      (2, 4),
+
+      (3, 5),
+      (3, 6);
+  `,
+
+  `INSERT INTO custom_category_pr (custom_category_pr_id, pr_history_id)
+      VALUES
+      (1, 7);
+  `,
+
+  `INSERT INTO exercise (standard_exercise_category_id, custom_exercise_category_id, workout_id, exercise_type_id, exercise_equipment_id, title, list_order, initial_weight, notes)
+      VALUES
+      (1,     NULL,   1,  1,  2,      'Bench',                1,  45,     ''),
+      (NULL,  NULL,   1,  1,  5,      'Chin-Ups',             2,  NULL,   ''),
+      (NULL,  NULL,   1,  1,  1,      'Overhead Press',       3,  NULL,   ''),
+      (NULL,  NULL,   1,  1,  1,      'Bicep Curls',          4,  NULL,   ''),
+      (NULL,  NULL,   1,  1,  4,      'Rows',                 5,  NULL,   ''),
+      (NULL,  1,      1,  1,  4,      'Tricep Extensions',    6,  NULL,   'Extended down varient'),
+      
+      (NULL,  NULL,   2,  1,  4,      'Leg Curls',            1,  NULL,   'Try to hit 12 reps'),
+      (NULL,  NULL,   2,  1,  4,      'Calf Raises',          2,  20,     ''),
+      (NULL,  NULL,   2,  1,  4,      'Core push-ins',        3,  20,     ''),
+      (NULL,  NULL,   2,  1,  4,      'Leg Press',            4,  50,     'Bruh'),
+      (2,     NULL,   2,  1,  2,      'Squats',               5,  45,     ''),
+      (NULL,  NULL,   2,  2,  NULL,   'Jog',                  6,  NULL,   ''),
+
+      (NULL,  NULL,   3,  2,  NULL,   'ALL STRETCHES',        1,  NULL,   ''),
+
+      (NULL,  NULL,   3,  2,  NULL,   'ALL STRETCHES',        1,  NULL,   ''),
+
+      (1,     NULL,   1,  1,  2,      'Bench',                1,  45,     ''),
+      (NULL,  NULL,   1,  1,  5,      'Chin-Ups',             2,  NULL,   ''),
+      (NULL,  NULL,   1,  1,  1,      'Overhead Press',       3,  NULL,   ''),
+      (NULL,  NULL,   1,  1,  1,      'Bicep Curls',          4,  NULL,   ''),
+      (NULL,  NULL,   1,  1,  4,      'Rows',                 5,  NULL,   ''),
+      (NULL,  1,      1,  1,  4,      'Tricep Extensions',    6,  NULL,   'Extended down varient'),
+
+      (NULL,  NULL,   3,  2,  NULL,   'ALL STRETCHES',        1,  NULL,   ''),
+      
+      (NULL,  NULL,   2,  1,  4,      'Leg Curls',            1,  NULL,   'Try to hit 12 reps'),
+      (NULL,  NULL,   2,  1,  4,      'Calf Raises',          2,  20,     ''),
+      (NULL,  NULL,   2,  1,  4,      'Core push-ins',        3,  20,     ''),
+      (NULL,  NULL,   2,  1,  4,      'Leg Press',            4,  50,     'Bruh'),
+      (2,     NULL,   2,  1,  2,      'Squats',               5,  45,     ''),
+      (NULL,  NULL,   2,  2,  NULL,   'Jog',                  6,  NULL,   '');
+  `,
+
+  `INSERT INTO "exercise_set" (exercise_id, title, list_order, reps, rest_time)
+      VALUES
+      
+      (1,     'Warm-Up',      1,  5,      180),
+      (1,     'Main Set',     2,  12,     180),
+      (2,     'Main Set',     1,  15,     180),
+      (3,     'Main Set',     1,  10,     180),
+      (4,     'Main Set',     1,  12,     180),
+      (5,     'Main Set',     1,  12,     180),
+      (6,     'Main Set',     1,  16,     0),
+
+      /* --- */
+
+      (7,     'Main Set',     1,  12,     180),
+      (8,     'Main Set',     1,  10,     180),
+      (9,     'Main Set',     1,  16,     180),
+      (10,    'Warm-Up',      1,  5,      180),
+      (10,    'Main Set',     2,  12,     180),
+      (11,    'Warm-Up',      1,  5,      180),
+      (11,    'Main Set',     2,  12,     180),
+      (12,    'Cool-Down',    1,  1,    0),
+
+      (13,    '',             1,  1,    0),
+      (14,    '',             1,  1,    0),
+
+      (15,    'Warm-Up',      1,  5,      180),
+      (15,    'Main Set',     2,  12,     180),
+      (16,    'Main Set',     1,  15,     180),
+      (17,    'Main Set',     1,  10,     180),
+      (18,    'Main Set',     1,  12,     180),
+      (19,    'Main Set',     1,  12,     180),
+      (20,    'Main Set',     1,  16,     0),
+
+      (21,    '',             1,  1,    0),
+
+      (22,    'Main Set',     1,  12,     180),
+      (23,    'Main Set',     1,  10,     180),
+      (24,    'Main Set',     1,  16,     180),
+      (25,    'Warm-Up',      1,  5,      180),
+      (25,    'Main Set',     2,  12,     180),
+      (26,    'Warm-Up',      1,  5,      180),
+      (26,    'Main Set',     2,  12,     180),
+      (27,    'Cool-Down',    1,  1,    0);
+    `,
+
+  `INSERT INTO resistance_set (exercise_set_id, total_weight)
+      VALUES
+      (1,     125),
+      (2,     175),
+      (3,     162),
+      (4,     55),
+      (5,     70),
+      (6,     150),
+      (7,     25),
+
+      (8,     110),
+      (9,     120),
+      (10,    50),
+      (11,    320),
+      (12,    560),
+      (13,    135),
+      (14,    225),
+
+      (18,     125),
+      (19,     175),
+      (20,     162),
+      (21,     55),
+      (22,     70),
+      (23,     150),
+      (24,     25),
+
+      (26,     110),
+      (27,     120),
+      (28,    50),
+      (29,    320),
+      (30,    560),
+      (31,    135),
+      (32,    225);
+  `,
+
+  `INSERT INTO cardio_set (exercise_set_id, target_distance, target_speed, target_time)
+      VALUES
+      (15,    NULL,   NULL,   500),
+      (16,    NULL,   NULL,   120),
+      (17,    NULL,   NULL,   120),
+
+      (25,    NULL,   NULL,   180),
+      (33,    NULL,   NULL,   500);
+  `,
+
+  `INSERT INTO user_bodyweight (app_user_id, weight, date)
+      VALUES
+      (1, 158, '2023-11-07 14:12:34+00'),
+      (1, 162, '2023-11-15 07:34:12+00');
+  `,
+
+  `INSERT INTO workout_days (workout_id, day)
+      VALUES
+      (1,'Tuesday'),
+      (2,'Saturday');
+  `,
+
+  `INSERT INTO workout_session (app_user_id, title, date, calories, tied_to_workout)
+      VALUES
+      (1, 'Warmup Stretches',         '2023-11-07 14:12:34+00',   34,     False),
+      (1, 'Upperbody',                '2023-11-07 14:12:34+00',   200,    True),
+      (1, 'Legday workout + core',    '2023-11-15 07:34:12+00',   200,    True),
+      (1, 'Upperbody',                '2023-11-15 07:34:12+00',   200,    False),
+
+      (1, 'Daily Jog',                '2023-11-07 14:12:34+00',   134,    False),
+      (1, 'Daily Jog',                '2023-11-11 17:05:03+00',   120,    False);
+  `,
+
+  `INSERT INTO exercise_session (workout_session_id, pr_history_id, exercise_type_id, title, list_order, initial_weight, was_completed)
+      VALUES
+      (2, 2,      1,  'Bench',                1,  45,     True), /*Upperbody*/
+      (2, NULL,   1,  'Pull-Ups',             2,  162,    True),
+      (2, NULL,   1,  'Overhead Press',       3,  NULL,   True),
+      (2, NULL,   1,  'Bicep Curls',          4,  NULL,   True),
+      (2, NULL,   1,  'Rows',                 5,  NULL,   True), 
+      (2, 7,      1,  'Tricep Extensions',    6,  NULL,   True),
+
+      (3, NULL,   1,  'Leg Curls',            1,  NULL,   True), /*Legs*/
+      (3, NULL,   1,  'Calf Raises',          2,  20,     True),
+      (3, NULL,   1,  'Core push-ins',        3,  20,     True),
+      (3, NULL,   1,  'Leg Press',            4,  50,     True),
+      (3, 4,      1,  'Squats',               5,  45,     True),
+      (3, NULL,   2,  'Skipped Jog',          6,  NULL,   False);
+  `,
+
+  `INSERT INTO set_session (exercise_session_id, title, reps, list_order, elapsed_time, rest_time)
+      VALUES
+      (1,     'Warm Up',          5,      1,  18, 192),
+      (1,     'Main Set',         12,     2,  47, 180),
+      (2,     'Main Set',         15,     1,  63, 180),
+      (3,     'Main Set',         10,     1,  52, 180),
+      (4,     'Main Set',         12,     1,  49, 180),
+      (5,     'Main Set',         12,     1,  72, 180),
+      (6,     'Main Set',         16,     1,  174, 0),
+      
+      (7,     'Main Set',         12,     1,  84, 180),
+      (8,     'Main Set',         10,     1,  42, 180),
+      (9,     'Main Set',         16,     1,  57, 180),
+      (10,    'Warm-Up',          5,      1,  23, 180),
+      (10,    'Main Set',         12,     2,  61, 180),
+      (11,    'Warm-Up',          5,      1,  34, 180),
+      (11,    'Main Set',         12,     2,  76, 180),
+      (12,    'Cool-Down Jog',    420,    1,  0,  0);
+  `,
+
+  `INSERT INTO resistance_set_session (set_session_id, total_weight)
+      VALUES
+      (1,     125),
+      (2,     175),
+      (3,     162),
+      (4,     55),
+      (5,     70),
+      (6,     150),
+      (7,     25),
+
+      (8,     110),
+      (9,     120),
+      (10,    50),
+      (11,    320),
+      (12,    560),
+      (13,    135),
+      (14,    225);
+  `,
+
+  `INSERT INTO cardio_set_session (set_session_id, target_distance, target_speed, target_time, actual_distance, actual_speed, actual_time)
+      VALUES
+      (15,    69, NULL,   69, 6969,   NULL,   6969);
+  `,
 ];
 
-export default sqlite_ddl;
+export { sqlite_ddl, sqlite_dml };

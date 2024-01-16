@@ -3,7 +3,6 @@ import EditScreenInfo from "../../components/EditScreenInfo";
 import { Text, View } from "../../components/Themed";
 import * as FileSystem from "expo-file-system";
 import * as SQLite from "expo-sqlite";
-import sqlite_ddl from "../../pgdb-ddl";
 import { openDB, doesLocalDbExist } from "../../db-utils";
 
 export default function TabTwoScreen() {
