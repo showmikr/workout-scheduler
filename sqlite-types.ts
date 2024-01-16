@@ -3,43 +3,43 @@
  * Rerun sql-ts to regenerate this file.
  */
 export interface AppUser {
-  avgDailyCalorieGoal?: number | null;
-  awsCognitoSub: string;
-  bodyweightGoal?: number | null;
-  creationDate: Date;
+  avg_daily_calorie_goal?: number | null;
+  aws_cognito_sub: string;
+  bodyweight_goal?: number | null;
+  creation_date: Date;
   email: string;
-  emailVerified?: boolean;
-  firstName?: string | null;
+  email_verified?: boolean;
+  first_name?: string | null;
   id?: number | null;
-  imageUrl?: string | null;
-  lastName?: string | null;
-  lastSignedIn: Date;
-  userName?: string | null;
+  image_url?: string | null;
+  last_name?: string | null;
+  last_signed_in: Date;
+  user_name?: string | null;
 }
 export interface CardioSet {
-  exerciseSetId: string;
+  exercise_set_id: string;
   id?: number | null;
-  targetDistance?: number | null;
-  targetSpeed?: number | null;
-  targetTime?: number | null;
+  target_distance?: number | null;
+  target_speed?: number | null;
+  target_time?: number | null;
 }
 export interface CardioSetSession {
-  actualDistance?: number | null;
-  actualSpeed?: number | null;
-  actualTime?: number | null;
+  actual_distance?: number | null;
+  actual_speed?: number | null;
+  actual_time?: number | null;
   id?: number | null;
-  setSessionId: string;
-  targetDistance?: number | null;
-  targetSpeed?: number | null;
-  targetTime?: number | null;
+  set_session_id: string;
+  target_distance?: number | null;
+  target_speed?: number | null;
+  target_time?: number | null;
 }
 export interface CustomCategoryPr {
-  customCategoryPrId: string;
+  custom_category_pr_id: string;
   id?: number | null;
-  prHistoryId: string;
+  pr_history_id: string;
 }
 export interface CustomExerciseCategory {
-  appUserId: string;
+  app_user_id: string;
   id?: number | null;
   title: string;
 }
@@ -47,37 +47,37 @@ export interface DaysOfWeek {
   day: string;
 }
 export interface Exercise {
-  customExerciseCategoryId?: string | null;
-  exerciseEquipmentId?: string | null;
-  exerciseTypeId: string;
+  custom_exercise_category_id?: string | null;
+  exercise_equipment_id?: string | null;
+  exercise_type_id: string;
   id?: number | null;
-  initialWeight?: number | null;
-  listOrder: number;
+  initial_weight?: number | null;
+  list_order: number;
   notes?: string | null;
-  standardExerciseCategoryId?: string | null;
+  standard_exercise_category_id?: string | null;
   title: string;
-  workoutId: string;
+  workout_id: string;
 }
 export interface ExerciseEquipment {
   id?: number | null;
   title: string;
 }
 export interface ExerciseSession {
-  exerciseTypeId: string;
+  exercise_type_id: string;
   id?: number | null;
-  initialWeight?: number | null;
-  listOrder: number;
-  prHistoryId?: string | null;
+  initial_weight?: number | null;
+  list_order: number;
+  pr_history_id?: string | null;
   title: string;
-  wasCompleted?: boolean;
-  workoutSessionId: string;
+  was_completed?: boolean;
+  workout_session_id: string;
 }
 export interface ExerciseSet {
-  exerciseId: string;
+  exercise_id: string;
   id?: number | null;
-  listOrder: number;
+  list_order: number;
   reps?: number;
-  restTime?: number;
+  rest_time?: number;
   title?: string | null;
 }
 export interface ExerciseType {
@@ -86,8 +86,8 @@ export interface ExerciseType {
 }
 export interface LinkTagWorkout {
   id?: number | null;
-  workoutId: string;
-  workoutTagId: string;
+  workout_id: string;
+  workout_tag_id: string;
 }
 export interface PrHistory {
   date: Date;
@@ -99,73 +99,73 @@ export interface PrHistory {
   weight?: number | null;
 }
 export interface ResistanceSet {
-  exerciseSetId: string;
+  exercise_set_id: string;
   id?: number | null;
-  totalWeight?: number | null;
+  total_weight?: number | null;
 }
 export interface ResistanceSetSession {
   id?: number | null;
-  setSessionId: string;
-  totalWeight?: number | null;
+  set_session_id: string;
+  total_weight?: number | null;
 }
 export interface SetSession {
-  elapsedTime?: number;
-  exerciseSessionId: string;
+  elapsed_time?: number;
+  exercise_session_id: string;
   id?: number | null;
-  listOrder: number;
+  list_order: number;
   reps?: number;
-  restTime?: number;
+  rest_time?: number;
   title?: string | null;
 }
 export interface StandardCategoryPr {
   id?: number | null;
-  prHistoryId: string;
-  standardCategoryPrId: string;
+  pr_history_id: string;
+  standard_category_pr_id: string;
 }
 export interface StandardExerciseCategory {
   id?: number | null;
   title: string;
 }
 export interface TrainingCycle {
-  appUserId: string;
+  app_user_id: string;
   id?: number | null;
-  listOrder: number;
+  list_order: number;
   title: string;
 }
 export interface TrainingDay {
   id?: number | null;
-  listOrder: number;
-  trainingCycleId: string;
+  list_order: number;
+  training_cycle_id: string;
 }
 export interface UserBodyweight {
-  appUserId: string;
+  app_user_id: string;
   date: Date;
   id?: number | null;
   weight: number;
 }
 export interface Workout {
-  appUserId: string;
+  app_user_id: string;
   id?: number | null;
-  lastSession?: Date | null;
-  listOrder: number;
+  last_session?: Date | null;
+  list_order: number;
   title: string;
-  trainingDayId?: string | null;
+  training_day_id?: string | null;
 }
 export interface WorkoutDays {
   day: any;
   id?: number | null;
-  workoutId?: string | null;
+  workout_id?: string | null;
 }
 export interface WorkoutSession {
-  appUserId: string;
+  app_user_id: string;
   calories?: number | null;
   date: Date;
   id?: number | null;
-  tiedToWorkout?: boolean;
+  tied_to_workout?: boolean;
   title: string;
 }
 export interface WorkoutTag {
-  appUserId: string;
+  app_user_id: string;
   id?: number | null;
   title: string;
 }

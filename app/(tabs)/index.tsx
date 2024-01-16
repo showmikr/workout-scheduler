@@ -6,19 +6,12 @@ import { useSession } from "../../ctx";
 import * as AuthSession from "expo-auth-session";
 import { openDB } from "../../db-utils";
 import { useState } from "react";
-
-type User = {
-  firstName?: string;
-  lastName?: string;
-  userName: string;
-  email: string;
-  subjectClaim: string;
-};
+import { AppUser } from "../../sqlite-types";
 
 export default function TabOneScreen() {
   const { colorScheme, setColorScheme } = useColorScheme();
   const { fakeSignOut, signOut, session } = useSession()!;
-  const [userData, setUserData] = useState<User | null>(null);
+  const [userData, setUserData] = useState<Partial<AppUser> | null>(null);
 
   if (session && !userData) {
     openDB().then((db) => {
@@ -26,19 +19,11 @@ export default function TabOneScreen() {
         // get subject claim - this will be used as the search criteria in the sqlite app_user table
         const subjectClaim: string = JSON.parse(session).subjectClaim;
         tx.executeSql(
-          "SELECT aws_cognito_sub, first_name, last_name, user_name, email FROM app_user WHERE aws_cognito_sub = ?",
+          "SELECT first_name, last_name, user_name, email FROM app_user WHERE aws_cognito_sub = ?",
           [subjectClaim],
           (_tx, resultSet) => {
-            const { aws_cognito_sub, first_name, last_name, user_name, email } =
-              resultSet.rows._array[0];
-            const readData: User = {
-              subjectClaim: aws_cognito_sub,
-              firstName: first_name,
-              lastName: last_name,
-              userName: user_name,
-              email: email,
-            };
-            setUserData(readData);
+            const user: Partial<AppUser> = resultSet.rows._array[0];
+            setUserData(user);
           }
         );
       });
@@ -55,7 +40,7 @@ export default function TabOneScreen() {
             className="text-center border-solid border border-slate-400 text-xl p-1"
             key={key}
           >
-            {key}: {value}
+            {key}: {typeof value === "object" ? value?.toDateString() : value}
           </Text>
         ))}
       <View

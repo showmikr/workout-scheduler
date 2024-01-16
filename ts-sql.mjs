@@ -27,22 +27,16 @@ const config = {
 
 /* 
 Creates a new typescript definitions object with
-PascalCase table names and camelCase column names for each table
+PascalCase table names and leaves column_names unchanged
 */
 function renameTables(definitions) {
   const toPascalCase = (word) => word.charAt(0).toUpperCase() + word.slice(1);
-  const toCamelCase = (word, index) =>
-    index > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word;
 
   return {
     ...definitions,
     tables: definitions.tables.map((table) => ({
       ...table,
       interfaceName: table.name.split("_").map(toPascalCase).join(""),
-      columns: table.columns.map((column) => ({
-        ...column,
-        propertyName: column.name.split("_").map(toCamelCase).join(""),
-      })),
     })),
   };
 }
@@ -56,7 +50,6 @@ function main() {
       if (err) {
         return console.log(err);
       }
-      console.log(rows);
       sqlts
         .toObject(config)
         .then((definitions) => {
