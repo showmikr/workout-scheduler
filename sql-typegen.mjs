@@ -1,5 +1,5 @@
 /* 
-Just run 'node ts-sql.mjs' in your terminal 
+Just run 'node sql-typegen.mjs' in your terminal 
 to generate typescript definitions for your sqlite database
 */
 
