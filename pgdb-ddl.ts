@@ -79,7 +79,7 @@ const sqlite_ddl = [
     FOREIGN KEY ("standard_exercise_category_id") REFERENCES "standard_exercise_category" ("id") ON DELETE SET NULL
   );`,
 
-  `CREATE TABLE IF NOT EXISTS "set" (
+  `CREATE TABLE IF NOT EXISTS "exercise_set" (
     "id" INTEGER PRIMARY KEY,
     "exercise_id" bigint NOT NULL,
     "title" text,
@@ -91,18 +91,18 @@ const sqlite_ddl = [
 
   `CREATE TABLE IF NOT EXISTS "resistance_set" (
     "id" INTEGER PRIMARY KEY,
-    "set_id" bigint UNIQUE NOT NULL,
+    "exercise_set_id" bigint UNIQUE NOT NULL,
     "total_weight" real,
-    FOREIGN KEY ("set_id") REFERENCES "set" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("exercise_set_id") REFERENCES "exercise_set" ("id") ON DELETE CASCADE ON UPDATE CASCADE
   );`,
 
   `CREATE TABLE IF NOT EXISTS "cardio_set" (
     "id" INTEGER PRIMARY KEY,
-    "set_id" bigint UNIQUE NOT NULL,
+    "exercise_set_id" bigint UNIQUE NOT NULL,
     "target_distance" real,
     "target_speed" real,
     "target_time" int,
-    FOREIGN KEY ("set_id") REFERENCES "set" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY ("exercise_set_id") REFERENCES "exercise_set" ("id") ON DELETE CASCADE ON UPDATE CASCADE
   );`,
 
   `CREATE TABLE IF NOT EXISTS "workout_session" (
