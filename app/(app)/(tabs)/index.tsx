@@ -20,10 +20,13 @@ export default function TabOneScreen() {
         // get subject claim - this will be used as the search criteria in the sqlite app_user table
         const subjectClaim: string = JSON.parse(session).subjectClaim;
         tx.executeSql(
-          "SELECT first_name, last_name, user_name, email FROM app_user WHERE aws_cognito_sub = ?",
+          "SELECT first_name, last_name, user_name, email, creation_date FROM app_user WHERE aws_cognito_sub = ?",
           [subjectClaim],
           (_tx, resultSet) => {
-            const user: Partial<AppUser> = resultSet.rows._array[0];
+            const user: Partial<AppUser> = {
+              ...resultSet.rows._array[0],
+              creation_date: new Date(resultSet.rows._array[0].creation_date),
+            };
             setUserData(user);
           }
         );
@@ -50,7 +53,7 @@ export default function TabOneScreen() {
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <EditScreenInfo path="app/(app)/(tabs)/" />
       <Link href="/hello" asChild>
         <Pressable className="items-center m-10 p-1 bg-slate-600 border-solid border-2 border-slate-400 active:opacity-50">
           <Text className="text-xl">Go to Hello</Text>
