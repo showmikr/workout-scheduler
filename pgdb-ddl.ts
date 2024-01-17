@@ -233,6 +233,17 @@ const sqlite_ddl = [
   VALUES
 	('c8bf7e34-7dcf-11ee-b962-0242ac120002', 'David', 'Shcherbina', 'kalashnikov', 'davidshcherbina@gmail.com', true, null, '2022-05-07 09:12:34-05:00', '2023-11-07 14:12:34-05:00', 150, 270);
   `,
+
+  `INSERT INTO workout_session (app_user_id, title, date, calories, tied_to_workout)
+    VALUES
+    (1, 'Warmup Stretches',         '2023-11-07T14:12:34',   34,     False),
+    (1, 'Upperbody',                '2023-11-07T14:12:34',   200,    True),
+    (1, 'Legday workout + core',    '2023-11-15T07:34:12',   200,    True),
+    (1, 'Upperbody',                '2023-11-15T07:34:12',   200,    False),
+
+    (1, 'Daily Jog',                '2023-11-07T14:12:34',   134,    False),
+    (1, 'Daily Jog',                '2023-11-11T17:05:03',   120,    False);
+  `,
 ];
 
 export default sqlite_ddl;
