@@ -1,9 +1,9 @@
 import { Pressable, Button, StyleSheet } from "react-native";
-import EditScreenInfo from "../../components/EditScreenInfo";
-import { Text, View } from "../../components/Themed";
+import EditScreenInfo from "../../../components/EditScreenInfo";
+import { Text, View } from "../../../components/Themed";
 import * as FileSystem from "expo-file-system";
 import * as SQLite from "expo-sqlite";
-import { openDB, doesLocalDbExist } from "../../db-utils";
+import { openDB, doesLocalDbExist } from "../../../db-utils";
 
 export default function TabTwoScreen() {
   const readDB = () => {

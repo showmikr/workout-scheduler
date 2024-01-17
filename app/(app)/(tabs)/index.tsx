@@ -1,12 +1,13 @@
 import { Pressable, StyleSheet, ScrollView } from "react-native";
-import EditScreenInfo from "../../components/EditScreenInfo";
-import { Text, View } from "../../components/Themed";
+import EditScreenInfo from "../../../components/EditScreenInfo";
+import { Text, View } from "../../../components/Themed";
 import { useColorScheme } from "nativewind";
-import { useSession } from "../../ctx";
+import { useSession } from "../../../ctx";
 import * as AuthSession from "expo-auth-session";
-import { openDB } from "../../db-utils";
+import { openDB } from "../../../db-utils";
 import { useState } from "react";
-import { AppUser } from "../../sqlite-types";
+import { AppUser } from "../../../sqlite-types";
+import { Link } from "expo-router";
 
 export default function TabOneScreen() {
   const { colorScheme, setColorScheme } = useColorScheme();
@@ -50,6 +51,11 @@ export default function TabOneScreen() {
         darkColor="rgba(255,255,255,0.1)"
       />
       <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <Link href="/hello" asChild>
+        <Pressable className="items-center m-10 p-1 bg-slate-600 border-solid border-2 border-slate-400 active:opacity-50">
+          <Text className="text-xl">Go to Hello</Text>
+        </Pressable>
+      </Link>
       <Pressable
         onPress={() =>
           setColorScheme(colorScheme === "dark" ? "light" : "dark")

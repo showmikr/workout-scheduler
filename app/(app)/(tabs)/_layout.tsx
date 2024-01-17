@@ -1,9 +1,9 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, Redirect, Tabs } from "expo-router";
+import { Link, Redirect, Slot, Tabs } from "expo-router";
 import { Pressable, View, Text, useColorScheme } from "react-native";
 
-import Colors from "../../constants/Colors";
-import { useSession } from "../../ctx";
+import Colors from "../../../constants/Colors";
+import { useSession } from "../../../ctx";
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
@@ -32,7 +32,7 @@ export default function TabLayout() {
   if (!session) {
     // On web, static rendering will stop here as the user is not authenticated
     // in the headless Node process that the pages are rendered in.
-    return <Redirect href="/sign-in" />;
+    return <Redirect href="/auth" />;
   }
 
   return (

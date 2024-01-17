@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from "react-native";
-import { useSession } from "../ctx";
+import { useSession } from "../../ctx";
 import { Redirect } from "expo-router";
 import { TokenResponse } from "expo-auth-session";
 
@@ -34,6 +34,6 @@ export default function SignIn() {
       </Pressable>
     </View>
   ) : (
-    <Redirect href="/" />
+    <Redirect href="/(app)/(tabs)" />
   );
 }
