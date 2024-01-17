@@ -230,7 +230,7 @@ INSERT INTO days_of_week values
 
 INSERT INTO app_user (aws_cognito_sub, first_name, last_name, user_name, email, email_verified, image_url, creation_date, last_signed_in, avg_daily_calorie_goal, bodyweight_goal)
   VALUES
-	('c8bf7e34-7dcf-11ee-b962-0242ac120002', 'David', 'Shcherbina', 'kalashnikov', 'davidshcherbina@gmail.com', true, null, '2022-05-07 09:12:34-05:00', '2023-11-07 14:12:34-05:00', 150, 270);
+	('c8bf7e34-7dcf-11ee-b962-0242ac120002', 'David', 'Shcherbina', 'kalashnikov', 'davidshcherbina@gmail.com', true, null, '2022-05-07T14:12:34.000Z', '2023-11-07T19:12:34.000Z', 150, 270);
 
 INSERT INTO training_cycle (app_user_id, title, list_order)
     VALUES
@@ -248,14 +248,14 @@ INSERT INTO training_day (training_cycle_id, list_order)
 
 INSERT INTO workout (app_user_id, training_day_id, title, list_order, last_session)
     VALUES
-    (1, NULL,   'Upperbody',                1,  '2023-11-28 17:40:00-05:00'),
-    (1, NULL,   'Legday workout + core',    2,  '2023-12-02 12:15:00-05:00'),
-    (1, NULL,   'Warmup Stretches',         3,  '2022-11-28 17:40:00-05:00'),
+    (1, NULL,   'Upperbody',                1,  '2023-11-28T22:40:00.000Z'),
+    (1, NULL,   'Legday workout + core',    2,  '2023-12-02T17:15:00.000Z'),
+    (1, NULL,   'Warmup Stretches',         3,  '2022-11-28T22:40:00.000Z'),
 
-    (1, 2,      'Warmup Stretches',         1,  '2022-11-28 17:40:00-05:00'),
-    (1, 2,      'Upperbody',                2,  '2023-11-28 17:40:00-05:00'),
-    (1, 6,      'Warmup Stretches',         1,  '2022-11-28 17:40:00-05:00'),
-    (1, 6,      'Legday workout + core',    2,  '2023-12-02 12:15:00-05:00');
+    (1, 2,      'Warmup Stretches',         1,  '2022-11-28T22:40:00.000Z'),
+    (1, 2,      'Upperbody',                2,  '2023-11-28T22:40:00.000Z'),
+    (1, 6,      'Warmup Stretches',         1,  '2022-11-28T23:30:00.000Z'),
+    (1, 6,      'Legday workout + core',    2,  '2023-12-02T17:15:00.000Z');
 
 
 INSERT INTO workout_tag (app_user_id, title)
@@ -296,16 +296,16 @@ INSERT INTO custom_exercise_category (app_user_id, title)
 
 INSERT INTO pr_history (weight, reps, distance, speed, time, date)
     VALUES
-    (220, 1, NULL, NULL, NULL, '2022-11-07 09:12:34-05:00'),
-    (240, 1, NULL, NULL, NULL, '2023-11-07 14:12:34-05:00'),
+    (220, 1, NULL, NULL, NULL, '2022-11-07T14:12:34.000Z'),
+    (240, 1, NULL, NULL, NULL, '2023-11-07T19:12:34.000Z'),
 
-    (255, 1, NULL, NULL, NULL, '2022-11-07 09:12:34-05:00'),
-    (285, 1, NULL, NULL, NULL, '2023-11-07 14:12:34-05:00'),
+    (255, 1, NULL, NULL, NULL, '2022-11-07T14:12:34.000Z'),
+    (285, 1, NULL, NULL, NULL, '2023-11-07T19:12:34.000Z'),
 
-    (355, 1, NULL, NULL, NULL, '2022-11-07 09:12:34-05:00'),
-    (395, 1, NULL, NULL, NULL, '2023-11-07 14:12:34-05:00'),
+    (355, 1, NULL, NULL, NULL, '2022-11-07T14:12:34.000Z'),
+    (395, 1, NULL, NULL, NULL, '2023-11-07T19:12:34.000Z'),
 
-    (30, 12, NULL, NULL, NULL, '2022-11-07 09:12:34-05:00');
+    (30, 12, NULL, NULL, NULL, '2022-11-07T14:12:34.000Z');
 
 INSERT INTO standard_category_pr (standard_category_pr_id, pr_history_id)
     VALUES
@@ -450,8 +450,8 @@ INSERT INTO cardio_set (exercise_set_id, target_distance, target_speed, target_t
 
 INSERT INTO user_bodyweight (app_user_id, weight, date)
     VALUES
-    (1, 158, '2023-11-07 14:12:34+00'),
-    (1, 162, '2023-11-15 07:34:12+00');
+    (1, 158, '2023-11-07T14:12:34.000Z'),
+    (1, 162, '2023-11-15T07:34:12.000Z');
 
 INSERT INTO workout_days (workout_id, day)
     VALUES
@@ -460,13 +460,13 @@ INSERT INTO workout_days (workout_id, day)
 
 INSERT INTO workout_session (app_user_id, title, date, calories, tied_to_workout)
     VALUES
-    (1, 'Warmup Stretches',         '2023-11-07 14:12:34+00',   34,     False),
-    (1, 'Upperbody',                '2023-11-07 14:12:34+00',   200,    True),
-    (1, 'Legday workout + core',    '2023-11-15 07:34:12+00',   200,    True),
-    (1, 'Upperbody',                '2023-11-15 07:34:12+00',   200,    False),
+    (1, 'Warmup Stretches',         '2023-11-07T14:12:34.000Z',   34,     False),
+    (1, 'Upperbody',                '2023-11-07T16:20:34.000Z',   200,    True),
+    (1, 'Legday workout + core',    '2023-11-15T07:34:12.000Z',   200,    True),
+    (1, 'Upperbody',                '2023-11-15T03:45:12.000Z',   200,    False),
 
-    (1, 'Daily Jog',                '2023-11-07 14:12:34+00',   134,    False),
-    (1, 'Daily Jog',                '2023-11-11 17:05:03+00',   120,    False);
+    (1, 'Daily Jog',                '2023-11-07T08:05:34.000Z',   134,    False),
+    (1, 'Daily Jog',                '2023-11-11T17:05:03.000Z',   120,    False);
 
 INSERT INTO exercise_session (workout_session_id, pr_history_id, exercise_type_id, title, list_order, initial_weight, was_completed)
     VALUES
