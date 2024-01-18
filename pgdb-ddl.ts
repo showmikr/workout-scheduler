@@ -242,7 +242,21 @@ const sqlite_ddl = [
     (1, 'Upperbody',                '2023-11-15T07:34:12',   200,    False),
 
     (1, 'Daily Jog',                '2023-11-07T14:12:34',   134,    False),
-    (1, 'Daily Jog',                '2023-11-11T17:05:03',   120,    False);
+    (1, 'Daily Jog',                '2023-11-11T17:05:03',   120,    False),
+
+    (1, 'Upperbody',                '2023-11-23T07:34:12',   296,    False),
+    (1, 'Upperbody',                '2023-11-28T07:34:12',   274,    False),
+    (1, 'Upperbody',                '2023-12-02T07:34:12',   203,    False),
+    (1, 'Upperbody',                '2023-12-07T07:34:12',   108,    False),
+    (1, 'Upperbody',                '2023-12-12T07:34:12',   253,    False),
+    (1, 'Upperbody',                '2023-12-17T07:34:12',   393,    False),
+    (1, 'Upperbody',                '2023-12-25T07:34:12',   169,    False),
+    (1, 'Upperbody',                '2023-12-29T07:34:12',   222,    False),
+    (1, 'Upperbody',                '2023-12-31T07:34:12',   257,    False),
+    (1, 'Upperbody',                '2024-01-03T07:34:12',   247,    False),
+    (1, 'Upperbody',                '2024-01-10T07:34:12',   332,    False),
+    (1, 'Upperbody',                '2024-01-13T07:34:12',   202,    False),
+    (1, 'Upperbody',                '2024-01-17T07:34:12',   355,    False);
   `,
 ];
 

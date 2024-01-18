@@ -17,14 +17,27 @@ export default function Graph() {
     null as WorkoutSession[] | null
   );
 
-  // Load Calories + Dates
+  // let w = 0;
+  // let m = 0;
+  // let y = 1;
+  // console.log(
+  //   "W:" + w + ", M: " + m + ", Y: " + y + " | " + getPriorTime(w, m, y)
+  // );
+
+  function getPriorTime(week: number, month: number, year: number) {
+    return new Date(
+      Date.now() - (657449982 * week + 2629799928 * month + 31557599136 * year)
+    ).toDateString();
+  }
+
+  // 1) Load Calories + Dates
   if (!workoutSessionData) {
     openDB().then((db) => {
       console.log("Reading from DB");
       db.transaction(
         (transaction) => {
           transaction.executeSql(
-            "select * from workout_session",
+            "select * from workout_session as ws order by ws.date",
             undefined,
             (_trx, resultSet) => {
               const rawData = resultSet.rows._array;
@@ -53,7 +66,18 @@ export default function Graph() {
     });
   }
 
-  const ptData = workoutSessionData?.map((ws) => {
+  // workoutSessionData?.sort(function (a, b) {
+  //   return a.date.getTime() - b.date.getTime();
+  // });
+
+  console.log(
+    workoutSessionData?.map((ws) => {
+      return { value: ws.calories, date: ws.date.toDateString() };
+    })
+  );
+
+  // 2) Insert data into graph
+  const graphData = workoutSessionData?.map((ws) => {
     return {
       value: ws.calories,
       date: ws.date.toDateString().substring(3, ws.date.toDateString().length),
@@ -74,12 +98,12 @@ export default function Graph() {
       <LineChart
         // Chart
         areaChart
-        data={ptData}
+        data={graphData}
         rotateLabel
-        width={300}
+        width={350}
         overflowTop={0}
         hideDataPoints
-        spacing={22}
+        spacing={19}
         // Gradient
         color="#A53535"
         thickness={2}
@@ -87,7 +111,7 @@ export default function Graph() {
         endFillColor="rgba(165,53,53,1)"
         startOpacity={0.6}
         endOpacity={0.1}
-        initialSpacing={20}
+        initialSpacing={10}
         noOfSections={4}
         maxValue={400}
         yAxisColor="white"
