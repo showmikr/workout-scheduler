@@ -25,21 +25,23 @@ function HelloChild({
   onDeleteDb: () => void;
 }) {
   const textStyle = "dark:text-white text-4xl";
-  if (!database) {
-    return <Text className={textStyle}>...Loading</Text>;
-  } else {
-    return (
-      <>
-        <Text className={textStyle}>Hello There</Text>
-        <Pressable
-          className="m-10 p-1 bg-slate-600 border-solid border-2 border-slate-400 active:opacity-50"
-          onPress={onDeleteDb}
-        >
-          <Text className="text-lg/10 dark:color-white">Delete Database</Text>
-        </Pressable>
-      </>
-    );
-  }
+  return (
+    <>
+      {!database ? (
+        <Text className={textStyle}>...Loading</Text>
+      ) : (
+        <>
+          <Text className={textStyle}>Hello There</Text>
+          <Pressable
+            className="m-10 p-1 bg-slate-600 border-solid border-2 border-slate-400 active:opacity-50"
+            onPress={onDeleteDb}
+          >
+            <Text className="text-lg/10 dark:color-white">Delete Database</Text>
+          </Pressable>
+        </>
+      )}
+    </>
+  );
 }
 
 // Proof of concept for using database as "global" context
