@@ -24,22 +24,15 @@ function HelloChild({
   database: SQLite.Database | null;
   onDeleteDb: () => void;
 }) {
-  const textStyle = "dark:text-white text-4xl";
   return (
     <>
-      {!database ? (
-        <Text className={textStyle}>...Loading</Text>
-      ) : (
-        <>
-          <Text className={textStyle}>Hello There</Text>
-          <Pressable
-            className="m-10 p-1 bg-slate-600 border-solid border-2 border-slate-400 active:opacity-50"
-            onPress={onDeleteDb}
-          >
-            <Text className="text-lg/10 dark:color-white">Delete Database</Text>
-          </Pressable>
-        </>
-      )}
+      <Text className="dark:text-white text-4xl">Hello There</Text>
+      <Pressable
+        className="m-10 p-1 bg-slate-600 border-solid border-2 border-slate-400 active:opacity-50"
+        onPress={onDeleteDb}
+      >
+        <Text className="text-lg/10 dark:color-white">Delete Database</Text>
+      </Pressable>
     </>
   );
 }
@@ -68,9 +61,14 @@ export default function HelloParent() {
       setDb(null);
     });
   };
+  const textStyle = "dark:text-white text-4xl";
   return (
     <View className="dark:bg-black flex-1 items-center justify-center">
-      <HelloChild database={db} onDeleteDb={onDeleteDb} />
+      {!db ? (
+        <Text className="dark:text-white text-4xl">...Loading</Text>
+      ) : (
+        <HelloChild database={db} onDeleteDb={onDeleteDb} />
+      )}
     </View>
   );
 }
