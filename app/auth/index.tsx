@@ -34,6 +34,6 @@ export default function SignIn() {
       </Pressable>
     </View>
   ) : (
-    <Redirect href="/(app)/(tabs)" />
+    <Redirect href="/" />
   );
 }
