@@ -5,7 +5,6 @@ import { Platform } from "react-native";
 function useAsyncState<T>(initialValue: [boolean, T | null] = [true, null]) {
   return React.useReducer(
     (state: [boolean, T | null], action: T | null): [boolean, T | null] => {
-      for (let i = 0; i < 29990000; i++);
       return [false, action];
     },
     initialValue
