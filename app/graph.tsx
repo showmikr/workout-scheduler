@@ -16,6 +16,8 @@ export default function Graph() {
   const [workoutSessionData, setWorkoutSessionData] = useState(
     null as WorkoutSession[] | null
   );
+  const [buttonSelected, setButtonSelected] = useState("null");
+  const buttons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "2Y"];
 
   // let w = 0;
   // let m = 0;
@@ -70,11 +72,11 @@ export default function Graph() {
   //   return a.date.getTime() - b.date.getTime();
   // });
 
-  console.log(
-    workoutSessionData?.map((ws) => {
-      return { value: ws.calories, date: ws.date.toDateString() };
-    })
-  );
+  // console.log(
+  //   workoutSessionData?.map((ws) => {
+  //     return { value: ws.calories, date: ws.date.toDateString() };
+  //   })
+  // );
 
   // 2) Insert data into graph
   const graphData = workoutSessionData?.map((ws) => {
@@ -191,111 +193,37 @@ export default function Graph() {
         className="flex flex-row "
         style={{ backgroundColor: "#1C1C1C", justifyContent: "space-evenly" }}
       >
-        <Pressable
-          style={{
-            backgroundColor: "#343434",
-            alignItems: "center",
-            justifyContent: "center",
-            paddingVertical: 4,
-            paddingHorizontal: 4,
-            borderRadius: 4,
-            elevation: 3,
-            width: 30,
-            height: 30,
-          }}
-        >
-          <Text style={{ color: "white", fontWeight: "bold" }}>1W</Text>
-        </Pressable>
-        <Pressable
-          style={{
-            backgroundColor: "#1C1C1C",
-            alignItems: "center",
-            justifyContent: "center",
-            paddingVertical: 4,
-            paddingHorizontal: 4,
-            borderRadius: 4,
-            elevation: 3,
-            width: 30,
-            height: 30,
-          }}
-        >
-          <Text style={{ color: "white" }}>1M</Text>
-        </Pressable>
-        <Pressable
-          style={{
-            backgroundColor: "#1C1C1C",
-            alignItems: "center",
-            justifyContent: "center",
-            paddingVertical: 4,
-            paddingHorizontal: 4,
-            borderRadius: 4,
-            elevation: 3,
-            width: 30,
-            height: 30,
-          }}
-        >
-          <Text style={{ color: "white" }}>3M</Text>
-        </Pressable>
-        <Pressable
-          style={{
-            backgroundColor: "#1C1C1C",
-            alignItems: "center",
-            justifyContent: "center",
-            paddingVertical: 4,
-            paddingHorizontal: 4,
-            borderRadius: 4,
-            elevation: 3,
-            width: 30,
-            height: 30,
-          }}
-        >
-          <Text style={{ color: "white" }}>6M</Text>
-        </Pressable>
-        <Pressable
-          style={{
-            backgroundColor: "#1C1C1C",
-            alignItems: "center",
-            justifyContent: "center",
-            paddingVertical: 4,
-            paddingHorizontal: 4,
-            borderRadius: 4,
-            elevation: 3,
-            width: 35,
-            height: 30,
-          }}
-        >
-          <Text style={{ color: "white" }}>YTD</Text>
-        </Pressable>
-        <Pressable
-          style={{
-            backgroundColor: "#1C1C1C",
-            alignItems: "center",
-            justifyContent: "center",
-            paddingVertical: 4,
-            paddingHorizontal: 4,
-            borderRadius: 4,
-            elevation: 3,
-            width: 30,
-            height: 30,
-          }}
-        >
-          <Text style={{ color: "white" }}>1Y</Text>
-        </Pressable>
-        <Pressable
-          style={{
-            backgroundColor: "#1C1C1C",
-            alignItems: "center",
-            justifyContent: "center",
-            paddingVertical: 4,
-            paddingHorizontal: 4,
-            borderRadius: 4,
-            elevation: 3,
-            width: 30,
-            height: 30,
-          }}
-        >
-          <Text style={{ color: "white" }}>2Y</Text>
-        </Pressable>
+        {buttons.map((title) => {
+          return (
+            <Pressable
+              style={{
+                backgroundColor:
+                  buttonSelected === title ? "#343434" : "#1C1C1C",
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 4,
+                paddingHorizontal: 4,
+                borderRadius: 4,
+                elevation: 3,
+                width: title === "YTD" ? 36 : 30,
+                height: 30,
+              }}
+              onPress={() => {
+                setButtonSelected(title);
+              }}
+              key={title}
+            >
+              <Text
+                style={{
+                  color: "white",
+                  fontWeight: buttonSelected === title ? "bold" : "normal",
+                }}
+              >
+                {title}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
