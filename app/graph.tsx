@@ -16,20 +16,13 @@ export default function Graph() {
   const [workoutSessionData, setWorkoutSessionData] = useState(
     null as WorkoutSession[] | null
   );
-  const [buttonSelected, setButtonSelected] = useState("null");
-  const buttons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "2Y"];
-
-  // let w = 0;
-  // let m = 0;
-  // let y = 1;
-  // console.log(
-  //   "W:" + w + ", M: " + m + ", Y: " + y + " | " + getPriorTime(w, m, y)
-  // );
+  const [buttonSelected, setButtonSelected] = useState("1M");
+  const buttons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "2Y", "ALL"];
 
   function getPriorTime(week: number, month: number, year: number) {
     return new Date(
       Date.now() - (657449982 * week + 2629799928 * month + 31557599136 * year)
-    ).toDateString();
+    );
   }
 
   // 1) Load Calories + Dates
@@ -68,44 +61,93 @@ export default function Graph() {
     });
   }
 
-  // workoutSessionData?.sort(function (a, b) {
-  //   return a.date.getTime() - b.date.getTime();
-  // });
-
-  // console.log(
-  //   workoutSessionData?.map((ws) => {
-  //     return { value: ws.calories, date: ws.date.toDateString() };
-  //   })
-  // );
-
   // 2) Insert data into graph
   const graphData = workoutSessionData?.map((ws) => {
     return {
       value: ws.calories,
-      date: ws.date.toDateString().substring(3, ws.date.toDateString().length),
+      date: ws.date,
     };
   });
+
+  let maxGraphValue = graphData?.reduce((p, c) => (p.value > c.value ? p : c));
+  let graphInput = graphData;
+  if (buttonSelected === "1W") {
+    (graphInput = graphData?.filter(
+      (wk) => new Date(wk.date) > getPriorTime(1, 0, 0)
+    )),
+      (maxGraphValue = graphInput?.reduce((p, c) =>
+        p.value > c.value ? p : c
+      ));
+  } else if (buttonSelected === "1M") {
+    (graphInput = graphData?.filter(
+      (wk) => new Date(wk.date) > getPriorTime(0, 1, 0)
+    )),
+      (maxGraphValue = graphInput?.reduce((p, c) =>
+        p.value > c.value ? p : c
+      ));
+  } else if (buttonSelected === "3M") {
+    (graphInput = graphData?.filter(
+      (wk) => new Date(wk.date) > getPriorTime(0, 3, 0)
+    )),
+      (maxGraphValue = graphInput?.reduce((p, c) =>
+        p.value > c.value ? p : c
+      ));
+  } else if (buttonSelected === "6M") {
+    (graphInput = graphData?.filter(
+      (wk) => new Date(wk.date) > getPriorTime(0, 6, 0)
+    )),
+      (maxGraphValue = graphInput?.reduce((p, c) =>
+        p.value > c.value ? p : c
+      ));
+  } else if (buttonSelected === "YTD") {
+    (graphInput = graphData?.filter(
+      (wk) => new Date(wk.date) > new Date(new Date().getFullYear(), 0, 1)
+    )),
+      (maxGraphValue = graphInput?.reduce((p, c) =>
+        p.value > c.value ? p : c
+      ));
+  } else if (buttonSelected === "1Y") {
+    (graphInput = graphData?.filter(
+      (wk) => new Date(wk.date) > getPriorTime(0, 0, 1)
+    )),
+      (maxGraphValue = graphInput?.reduce((p, c) =>
+        p.value > c.value ? p : c
+      ));
+  } else if (buttonSelected === "2Y") {
+    (graphInput = graphData?.filter(
+      (wk) => new Date(wk.date) > getPriorTime(0, 0, 2)
+    )),
+      (maxGraphValue = graphInput?.reduce((p, c) =>
+        p.value > c.value ? p : c
+      ));
+  } else {
+    graphInput = graphData;
+  }
 
   return (
     <View
       style={{
-        //flex: 1,
+        flex: 1,
         //alignItems: 'center',
-        //justifyContent: 'center',
-        paddingVertical: 100,
+        justifyContent: "center",
+        paddingVertical: 134,
         paddingLeft: 0,
-        backgroundColor: "#1C1C1C",
+        backgroundColor: "#0D0D0D",
       }}
     >
       <LineChart
         // Chart
+        isAnimated={true}
+        animationDuration={1000}
+        //animateOnDataChange={true}
+        adjustToWidth={true}
+        disableScroll={true}
         areaChart
-        data={graphData}
+        data={graphInput}
         rotateLabel
-        width={350}
-        overflowTop={0}
+        width={345}
+        overflowTop={70}
         hideDataPoints
-        spacing={19}
         // Gradient
         color="#A53535"
         thickness={2}
@@ -113,29 +155,32 @@ export default function Graph() {
         endFillColor="rgba(165,53,53,1)"
         startOpacity={0.6}
         endOpacity={0.1}
-        initialSpacing={10}
+        initialSpacing={7.5}
         noOfSections={4}
-        maxValue={400}
-        yAxisColor="white"
+        maxValue={
+          Math.ceil((maxGraphValue ? maxGraphValue?.value : 400) / 100) * 100
+        }
+        yAxisColor="#575757"
         yAxisThickness={0}
         rulesColor="#252525"
         yAxisTextStyle={{ color: "gray" }}
         xAxisColor="#575757"
         yAxisSide={yAxisSides.LEFT}
         pointerConfig={{
-          pointerStripHeight: 160,
+          pointerStripHeight: 250,
           pointerStripColor: "lightgray",
           pointerStripWidth: 2,
           pointerColor: "white",
           radius: 6,
           pointerLabelWidth: 100,
           pointerLabelHeight: 90,
-          activatePointersOnLongPress: true,
+          activatePointersOnLongPress: false,
+
           autoAdjustPointerLabelPosition: false,
           pointerLabelComponent: (
             items: {
               value: number;
-              date: string;
+              date: Date;
               label: string;
               labelTextStyle?: {
                 color: string;
@@ -153,7 +198,7 @@ export default function Graph() {
                   paddingHorizontal: 5,
                   marginVertical: 20,
                   marginHorizontal: -10,
-                  backgroundColor: "#1C1C1C",
+                  backgroundColor: "#0D0D0D",
                 }}
               >
                 <Text
@@ -162,9 +207,12 @@ export default function Graph() {
                     fontSize: 14,
                     marginBottom: 6,
                     textAlign: "center",
+                    fontWeight: "300",
                   }}
                 >
-                  {items[0].date}
+                  {items[0].date
+                    .toDateString()
+                    .substring(4, items[0].date.toDateString().length)}
                 </Text>
 
                 <View
@@ -191,7 +239,7 @@ export default function Graph() {
       />
       <View
         className="flex flex-row "
-        style={{ backgroundColor: "#1C1C1C", justifyContent: "space-evenly" }}
+        style={{ backgroundColor: "#0D0D0D", justifyContent: "space-evenly" }}
       >
         {buttons.map((title) => {
           return (
@@ -216,7 +264,7 @@ export default function Graph() {
               <Text
                 style={{
                   color: "white",
-                  fontWeight: buttonSelected === title ? "bold" : "normal",
+                  fontWeight: buttonSelected === title ? "bold" : "300",
                 }}
               >
                 {title}
