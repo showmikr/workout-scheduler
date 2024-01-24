@@ -1,27 +1,13 @@
 import { View, Text, Pressable } from "react-native";
 import React from "react";
-import * as SQLite from "expo-sqlite";
-import { openDB, doesLocalDbExist } from "../../../db-utils";
-
-const deleteDB = async () => {
-  doesLocalDbExist().then((dbExists) => {
-    if (!dbExists) {
-      console.log("db doesn't exist, quitting deletion");
-      return;
-    }
-    openDB().then((db) => {
-      db.closeAsync();
-      db.deleteAsync();
-      console.log("DB deleted successfully");
-    });
-  });
-};
+import * as Next from "expo-sqlite/next";
+import { openDB, deleteDB } from "../../../db-utils";
 
 function HelloChild({
   database,
   onDeleteDb,
 }: {
-  database: SQLite.Database | null;
+  database: Next.SQLiteDatabase | null;
   onDeleteDb: () => void;
 }) {
   return (
@@ -39,7 +25,7 @@ function HelloChild({
 
 // Proof of concept for using database as "global" context
 export default function HelloParent() {
-  const [db, setDb] = React.useState<SQLite.Database | null>(null);
+  const [db, setDb] = React.useState<Next.SQLiteDatabase | null>(null);
   React.useEffect(() => {
     // Using a setTimeout function to simulate loading in the db
     // for 2 seconds b/c it normally loads too fast to even see the loading screen I wrote
@@ -61,7 +47,6 @@ export default function HelloParent() {
       setDb(null);
     });
   };
-  const textStyle = "dark:text-white text-4xl";
   return (
     <View className="dark:bg-black flex-1 items-center justify-center">
       {!db ? (

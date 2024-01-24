@@ -1,44 +1,20 @@
 import { Pressable, Button, StyleSheet } from "react-native";
 import EditScreenInfo from "../../../components/EditScreenInfo";
 import { Text, View } from "../../../components/Themed";
-import * as FileSystem from "expo-file-system";
-import * as SQLite from "expo-sqlite";
-import { openDB, doesLocalDbExist } from "../../../db-utils";
+import { openDB, deleteDB } from "../../../db-utils";
+import { DaysOfWeek } from "../../../sqlite-types";
 
 export default function TabTwoScreen() {
   const readDB = () => {
     openDB().then((db) => {
       console.log("Reading from DB");
-      db.transaction(
-        (transaction) => {
-          transaction.executeSql(
-            "select day from days_of_week",
-            undefined,
-            (_trx, rs) => {
-              for (const row of rs.rows._array) {
-                console.log(row.day);
-              }
-            }
-          );
-        },
-        (err) => {
-          console.log(err);
+      db.getAllAsync<DaysOfWeek>("select day from days_of_week", null).then(
+        (daysOfWeeksArray) => {
+          daysOfWeeksArray.forEach((dayObj) => {
+            console.log(dayObj.day);
+          });
         }
       );
-    });
-  };
-
-  const deleteDB = () => {
-    doesLocalDbExist().then((dbExists) => {
-      if (!dbExists) {
-        console.log("db doesn't exist, quitting deletion");
-        return;
-      }
-      openDB().then((db) => {
-        db.closeAsync();
-        db.deleteAsync();
-        console.log("DB deleted successfully");
-      });
     });
   };
 

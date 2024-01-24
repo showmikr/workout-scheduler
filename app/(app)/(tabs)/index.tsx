@@ -15,23 +15,23 @@ export default function TabOneScreen() {
   const [userData, setUserData] = useState<Partial<AppUser> | null>(null);
 
   if (session && !userData) {
-    openDB().then((db) => {
-      db.transaction((tx) => {
-        // get subject claim - this will be used as the search criteria in the sqlite app_user table
+    openDB()
+      .then((db) => {
         const subjectClaim: string = JSON.parse(session).subjectClaim;
-        tx.executeSql(
+        console.log(db.databaseName);
+        return db.getFirstAsync<Partial<AppUser>>(
           "SELECT first_name, last_name, user_name, email, creation_date FROM app_user WHERE aws_cognito_sub = ?",
-          [subjectClaim],
-          (_tx, resultSet) => {
-            const user: Partial<AppUser> = {
-              ...resultSet.rows._array[0],
-              creation_date: new Date(resultSet.rows._array[0].creation_date),
-            };
-            setUserData(user);
-          }
+          [subjectClaim]
         );
+      })
+      .then((result) => {
+        console.log(result);
+        const user = result && {
+          ...result,
+          creation_date: new Date((result as any).creation_date),
+        };
+        setUserData(user);
       });
-    });
   }
 
   return (

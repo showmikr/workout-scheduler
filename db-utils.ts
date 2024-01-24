@@ -1,8 +1,8 @@
 import * as FileSystem from "expo-file-system";
-import * as SQLite from "expo-sqlite";
-import { sqlite_ddl, sqlite_dml } from "./pgdb-ddl";
+import * as Next from "expo-sqlite/next";
+import { giantSqlString } from "./giant-sql-string";
 
-const dbName = "pg-sqlite.db";
+const dbName = "next-sqlite.db";
 
 async function doesLocalDbExist() {
   const dbExists = (
@@ -16,29 +16,26 @@ async function doesLocalDbExist() {
 // function for opening sqlite version of our postgresDB
 async function openDB() {
   if (await doesLocalDbExist()) {
-    return SQLite.openDatabase(dbName);
+    return Next.openDatabaseAsync(dbName);
   }
 
-  // otherwise, we need to initialize the db before returning it
-  const db = SQLite.openDatabase(
-    dbName,
-    undefined,
-    undefined,
-    undefined,
-    () => {
-      /* 
-      At the moment, to make the sample data for app_user and days_of_week
-      show up in the tabs, I need to grab the sql ddl and the first 2 insert
-      statements from the dml 
-      */
-      for (const queryString of [...sqlite_ddl, ...sqlite_dml.slice(0, 2)]) {
-        db.transaction((transaction) => {
-          transaction.executeSql(queryString);
-        });
-      }
-    }
-  );
+  // Otherwise, initialize db with create and sample insert statments and then return db connection
+  const db = await Next.openDatabaseAsync(dbName);
+  await db.execAsync(giantSqlString);
   return db;
 }
 
-export { openDB, doesLocalDbExist };
+async function deleteDB() {
+  const dbExists = await doesLocalDbExist();
+  if (!dbExists) {
+    console.log("db doesn't exist, quitting deletion");
+    return;
+  }
+  // Otherwise, delete the db
+  const db = await Next.openDatabaseAsync(dbName);
+  await db.closeAsync();
+  await Next.deleteDatabaseAsync(dbName);
+  console.log(`${dbName} successfully deleted`);
+}
+
+export { openDB, doesLocalDbExist, deleteDB };
