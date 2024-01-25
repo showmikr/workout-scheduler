@@ -1,6 +1,7 @@
 import * as FileSystem from "expo-file-system";
 import * as SQLite from "expo-sqlite/next";
 import { giantSqlString } from "./giant-sql-string";
+import { Asset } from "expo-asset";
 
 const dbName = "next-sqlite.db";
 
@@ -37,5 +38,18 @@ async function deleteDB() {
   await SQLite.deleteDatabaseAsync(dbName);
   console.log(`${dbName} successfully deleted`);
 }
+
+function initDB() {
+  console.log("initDB");
+  Asset.fromModule(require("./workout-scheduler-v2.sql"))
+    .downloadAsync()
+    .then((asset) => asset.localUri)
+    .then((fileUrl) =>
+      fileUrl ? FileSystem.readAsStringAsync(fileUrl) : "null"
+    )
+    .then((str) => console.log(str));
+}
+
+initDB();
 
 export { openDB, doesLocalDbExist, deleteDB };
