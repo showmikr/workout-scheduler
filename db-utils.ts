@@ -39,15 +39,4 @@ async function deleteDB() {
   console.log(`${dbName} successfully deleted`);
 }
 
-function initDB() {
-  console.log("initDB");
-  Asset.fromModule(require("./workout-scheduler-v2.sql"))
-    .downloadAsync()
-    .then((asset) => asset.localUri)
-    .then((fileUrl) =>
-      fileUrl ? FileSystem.readAsStringAsync(fileUrl) : "null"
-    )
-    .then((str) => console.log(str));
-}
-
 export { openDB, doesLocalDbExist, deleteDB };
