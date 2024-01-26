@@ -1,5 +1,5 @@
 import * as FileSystem from "expo-file-system";
-import * as Next from "expo-sqlite/next";
+import * as SQLite from "expo-sqlite/next";
 import { giantSqlString } from "./giant-sql-string";
 
 const dbName = "next-sqlite.db";
@@ -16,11 +16,11 @@ async function doesLocalDbExist() {
 // function for opening sqlite version of our postgresDB
 async function openDB() {
   if (await doesLocalDbExist()) {
-    return Next.openDatabaseAsync(dbName);
+    return SQLite.openDatabaseAsync(dbName);
   }
 
   // Otherwise, initialize db with create and sample insert statments and then return db connection
-  const db = await Next.openDatabaseAsync(dbName);
+  const db = await SQLite.openDatabaseAsync(dbName);
   await db.execAsync(giantSqlString);
   return db;
 }
@@ -32,9 +32,9 @@ async function deleteDB() {
     return;
   }
   // Otherwise, delete the db
-  const db = await Next.openDatabaseAsync(dbName);
+  const db = await SQLite.openDatabaseAsync(dbName);
   await db.closeAsync();
-  await Next.deleteDatabaseAsync(dbName);
+  await SQLite.deleteDatabaseAsync(dbName);
   console.log(`${dbName} successfully deleted`);
 }
 
