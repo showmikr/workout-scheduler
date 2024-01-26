@@ -50,6 +50,4 @@ function initDB() {
     .then((str) => console.log(str));
 }
 
-initDB();
-
 export { openDB, doesLocalDbExist, deleteDB };

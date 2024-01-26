@@ -10,6 +10,9 @@ import { useEffect } from "react";
 import { useColorScheme } from "nativewind";
 import { SessionProvider } from "../ctx";
 import "../global.css";
+import { SQLiteProvider, SQLiteDatabase } from "expo-sqlite/next";
+import { Asset } from "expo-asset";
+import * as FileSystem from "expo-file-system";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -50,8 +53,36 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <SessionProvider>
-        <Slot />
+        <SQLiteProvider databaseName="next-sqlite.db" onInit={initDb}>
+          <Slot />
+        </SQLiteProvider>
       </SessionProvider>
     </ThemeProvider>
   );
+}
+
+async function initDb(db: SQLiteDatabase) {
+  const tableInfo = db.getFirstSync<{ table_count: number }>(
+    "SELECT COUNT(name) as table_count FROM sqlite_master WHERE type=?",
+    ["table"]
+  );
+
+  const tableCount = tableInfo ? tableInfo.table_count : 0;
+  console.log(`tableCount: ${tableCount}`);
+
+  if (tableCount > 0) {
+    return;
+  }
+
+  const sqlFile = await Asset.fromModule(
+    require("../workout-scheduler-v2.sql")
+  ).downloadAsync();
+
+  if (!sqlFile.localUri) {
+    console.log("workout-scheduler-v2.sql asset was not correctly downloaded");
+    return;
+  }
+  const sqlScript = await FileSystem.readAsStringAsync(sqlFile.localUri);
+  db.execSync(sqlScript);
+  console.log("db script executed to load tables schema");
 }
