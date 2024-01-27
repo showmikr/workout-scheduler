@@ -68,7 +68,6 @@ async function initDb(db: SQLiteDatabase) {
   );
 
   const tableCount = tableInfo ? tableInfo.table_count : 0;
-  console.log(`tableCount: ${tableCount}`);
 
   if (tableCount > 0) {
     return;

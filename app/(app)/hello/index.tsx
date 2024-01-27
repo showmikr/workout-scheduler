@@ -1,7 +1,5 @@
 import { View, Text, Pressable } from "react-native";
 import React from "react";
-import { deleteDB } from "../../../db-utils";
-import { useSQLiteContext } from "expo-sqlite/next";
 
 function HelloChild() {
   return (
