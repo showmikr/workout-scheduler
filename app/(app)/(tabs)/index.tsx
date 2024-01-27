@@ -4,10 +4,10 @@ import { Text, View } from "../../../components/Themed";
 import { useColorScheme } from "nativewind";
 import { useSession } from "../../../ctx";
 import * as AuthSession from "expo-auth-session";
-import { openDB } from "../../../db-utils";
 import { useState } from "react";
 import { AppUser } from "../../../sqlite-types";
 import { Link } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite/next";
 
 export default function TabOneScreen() {
   const { colorScheme, setColorScheme } = useColorScheme();
@@ -15,23 +15,21 @@ export default function TabOneScreen() {
   const [userData, setUserData] = useState<Partial<AppUser> | null>(null);
 
   if (session && !userData) {
-    openDB()
-      .then((db) => {
-        const subjectClaim: string = JSON.parse(session).subjectClaim;
-        console.log(db.databaseName);
-        return db.getFirstAsync<Partial<AppUser>>(
-          "SELECT first_name, last_name, user_name, email, creation_date FROM app_user WHERE aws_cognito_sub = ?",
-          [subjectClaim]
-        );
-      })
-      .then((result) => {
-        console.log(result);
-        const user = result && {
-          ...result,
-          creation_date: new Date((result as any).creation_date),
-        };
-        setUserData(user);
-      });
+    const db = useSQLiteContext();
+    const subjectClaim: string = JSON.parse(session).subjectClaim;
+    db.getFirstAsync<Partial<AppUser>>(
+      "SELECT first_name, last_name, user_name, email, creation_date FROM app_user WHERE aws_cognito_sub = ?",
+      [subjectClaim]
+    ).then((result) => {
+      console.log(result);
+      const user = result
+        ? {
+            ...result,
+            creation_date: new Date((result as any).creation_date),
+          }
+        : { first_name: "SQL Query returned nothing" };
+      setUserData(user);
+    });
   }
 
   return (

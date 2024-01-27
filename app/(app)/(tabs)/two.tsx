@@ -1,21 +1,23 @@
 import { Pressable, Button, StyleSheet } from "react-native";
 import EditScreenInfo from "../../../components/EditScreenInfo";
 import { Text, View } from "../../../components/Themed";
-import { openDB, deleteDB } from "../../../db-utils";
+import { deleteDB } from "../../../db-utils";
 import { DaysOfWeek } from "../../../sqlite-types";
+import { useSQLiteContext } from "expo-sqlite/next";
 
 export default function TabTwoScreen() {
+  const db = useSQLiteContext();
   const readDB = () => {
-    openDB().then((db) => {
-      console.log("Reading from DB");
-      db.getAllAsync<DaysOfWeek>("select day from days_of_week", null).then(
-        (daysOfWeeksArray) => {
-          daysOfWeeksArray.forEach((dayObj) => {
-            console.log(dayObj.day);
-          });
-        }
-      );
-    });
+    console.log("Reading from DB");
+    db.getAllAsync<DaysOfWeek>("select day from days_of_week", null)
+      .then((daysOfWeeksArray) => {
+        daysOfWeeksArray.forEach((dayObj) => {
+          console.log(dayObj.day);
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   return (
