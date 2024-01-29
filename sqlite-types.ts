@@ -6,14 +6,14 @@ export interface AppUser {
   avg_daily_calorie_goal?: number | null;
   aws_cognito_sub: string;
   bodyweight_goal?: number | null;
-  creation_date: Date;
+  creation_date: string;
   email: string;
   email_verified?: boolean;
   first_name?: string | null;
   id?: number | null;
   image_url?: string | null;
   last_name?: string | null;
-  last_signed_in: Date;
+  last_signed_in: string;
   user_name?: string | null;
 }
 export interface CardioSet {
@@ -90,7 +90,7 @@ export interface LinkTagWorkout {
   workout_tag_id: string;
 }
 export interface PrHistory {
-  date: Date;
+  date: string;
   distance?: number | null;
   id?: number | null;
   reps?: number | null;
@@ -139,14 +139,14 @@ export interface TrainingDay {
 }
 export interface UserBodyweight {
   app_user_id: string;
-  date: Date;
+  date: string;
   id?: number | null;
   weight: number;
 }
 export interface Workout {
   app_user_id: string;
   id?: number | null;
-  last_session?: Date | null;
+  last_session?: string | null;
   list_order: number;
   title: string;
   training_day_id?: string | null;
@@ -159,7 +159,7 @@ export interface WorkoutDays {
 export interface WorkoutSession {
   app_user_id: string;
   calories?: number | null;
-  date: Date;
+  date: string;
   id?: number | null;
   tied_to_workout?: boolean;
   title: string;

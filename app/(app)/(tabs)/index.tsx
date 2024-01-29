@@ -13,22 +13,19 @@ export default function TabOneScreen() {
   const { colorScheme, setColorScheme } = useColorScheme();
   const { fakeSignOut, signOut, session } = useSession()!;
   const [userData, setUserData] = useState<Partial<AppUser> | null>(null);
+  const db = useSQLiteContext();
 
   if (session && !userData) {
-    const db = useSQLiteContext();
     const subjectClaim: string = JSON.parse(session).subjectClaim;
-    db.getFirstAsync<Partial<AppUser>>(
+    type SelectFields = Pick<
+      AppUser,
+      "first_name" | "last_name" | "user_name" | "email" | "creation_date"
+    >;
+    db.getFirstAsync<SelectFields>(
       "SELECT first_name, last_name, user_name, email, creation_date FROM app_user WHERE aws_cognito_sub = ?",
       [subjectClaim]
     ).then((result) => {
-      console.log(result);
-      const user = result
-        ? {
-            ...result,
-            creation_date: new Date((result as any).creation_date),
-          }
-        : { first_name: "SQL Query returned nothing" };
-      setUserData(user);
+      setUserData(result);
     });
   }
 
@@ -42,7 +39,10 @@ export default function TabOneScreen() {
             className="text-center border-solid border border-slate-400 text-xl p-1"
             key={key}
           >
-            {key}: {typeof value === "object" ? value?.toDateString() : value}
+            {key}:{" "}
+            {key === "creation_date"
+              ? new Date(value as string).toDateString()
+              : value}
           </Text>
         ))}
       <View

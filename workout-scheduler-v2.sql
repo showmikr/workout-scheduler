@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS "app_user" (
   "email" text NOT NULL,
   "email_verified" boolean NOT NULL DEFAULT false,
   "image_url" text,
-  "creation_date" timestamp NOT NULL,
-  "last_signed_in" timestamp NOT NULL,
+  "creation_date" text NOT NULL,
+  "last_signed_in" text NOT NULL,
   "avg_daily_calorie_goal" int,
   "bodyweight_goal" real
 );
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS "workout" (
   "training_day_id" bigint,
   "title" text NOT NULL,
   "list_order" int NOT NULL,
-  "last_session" timestamp,
+  "last_session" text,
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY ("training_day_id") REFERENCES "training_day" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS "workout_session" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
   "title" text NOT NULL,
-  "date" timestamp NOT NULL,
+  "date" text NOT NULL,
   "calories" int,
   "tied_to_workout" boolean NOT NULL DEFAULT False,
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
@@ -162,7 +162,7 @@ CREATE TABLE IF NOT EXISTS "user_bodyweight" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
   "weight" real NOT NULL,
-  "date" timestamp NOT NULL,
+  "date" text NOT NULL,
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -180,7 +180,7 @@ CREATE TABLE IF NOT EXISTS "pr_history" (
   "distance" real,
   "speed" real,
   "time" int,
-  "date" timestamp NOT NULL
+  "date" text NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "custom_category_pr" (
