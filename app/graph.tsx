@@ -4,6 +4,8 @@ import { Text, Button, Pressable } from "react-native";
 import { openDB } from "../db-utils";
 import { useState } from "react";
 
+// Issue: Interpolating a null data point regardless of configuration will show an average value of previous and future data point values
+
 type WorkoutSession = {
   appUserId: bigint;
   title: string;
@@ -12,23 +14,127 @@ type WorkoutSession = {
   tiedToWorkout: boolean;
 };
 
-export default function Graph() {
-  const [workoutSessionData, setWorkoutSessionData] = useState(
-    null as WorkoutSession[] | null
-  );
-  const [buttonSelected, setButtonSelected] = useState("1M");
-  const buttons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "2Y", "ALL"];
+type CalorieData = {
+  value: number | null;
+  date: Date;
+};
 
+export default function Graph() {
+  const [workoutSessionData, setWorkoutSessionData] = useState<
+    WorkoutSession[] | null
+  >(null);
+  const [buttonSelected, setButtonSelected] = useState("1M");
+  const buttons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
+
+  // Returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
     return new Date(
       Date.now() - (657449982 * week + 2629799928 * month + 31557599136 * year)
     );
   }
+  function getFirstDayOfWeek(timeFrame: Date) {
+    return new Date(
+      timeFrame.setDate(timeFrame.getDate() - timeFrame.getDay())
+    );
 
-  // 1) Load Calories + Dates
+    /*
+    
+    -
+        timeFrame.getHours() * 3600000 -
+        timeFrame.getMinutes() * 60000 -
+        timeFrame.getSeconds() * 1000 -
+        timeFrame.getMilliseconds()
+    
+    */
+  }
+  function getLastDayOfWeek(timeFrame: Date) {
+    return new Date(
+      timeFrame.setDate(timeFrame.getDate() - timeFrame.getDay() + 6) +
+        (24 - timeFrame.getHours()) * 3600000 -
+        timeFrame.getMinutes() * 60000 -
+        timeFrame.getSeconds() * 1000 -
+        timeFrame.getMilliseconds() -
+        1
+    );
+  }
+  function getFirstDayOfMonth(timeFrame: Date) {
+    return new Date(timeFrame.getFullYear(), timeFrame.getMonth(), 1);
+  }
+  function getLastDayOfMonth(timeFrame: Date) {
+    return new Date(
+      new Date(timeFrame.getFullYear(), timeFrame.getMonth() + 1, 1).getTime() -
+        1
+    );
+  }
+
+  // Averages data bases on the length of time given
+  function averagePlotData(data: CalorieData[] | null) {
+    // Looks messy, code clean up if possible
+    let res = [];
+    if (!data || data.length < 1) {
+      return [
+        { value: 404, date: new Date(Date.now()) },
+        { value: 404, date: new Date(Date.now()) },
+      ];
+    } else if (
+      31557599136 <
+      data[data.length - 1].date.getTime() - data[0].date.getTime()
+    ) {
+      // 1 year -> average months
+      let curr = 0;
+      let first = getFirstDayOfMonth(data[0].date);
+      let last = getLastDayOfMonth(data[0].date);
+
+      while (first < data[data.length - 1].date) {
+        let amt = 0;
+        let avg = 0;
+        while (curr < data.length && data[curr].date < last) {
+          avg += data[curr].value!;
+          amt += 1;
+          curr += 1;
+        }
+        amt == 0
+          ? res.push({
+              value: null,
+              date: first,
+            })
+          : res.push({ value: Math.round(avg / amt), date: first });
+        first = getFirstDayOfMonth(new Date(last.getTime() + 1));
+        last = getLastDayOfMonth(first);
+      }
+    } else {
+      // 6 months -> average weeks
+      let curr = 0;
+      let first = getFirstDayOfWeek(data[0].date);
+      let last = getLastDayOfWeek(data[0].date);
+      while (first < data[data.length - 1].date) {
+        let amt = 0;
+        let avg = 0;
+        while (curr < data.length && data[curr].date < last) {
+          avg += data[curr].value!;
+          amt += 1;
+          curr += 1;
+        }
+        amt == 0
+          ? res.push({
+              value: null,
+              date: first,
+            })
+          : res.push({
+              value: Math.round(avg / amt),
+              date: first,
+            });
+        first = getFirstDayOfWeek(new Date(last.getTime() + 1));
+        last = getLastDayOfWeek(first);
+      }
+    }
+    return res;
+  }
+
+  // 1) Load user data
   if (!workoutSessionData) {
     openDB().then((db) => {
-      console.log("Reading from DB");
+      //console.log("Reading from DB");
       db.transaction(
         (transaction) => {
           transaction.executeSql(
@@ -61,67 +167,65 @@ export default function Graph() {
     });
   }
 
-  // 2) Insert data into graph
-  const graphData = workoutSessionData?.map((ws) => {
+  // 2) Extract user calorie data
+  const graphData: CalorieData[] | undefined = workoutSessionData?.map((ws) => {
     return {
       value: ws.calories,
       date: ws.date,
     };
   });
 
-  let maxGraphValue = graphData?.reduce((p, c) => (p.value > c.value ? p : c));
+  // Button range logic
+  let maxGraphValue = graphData?.reduce((p, c) =>
+    p.value! > c.value! ? p : c
+  );
   let graphInput = graphData;
   if (buttonSelected === "1W") {
     (graphInput = graphData?.filter(
       (wk) => new Date(wk.date) > getPriorTime(1, 0, 0)
     )),
       (maxGraphValue = graphInput?.reduce((p, c) =>
-        p.value > c.value ? p : c
+        p.value! > c.value! ? p : c
       ));
   } else if (buttonSelected === "1M") {
     (graphInput = graphData?.filter(
       (wk) => new Date(wk.date) > getPriorTime(0, 1, 0)
     )),
       (maxGraphValue = graphInput?.reduce((p, c) =>
-        p.value > c.value ? p : c
+        p.value! > c.value! ? p : c
       ));
   } else if (buttonSelected === "3M") {
     (graphInput = graphData?.filter(
       (wk) => new Date(wk.date) > getPriorTime(0, 3, 0)
     )),
       (maxGraphValue = graphInput?.reduce((p, c) =>
-        p.value > c.value ? p : c
+        p.value! > c.value! ? p : c
       ));
   } else if (buttonSelected === "6M") {
     (graphInput = graphData?.filter(
       (wk) => new Date(wk.date) > getPriorTime(0, 6, 0)
     )),
       (maxGraphValue = graphInput?.reduce((p, c) =>
-        p.value > c.value ? p : c
+        p.value! > c.value! ? p : c
       ));
   } else if (buttonSelected === "YTD") {
-    (graphInput = graphData?.filter(
-      (wk) => new Date(wk.date) > new Date(new Date().getFullYear(), 0, 1)
+    (graphInput = averagePlotData(
+      graphData?.filter(
+        (wk) => new Date(wk.date) > new Date(new Date().getFullYear(), 0, 1)
+      )!
     )),
       (maxGraphValue = graphInput?.reduce((p, c) =>
-        p.value > c.value ? p : c
+        p.value! > c.value! ? p : c
       ));
   } else if (buttonSelected === "1Y") {
-    (graphInput = graphData?.filter(
-      (wk) => new Date(wk.date) > getPriorTime(0, 0, 1)
+    (graphInput = averagePlotData(
+      graphData?.filter((wk) => new Date(wk.date) > getPriorTime(0, 0, 1))!
     )),
       (maxGraphValue = graphInput?.reduce((p, c) =>
-        p.value > c.value ? p : c
-      ));
-  } else if (buttonSelected === "2Y") {
-    (graphInput = graphData?.filter(
-      (wk) => new Date(wk.date) > getPriorTime(0, 0, 2)
-    )),
-      (maxGraphValue = graphInput?.reduce((p, c) =>
-        p.value > c.value ? p : c
+        p.value! > c.value! ? p : c
       ));
   } else {
-    graphInput = graphData;
+    graphInput = averagePlotData(graphData!);
   }
 
   return (
@@ -135,6 +239,7 @@ export default function Graph() {
         backgroundColor: "#0D0D0D",
       }}
     >
+      {/* Chart View */}
       <LineChart
         // Chart
         isAnimated={true}
@@ -145,9 +250,12 @@ export default function Graph() {
         areaChart
         data={graphInput}
         rotateLabel
+        //interpolateMissingValue={false}
         width={345}
         overflowTop={70}
-        hideDataPoints
+        //DataPoints
+        hideDataPoints={true}
+        dataPointsColor="#A53535"
         // Gradient
         color="#A53535"
         thickness={2}
@@ -158,7 +266,7 @@ export default function Graph() {
         initialSpacing={7.5}
         noOfSections={4}
         maxValue={
-          Math.ceil((maxGraphValue ? maxGraphValue?.value : 400) / 100) * 100
+          Math.ceil((maxGraphValue ? maxGraphValue?.value! : 400) / 100) * 100
         }
         yAxisColor="#575757"
         yAxisThickness={0}
@@ -237,6 +345,7 @@ export default function Graph() {
           },
         }}
       />
+      {/* Button View */}
       <View
         className="flex flex-row "
         style={{ backgroundColor: "#0D0D0D", justifyContent: "space-evenly" }}
