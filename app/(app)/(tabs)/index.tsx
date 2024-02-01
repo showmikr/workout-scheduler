@@ -14,15 +14,15 @@ export default function TabOneScreen() {
   const { fakeSignOut, signOut, session } = useSession()!;
   const [userData, setUserData] = useState<Partial<AppUser> | null>(null);
   const db = useSQLiteContext();
+  type SelectFields = Pick<
+    AppUser,
+    "id" | "first_name" | "last_name" | "user_name" | "email" | "creation_date"
+  >;
 
   if (session && !userData) {
     const subjectClaim: string = JSON.parse(session).subjectClaim;
-    type SelectFields = Pick<
-      AppUser,
-      "first_name" | "last_name" | "user_name" | "email" | "creation_date"
-    >;
     db.getFirstAsync<SelectFields>(
-      "SELECT first_name, last_name, user_name, email, creation_date FROM app_user WHERE aws_cognito_sub = ?",
+      "SELECT id, first_name, last_name, user_name, email, creation_date FROM app_user WHERE aws_cognito_sub = ?",
       [subjectClaim]
     ).then((result) => {
       setUserData(result);
