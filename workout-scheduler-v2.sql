@@ -260,8 +260,8 @@ INSERT INTO workout (app_user_id, training_day_id, title, list_order, last_sessi
 
 INSERT INTO workout_tag (app_user_id, title)
     VALUES
-    (1, 'UpperBody'),
-    (1, 'LowerBody');
+    (1, 'Upper Body'),
+    (1, 'Lower Body');
 
 INSERT INTO link_tag_workout (workout_tag_id, workout_id)
     VALUES
