@@ -20,6 +20,11 @@ type CalorieData = {
 };
 
 export default function Graph() {
+  const DAY_MS = 93921426;
+  const WEEK_MS = 657449982;
+  const MONTH_MS = 2629799928;
+  const YEAR_MS = 31557599136;
+
   const [workoutSessionData, setWorkoutSessionData] = useState<
     WorkoutSession[] | null
   >(null);
@@ -29,7 +34,7 @@ export default function Graph() {
   // Returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
     return new Date(
-      Date.now() - (657449982 * week + 2629799928 * month + 31557599136 * year)
+      Date.now() - (WEEK_MS * week + MONTH_MS * month + YEAR_MS * year)
     );
   }
   function getFirstDayOfWeek(timeFrame: Date) {
@@ -66,21 +71,46 @@ export default function Graph() {
         1
     );
   }
-
+  function getDayOfWeekString(numberOfWeek: number) {
+    switch (numberOfWeek) {
+      case 0:
+        return "Sunday";
+      case 1:
+        return "Monday";
+      case 2:
+        return "Tuesday";
+      case 3:
+        return "Wednesday";
+      case 4:
+        return "Thursday";
+      case 5:
+        return "Friday";
+      case 6:
+        return "Saturday";
+      default:
+        return "Error: Unsupported Type | getNumberToStringDayOfWeek()";
+    }
+  }
   // Averages data bases on the length of time given
-  function averagePlotData(data: CalorieData[] | null) {
+  function averagePlotData(data: CalorieData[] | undefined) {
     // Looks messy, code clean up if possible
     let res = [];
     if (!data || data.length < 1) {
-      return [
-        { value: 404, date: new Date(Date.now()) },
-        { value: 404, date: new Date(Date.now()) },
+      console.log("Not enough data or data does not exist.");
+      res = [
+        {
+          value: 404,
+          date: new Date(getPriorTime(1, 0, 0).getTime() + DAY_MS),
+        },
+        { value: 404, date: new Date(new Date().getTime() - DAY_MS) },
+        { value: 404, date: new Date(new Date().getTime()) },
       ];
+      console.log("Res: " + res);
     } else if (
-      31557599136 <
+      YEAR_MS <
       data[data.length - 1].date.getTime() - data[0].date.getTime()
     ) {
-      // 1 year -> average months
+      // Greater than 1 year -> average months
       let curr = 0;
       let first = getFirstDayOfMonth(data[0].date);
       let last = getLastDayOfMonth(data[0].date);
@@ -102,8 +132,11 @@ export default function Graph() {
         first = getFirstDayOfMonth(new Date(last.getTime() + 1));
         last = getLastDayOfMonth(first);
       }
-    } else {
-      // 6 months -> average weeks
+    } else if (
+      MONTH_MS * 6 <
+      data[data.length - 1].date.getTime() - data[0].date.getTime()
+    ) {
+      // Greater than 6 months -> average weeks
       let curr = 0;
       let first = getFirstDayOfWeek(data[0].date);
       let last = getLastDayOfWeek(data[0].date);
@@ -127,7 +160,41 @@ export default function Graph() {
         first = getFirstDayOfWeek(new Date(last.getTime() + 1));
         last = getLastDayOfWeek(first);
       }
+    } else if (
+      WEEK_MS <
+      data[data.length - 1].date.getTime() - data[0].date.getTime()
+    ) {
+      // Greater than 1 week -> keep data as is
+      res = data;
+    } else {
+      // Data is equal (=) or less than (<) week -> Interpolate to correctly show day to day spacing for a week
+      let curr = 0;
+      let first = new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0));
+      let last = new Date();
+      while (first < last && curr < data.length) {
+        let total = 0;
+        while (
+          curr < data.length &&
+          first.toDateString() === data[curr].date.toDateString()
+        ) {
+          total += data[curr].value!;
+          curr += 1;
+        }
+        total == 0
+          ? res.push({
+              value: 0,
+              date: first,
+              label: getDayOfWeekString(first.getDay()),
+            })
+          : res.push({
+              value: Math.round(total),
+              date: first,
+              label: getDayOfWeekString(first.getDay()),
+            });
+        first = new Date(first.getTime() + DAY_MS);
+      }
     }
+
     return res;
   }
 
@@ -181,10 +248,10 @@ export default function Graph() {
   );
   let graphInput = graphData;
   if (buttonSelected === "1W") {
-    (graphInput = graphData?.filter(
-      (wk) => new Date(wk.date) > getPriorTime(1, 0, 0)
+    (graphInput = averagePlotData(
+      graphData?.filter((wk) => new Date(wk.date) > getPriorTime(1, 0, 0))
     )),
-      (maxGraphValue = graphInput?.reduce((p, c) =>
+      (maxGraphValue = averagePlotData(graphInput)?.reduce((p, c) =>
         p.value! > c.value! ? p : c
       ));
   } else if (buttonSelected === "1M") {
@@ -241,7 +308,7 @@ export default function Graph() {
     >
       {/* Chart View */}
       <LineChart
-        // Chart
+        // Chart //
         isAnimated={true}
         animationDuration={1000}
         //animateOnDataChange={true}
@@ -250,13 +317,17 @@ export default function Graph() {
         areaChart
         data={graphInput}
         rotateLabel
-        //interpolateMissingValue={false}
         width={345}
         overflowTop={70}
-        //DataPoints
+        // DataPoints //
         hideDataPoints={true}
         dataPointsColor="#A53535"
-        // Gradient
+        interpolateMissingValue={false}
+        focusEnabled={true}
+        showDataPointOnFocus={false}
+        showStripOnFocus={false}
+        stripOpacity={2}
+        // Gradient //
         color="#A53535"
         thickness={2}
         startFillColor="rgba(165,53,53,1)"
@@ -270,10 +341,10 @@ export default function Graph() {
         }
         yAxisColor="#575757"
         yAxisThickness={0}
-        rulesColor="#252525"
         yAxisTextStyle={{ color: "gray" }}
-        xAxisColor="#575757"
         yAxisSide={yAxisSides.LEFT}
+        xAxisColor="#575757"
+        rulesColor="#252525"
         pointerConfig={{
           pointerStripHeight: 250,
           pointerStripColor: "lightgray",
@@ -322,7 +393,6 @@ export default function Graph() {
                     .toDateString()
                     .substring(4, items[0].date.toDateString().length)}
                 </Text>
-
                 <View
                   style={{
                     paddingHorizontal: 14,

@@ -250,7 +250,7 @@ const sqlite_ddl = [
     (1, 'Upperbody',                '2022-02-17T07:34:12',   339,    False),
     (1, 'Upperbody',                '2022-02-25T07:34:12',   347,    False),
     (1, 'Upperbody',                '2022-02-29T07:34:12',   236,    False),
-    (1, 'Upperbody',                '2022-02-31T07:34:12',   93,    False),
+    (1, 'Upperbody',                '2022-02-31T07:34:12',   93,     False),
 	
 	  (1, 'Upperbody',                '2022-03-02T07:34:12',   281,    False),
     (1, 'Upperbody',                '2022-03-07T07:34:12',   316,    False),
@@ -265,12 +265,12 @@ const sqlite_ddl = [
     (1, 'Upperbody',                '2022-04-12T07:34:12',   344,    False),
     (1, 'Upperbody',                '2022-04-17T07:34:12',   238,    False),
     (1, 'Upperbody',                '2022-04-25T07:34:12',   116,    False),
-    (1, 'Upperbody',                '2022-04-29T07:34:12',   90,    False),
-    (1, 'Upperbody',                '2022-04-31T07:34:12',   94,    False),
+    (1, 'Upperbody',                '2022-04-29T07:34:12',   90,     False),
+    (1, 'Upperbody',                '2022-04-31T07:34:12',   94,     False),
 	
 	  (1, 'Upperbody',                '2022-05-02T07:34:12',   359,    False),
     (1, 'Upperbody',                '2022-05-07T07:34:12',   265,    False),
-    (1, 'Upperbody',                '2022-05-12T07:34:12',   90,    False),
+    (1, 'Upperbody',                '2022-05-12T07:34:12',   90,     False),
     (1, 'Upperbody',                '2022-05-17T07:34:12',   341,    False),
     (1, 'Upperbody',                '2022-05-25T07:34:12',   126,    False),
     (1, 'Upperbody',                '2022-05-29T07:34:12',   185,    False),
@@ -305,15 +305,15 @@ const sqlite_ddl = [
     (1, 'Upperbody',                '2022-09-12T07:34:12',   239,    False),
     (1, 'Upperbody',                '2022-09-17T07:34:12',   157,    False),
     (1, 'Upperbody',                '2022-09-25T07:34:12',   211,    False),
-    (1, 'Upperbody',                '2022-09-29T07:34:12',   87,    False),
+    (1, 'Upperbody',                '2022-09-29T07:34:12',   87,     False),
     (1, 'Upperbody',                '2022-09-31T07:34:12',   153,    False),
 	
 	  (1, 'Upperbody',                '2022-10-02T07:34:12',   156,    False),
     (1, 'Upperbody',                '2022-10-07T07:34:12',   298,    False),
     (1, 'Upperbody',                '2022-10-12T07:34:12',   184,    False),
     (1, 'Upperbody',                '2022-10-17T07:34:12',   277,    False),
-    (1, 'Upperbody',                '2022-10-25T07:34:12',   91,    False),
-    (1, 'Upperbody',                '2022-10-29T07:34:12',   99,    False),
+    (1, 'Upperbody',                '2022-10-25T07:34:12',   91,     False),
+    (1, 'Upperbody',                '2022-10-29T07:34:12',   99,     False),
     (1, 'Upperbody',                '2022-10-31T07:34:12',   293,    False),
 	
 	  (1, 'Upperbody',                '2022-11-02T07:34:12',   257,    False),
@@ -322,7 +322,7 @@ const sqlite_ddl = [
     (1, 'Upperbody',                '2022-11-17T07:34:12',   223,    False),
     (1, 'Upperbody',                '2022-11-25T07:34:12',   278,    False),
     (1, 'Upperbody',                '2022-11-29T07:34:12',   128,    False),
-    (1, 'Upperbody',                '2022-11-31T07:34:12',   86,    False),
+    (1, 'Upperbody',                '2022-11-31T07:34:12',   86,     False),
 	
 	  (1, 'Upperbody',                '2022-12-02T07:34:12',   237,    False),
     (1, 'Upperbody',                '2022-12-07T07:34:12',   179,    False),
@@ -433,8 +433,10 @@ const sqlite_ddl = [
     (1, 'Upperbody',                '2024-01-10T07:34:12',   332,    False),
     (1, 'Upperbody',                '2024-01-13T07:34:12',   202,    False),
     (1, 'Upperbody',                '2024-01-17T07:34:12',   355,    False),
-    (1, 'Upperbody',                '2024-01-20T07:34:12',   247,    False),
-    (1, 'Upperbody',                '2024-01-23T07:34:12',   332,    False);
+    (1, 'Upperbody',                '2024-01-20T07:34:12',   509,    False),
+    (1, 'Upperbody',                '2024-01-24T07:34:12',   271,    False),
+    (1, 'Upperbody',                '2024-01-27T07:34:12',   261,    False),
+    (1, 'Upperbody',                '2024-01-31T07:34:12',   440,    False);
   `,
 ];
 
