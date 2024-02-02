@@ -1,9 +1,10 @@
-import { Pressable, Button, StyleSheet } from "react-native";
-import EditScreenInfo from "../../../components/EditScreenInfo";
+import { Pressable, Button, StyleSheet, FlatList } from "react-native";
 import { Text, View } from "../../../components/Themed";
 import { deleteDB } from "../../../db-utils";
 import { useSQLiteContext } from "expo-sqlite/next";
+import WorkoutCard from "../../../components/WorkoutCard";
 
+type TaggedWorkout = { id: number; title: string; tags: string[] };
 export default function TabTwoScreen() {
   const db = useSQLiteContext();
   const getWorkouts = () => {
@@ -17,7 +18,6 @@ export default function TabTwoScreen() {
       `,
       null
     );
-    type TaggedWorkout = { id: number; title: string; tags: string[] };
     const taggedWorkouts: TaggedWorkout[] = workout_tags
       .reduce((prev: any[], curr) => {
         const p = prev;
@@ -38,8 +38,10 @@ export default function TabTwoScreen() {
           return tagList;
         }, []),
       }));
-    taggedWorkouts.forEach((tw) => console.log(tw));
+    return taggedWorkouts;
   };
+
+  const workouts = getWorkouts();
 
   return (
     <View
@@ -53,18 +55,20 @@ export default function TabTwoScreen() {
       >
         <Text className="text-lg/10">Delete Database</Text>
       </Pressable>
-      <Pressable
-        className="p-1 bg-slate-600 border-solid border-2 border-slate-400 active:opacity-50"
-        onPress={() => getWorkouts()}
-      >
-        <Text className="text-lg/10">Read From Database</Text>
-      </Pressable>
+      <Text className="-mb-6 text-2xl">Workouts</Text>
       <View
         style={styles.separator}
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
-      <EditScreenInfo path="app/(tabs)/two.tsx" />
+      <FlatList
+        className="flex-1 w-full"
+        data={workouts}
+        renderItem={({ item }: { item: TaggedWorkout }) => (
+          <WorkoutCard workout={item} />
+        )}
+        keyExtractor={(item: TaggedWorkout) => item.id.toString()}
+      />
     </View>
   );
 }
