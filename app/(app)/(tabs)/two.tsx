@@ -4,7 +4,8 @@ import { deleteDB } from "../../../db-utils";
 import { useSQLiteContext } from "expo-sqlite/next";
 import WorkoutCard from "../../../components/WorkoutCard";
 
-type TaggedWorkout = { id: number; title: string; tags: string[] };
+export type TaggedWorkout = { id: number; title: string; tags: string[] };
+
 export default function TabTwoScreen() {
   const db = useSQLiteContext();
   const getWorkouts = () => {
@@ -43,6 +44,18 @@ export default function TabTwoScreen() {
 
   const workouts = getWorkouts();
 
+  const readDb = () => {
+    const results = db.getAllSync<any>(
+      `
+      SELECT title FROM workout WHERE app_user_id = 1
+      UNION
+      SELECT day FROM days_of_week;
+      `,
+      null
+    );
+    console.log(results);
+  };
+
   return (
     <View
       className="flex-1 items-center justify-center" // NATIVEWIND WORKS BABY!!!!!
@@ -54,6 +67,12 @@ export default function TabTwoScreen() {
         onPress={() => deleteDB()}
       >
         <Text className="text-lg/10">Delete Database</Text>
+      </Pressable>
+      <Pressable
+        className="m-10 p-1 bg-slate-600 border-solid border-2 border-slate-400 active:opacity-50"
+        onPress={() => readDb()}
+      >
+        <Text className="text-lg/10">Read From DB</Text>
       </Pressable>
       <Text className="-mb-6 text-2xl">Workouts</Text>
       <View
