@@ -32,17 +32,17 @@ export default function TabOneScreen() {
   return (
     <ScrollView contentContainerClassName="pt-4 pb-8 items-stretch justify-center">
       <Text style={styles.title}>Tab One</Text>
-      <Text className="p-1 text-xl text-center">User Info:</Text>
+      <Text className="p-1 text-center text-xl">User Info:</Text>
       {userData &&
         Object.entries(userData).map(([key, value]) => (
           <Text
-            className="text-center border-solid border border-slate-400 text-xl p-1"
+            className="border border-solid border-slate-400 p-1 text-center text-xl"
             key={key}
           >
             {key}:{" "}
-            {key === "creation_date"
-              ? new Date(value as string).toDateString()
-              : value}
+            {key === "creation_date" ?
+              new Date(value as string).toDateString()
+            : value}
           </Text>
         ))}
       <View
@@ -53,7 +53,7 @@ export default function TabOneScreen() {
       />
       <EditScreenInfo path="app/(app)/(tabs)/" />
       <Link href="/hello" asChild>
-        <Pressable className="items-center m-10 p-1 bg-slate-600 border-solid border-2 border-slate-400 active:opacity-50">
+        <Pressable className="m-10 items-center border-2 border-solid border-slate-400 bg-slate-600 p-1 active:opacity-50">
           <Text className="text-xl">Go to Hello</Text>
         </Pressable>
       </Link>
@@ -69,11 +69,12 @@ export default function TabOneScreen() {
       <Text />
       <Text className="text-center text-xl dark:text-white">
         Session:{" "}
-        {session
-          ? (
-              JSON.parse(session) as AuthSession.TokenResponse
-            ).idToken?.substring(0, 10)
-          : null}
+        {session ?
+          (JSON.parse(session) as AuthSession.TokenResponse).idToken?.substring(
+            0,
+            10
+          )
+        : null}
       </Text>
       <View
         className="my-8 h-px w-4/5 self-center" // Replaces styles.separator native styling

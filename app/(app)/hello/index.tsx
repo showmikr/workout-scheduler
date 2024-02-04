@@ -4,8 +4,8 @@ import React from "react";
 function HelloChild() {
   return (
     <>
-      <Text className="dark:text-white text-4xl">Hello There</Text>
-      <Pressable className="m-10 p-1 bg-slate-600 border-solid border-2 border-slate-400 active:opacity-50">
+      <Text className="text-4xl dark:text-white">Hello There</Text>
+      <Pressable className="m-10 border-2 border-solid border-slate-400 bg-slate-600 p-1 active:opacity-50">
         <Text className="text-lg/10 dark:color-white">Do Nothing</Text>
       </Pressable>
     </>
@@ -31,12 +31,10 @@ export default function HelloParent() {
     return () => clearTimeout(timeoutId);
   });
   return (
-    <View className="dark:bg-black flex-1 items-center justify-center">
-      {isLoading ? (
-        <Text className="dark:text-white text-4xl">...Loading</Text>
-      ) : (
-        <HelloChild />
-      )}
+    <View className="flex-1 items-center justify-center dark:bg-black">
+      {isLoading ?
+        <Text className="text-4xl dark:text-white">...Loading</Text>
+      : <HelloChild />}
     </View>
   );
 }

@@ -50,7 +50,7 @@ export default function TabTwoScreen() {
     >
       <Text style={styles.title}>Tab Two</Text>
       <Pressable
-        className="m-10 p-1 bg-slate-600 border-solid border-2 border-slate-400 active:opacity-50"
+        className="m-10 border-2 border-solid border-slate-400 bg-slate-600 p-1 active:opacity-50"
         onPress={() => deleteDB()}
       >
         <Text className="text-lg/10">Delete Database</Text>
@@ -62,7 +62,7 @@ export default function TabTwoScreen() {
         darkColor="rgba(255,255,255,0.1)"
       />
       <FlatList
-        className="flex-1 w-full"
+        className="w-full flex-1"
         data={workouts}
         renderItem={({ item }: { item: TaggedWorkout }) => (
           <WorkoutCard workout={item} />

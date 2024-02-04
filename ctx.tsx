@@ -123,9 +123,8 @@ export function SessionProvider(props: React.PropsWithChildren) {
       value={{
         signIn: promptAsync,
         signOut: () => {
-          const authTokens = session
-            ? (JSON.parse(session) as AuthSession.TokenResponse)
-            : null;
+          const authTokens =
+            session ? (JSON.parse(session) as AuthSession.TokenResponse) : null;
           if (!authTokens?.refreshToken) {
             console.log("in ctx.tsx, calling signOut function");
             console.error(
