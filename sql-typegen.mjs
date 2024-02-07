@@ -23,6 +23,9 @@ const config = {
   },
   filename: "sqlite-types",
   useNullAsDefault: true,
+  typeMap: {
+    number: ["bigint"],
+  },
 };
 
 /* 
