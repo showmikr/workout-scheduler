@@ -436,7 +436,8 @@ const sqlite_ddl = [
     (1, 'Upperbody',                '2024-01-20T07:34:12',   509,    False),
     (1, 'Upperbody',                '2024-01-24T07:34:12',   271,    False),
     (1, 'Upperbody',                '2024-01-27T07:34:12',   261,    False),
-    (1, 'Upperbody',                '2024-01-31T07:34:12',   440,    False);
+    (1, 'Upperbody',                '2024-01-31T07:34:12',   440,    False),
+    (1, 'Upperbody',                '2024-02-03T07:34:12',   322,    False);
   `,
 ];
 
