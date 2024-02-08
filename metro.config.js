@@ -3,11 +3,9 @@ const { getDefaultConfig } = require("expo/metro-config");
 const { withNativeWind } = require("nativewind/metro");
 
 /** @type {import('expo/metro-config').MetroConfig} */
-const config = getDefaultConfig(__dirname, {
-  // [Web-only]: Enables CSS support in Metro.
-  isCSSEnabled: true,
-});
+const config = getDefaultConfig(__dirname);
 
 config.resolver.assetExts.push("db");
+config.resolver.assetExts.push("sql");
 
 module.exports = withNativeWind(config, { input: "./global.css" });

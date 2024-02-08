@@ -1,39 +1,32 @@
 import * as FileSystem from "expo-file-system";
-import * as SQLite from "expo-sqlite";
-import sqlite_ddl from "./pgdb-ddl";
+import * as SQLite from "expo-sqlite/next";
 
-const dbName = "pg-sqlite.db";
+const defaultDatabase = "next-sqlite.db";
 
-async function doesLocalDbExist() {
+async function doesLocalDbExist(dbFileName: string = defaultDatabase) {
   const dbExists = (
     await FileSystem.getInfoAsync(
-      FileSystem.documentDirectory + "SQLite/" + dbName
+      FileSystem.documentDirectory + "SQLite/" + defaultDatabase
     )
   ).exists;
   return dbExists;
 }
 
-// function for opening sqlite version of our postgresDB
-async function openDB() {
-  if (await doesLocalDbExist()) {
-    return SQLite.openDatabase(dbName);
+/* Use w/ caution alongside database context.
+ * When you delete the databse, the context doesn't reload,
+ * so you have to reload the whole app to recreate the database
+ */
+async function deleteDB(dbFileName: string = defaultDatabase) {
+  const dbExists = await doesLocalDbExist(dbFileName);
+  if (!dbExists) {
+    console.log("db doesn't exist, quitting deletion");
+    return;
   }
-
-  // otherwise, we need to initialize the db before returning it
-  const db = SQLite.openDatabase(
-    dbName,
-    undefined,
-    undefined,
-    undefined,
-    () => {
-      for (const queryString of sqlite_ddl) {
-        db.transaction((transaction) => {
-          transaction.executeSql(queryString);
-        });
-      }
-    }
-  );
-  return db;
+  // Otherwise, delete the db
+  const db = await SQLite.openDatabaseAsync(dbFileName);
+  await db.closeAsync();
+  await SQLite.deleteDatabaseAsync(dbFileName);
+  console.log(`${dbFileName} successfully deleted`);
 }
 
-export { openDB, doesLocalDbExist };
+export { deleteDB };
