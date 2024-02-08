@@ -76,6 +76,7 @@ export default function TabOneScreen() {
           )
         : null}
       </Text>
+      <Link className="text-center text-xl dark:text-white" href={"/graph"}>Go To Graph Page</Link>
       <View
         className="my-8 h-px w-4/5 self-center" // Replaces styles.separator native styling
         //style={styles.separator}

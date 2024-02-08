@@ -1,7 +1,7 @@
 import { LineChart, yAxisSides } from "react-native-gifted-charts";
-import { View } from "../components/Themed";
+import { View } from "../../components/Themed";
 import { Text, Button, Pressable } from "react-native";
-import { openDB } from "../db-utils";
+import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
 
 type WorkoutSession = {
@@ -22,6 +22,8 @@ export default function Graph() {
   const WEEK_MS = 657449982;
   const MONTH_MS = 2629799928;
   const YEAR_MS = 31557599136;
+
+  const myDb = useSQLiteContext();
 
   const [workoutSessionData, setWorkoutSessionData] = useState<
     WorkoutSession[] | null
