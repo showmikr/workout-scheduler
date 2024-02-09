@@ -338,27 +338,7 @@ INSERT INTO exercise (standard_exercise_category_id, custom_exercise_category_id
     (2,     NULL,   2,  1,  2,      'Squats',               5,  45,     ''),
     (NULL,  NULL,   2,  2,  NULL,   'Jog',                  6,  NULL,   ''),
 
-    (NULL,  NULL,   3,  2,  NULL,   'ALL STRETCHES',        1,  NULL,   ''),
-
-    (NULL,  NULL,   3,  2,  NULL,   'ALL STRETCHES',        1,  NULL,   ''),
-
-    (1,     NULL,   1,  1,  2,      'Bench',                1,  45,     ''),
-    (NULL,  NULL,   1,  1,  5,      'Chin-Ups',             2,  NULL,   ''),
-    (NULL,  NULL,   1,  1,  1,      'Overhead Press',       3,  NULL,   ''),
-    (NULL,  NULL,   1,  1,  1,      'Bicep Curls',          4,  NULL,   ''),
-    (NULL,  NULL,   1,  1,  4,      'Rows',                 5,  NULL,   ''),
-    (NULL,  1,      1,  1,  4,      'Tricep Extensions',    6,  NULL,   'Extended down varient'),
-
-    (NULL,  NULL,   3,  2,  NULL,   'ALL STRETCHES',        1,  NULL,   ''),
-    
-    (NULL,  NULL,   2,  1,  4,      'Leg Curls',            1,  NULL,   'Try to hit 12 reps'),
-    (NULL,  NULL,   2,  1,  4,      'Calf Raises',          2,  20,     ''),
-    (NULL,  NULL,   2,  1,  4,      'Core push-ins',        3,  20,     ''),
-    (NULL,  NULL,   2,  1,  4,      'Leg Press',            4,  50,     'Bruh'),
-    (2,     NULL,   2,  1,  2,      'Squats',               5,  45,     ''),
-    (NULL,  NULL,   2,  2,  NULL,   'Jog',                  6,  NULL,   '');
-
-    
+    (NULL,  NULL,   3,  2,  NULL,   'ALL STRETCHES',        1,  NULL,   '');
 
 INSERT INTO "exercise_set" (exercise_id, title, list_order, reps, rest_time)
     VALUES
