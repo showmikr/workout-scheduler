@@ -42,15 +42,6 @@ export default function Graph() {
       timeFrame.setDate(timeFrame.getDate() - timeFrame.getDay())
     );
 
-    /*
-    
-    -
-        timeFrame.getHours() * 3600000 -
-        timeFrame.getMinutes() * 60000 -
-        timeFrame.getSeconds() * 1000 -
-        timeFrame.getMilliseconds()
-    
-    */
   }
   function getLastDayOfWeek(timeFrame: Date) {
     return new Date(
@@ -100,7 +91,7 @@ export default function Graph() {
       res = [
         {
           value: 404,
-          date: new Date(getPriorTime(1, 0, 0).getTime() + DAY_MS),
+          date: new Date(new Date().getTime() - DAY_MS  * 2),
         },
         { value: 404, date: new Date(new Date().getTime() - DAY_MS) },
         { value: 404, date: new Date(new Date().getTime()) },
@@ -142,11 +133,11 @@ export default function Graph() {
         last = getLastDayOfMonth(first);
       }
     } else if (
-      MONTH_MS * 6 <
+      MONTH_MS * 3 <
       data[data.length - 1].date.getTime() - data[0].date.getTime()
     ) {
       // Greater than 6 months -> average weeks
-      console.log("Greater than 6 months");
+      console.log("Greater than 3 months");
       let curr = 0;
       let first = getFirstDayOfWeek(data[0].date);
       let last = getLastDayOfWeek(data[0].date);
@@ -187,25 +178,24 @@ export default function Graph() {
       let last = new Date();
       while (first < last) {
         let total = 0;
+
         while (
           curr < data.length &&
           first.toDateString() === data[curr].date.toDateString()
-          // ISSUE TO SOLVE:
-          // Replace condition and logic to fix improper totaling
         ) {
           total += data[curr].value!;
           curr += 1;
         }
-        //console.log(data[curr].date.toDateString() + "---");
         total === 0 ?
           res.push({
-            value: 0,
+            value: null,
             date: first,
           })
         : res.push({
             value: Math.round(total),
             date: first,
           });
+        first.setHours(0,0,0,0)
         first = new Date(first.getTime() + DAY_MS);
       }
     } else {
@@ -242,12 +232,6 @@ export default function Graph() {
 
   // 1) Load user data
   if (!workoutSessionData) {
-    myDB.getAllAsync<any>("SELECT * FROM days_of_week").then((result) => {
-      for (const row of result) {
-        console.log("Test: " + row.day);
-      }
-    });
-
     myDB
       .getAllAsync<any>("SELECT * FROM workout_session AS ws ORDER BY ws.date")
       .then((result) => {
