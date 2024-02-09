@@ -662,6 +662,8 @@ INSERT INTO workout_session (app_user_id, title, date, calories, tied_to_workout
     (1, 'Upperbody',                '2024-01-27T07:34:12',   261,    False),
     (1, 'Upperbody',                '2024-01-31T07:34:12',   440,    False),
     (1, 'Upperbody',                '2024-02-03T07:34:12',   322,    False),
+    (1, 'Upperbody',                '2024-02-05T07:34:12',   322,    False),
+    (1, 'Upperbody',                '2024-02-05T09:34:12',   402,    False),
     (1, 'Upperbody',                '2024-02-07T07:34:12',   244,    False);
 
 

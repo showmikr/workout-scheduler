@@ -1,4 +1,4 @@
-import { LineChart, yAxisSides } from "react-native-gifted-charts";
+import { BarChart, LineChart, yAxisSides } from "react-native-gifted-charts";
 import { View } from "../../components/Themed";
 import { Text, Button, Pressable } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
@@ -18,18 +18,19 @@ type CalorieData = {
 };
 
 export default function Graph() {
+  const myDB = useSQLiteContext();
+  
+  
+  const [workoutSessionData, setWorkoutSessionData] = useState<WorkoutSession[] | null>(null);
+  const [buttonSelected, setButtonSelected] = useState("1M");
+  const [graphType, setGraphType] = useState(true)
+  const buttons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
+  
   const DAY_MS = 93921426;
   const WEEK_MS = 657449982;
   const MONTH_MS = 2629799928;
   const YEAR_MS = 31557599136;
 
-  const myDB = useSQLiteContext();
-
-  const [workoutSessionData, setWorkoutSessionData] = useState<
-    WorkoutSession[] | null
-  >(null);
-  const [buttonSelected, setButtonSelected] = useState("1M");
-  const buttons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
 
   // Returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
@@ -327,14 +328,14 @@ export default function Graph() {
       }}
     >
       {/* Chart View */}
-      <LineChart
+      {graphType ? <LineChart
+        areaChart
         // Chart //
         isAnimated={true}
         animationDuration={1000}
         //animateOnDataChange={true}
         adjustToWidth={true}
         disableScroll={true}
-        areaChart
         data={graphInput}
         //https://github.com/Abhinandan-Kushwaha/react-native-gifted-charts/issues/149
         //xAxisLabelTextStyle // The key to making labels better?
@@ -342,7 +343,8 @@ export default function Graph() {
         rotateLabel
         width={345}
         overflowTop={70}
-        // DataPoints //
+        // Data //
+        onlyPositive={true}
         hideDataPoints={true}
         dataPointsColor="#A53535"
         // interpolateMissingValue={false}
@@ -437,7 +439,97 @@ export default function Graph() {
             );
           },
         }}
-      />
+      /> : <BarChart
+      width={345}
+      adjustToWidth={true}
+      barWidth={5}
+      overflowTop={70}
+      frontColor="#A53535"
+      noOfSections={4}
+      maxValue={
+        Math.ceil((maxGraphValue ? maxGraphValue?.value! : 400) / 100) * 100
+      }
+      spacing={2}
+      initialSpacing={7.5}
+      yAxisColor="#575757"
+      yAxisThickness={0}
+      yAxisTextStyle={{ color: "gray" }}
+      yAxisSide={yAxisSides.LEFT}
+      xAxisColor="#575757"
+      rulesColor="#252525"
+      data={graphInput}
+      // pointerConfig={{
+      //   pointerStripHeight: 250,
+      //   pointerStripColor: "lightgray",
+      //   pointerStripWidth: 2,
+      //   pointerColor: "white",
+      //   radius: 6,
+      //   pointerLabelWidth: 100,
+      //   pointerLabelHeight: 90,
+      //   activatePointersOnLongPress: false,
+
+      //   autoAdjustPointerLabelPosition: false,
+      //   pointerLabelComponent: (
+      //     items: {
+      //       value: number;
+      //       date: Date;
+      //       label: string;
+      //       labelTextStyle?: {
+      //         color: string;
+      //         width: number;
+      //       };
+      //     }[]
+      //   ) => {
+      //     return (
+      //       <View
+      //         style={{
+      //           flex: 1,
+      //           borderRadius: 16,
+      //           justifyContent: "center",
+      //           paddingVertical: 5,
+      //           paddingHorizontal: 5,
+      //           marginVertical: 20,
+      //           marginHorizontal: -10,
+      //           backgroundColor: "#0D0D0D",
+      //         }}
+      //       >
+      //         <Text
+      //           style={{
+      //             color: "white",
+      //             fontSize: 14,
+      //             marginBottom: 6,
+      //             textAlign: "center",
+      //             fontWeight: "300",
+      //           }}
+      //         >
+      //           {items[0].date
+      //             .toDateString()
+      //             .substring(4, items[0].date.toDateString().length)}
+      //         </Text>
+      //         <View
+      //           style={{
+      //             paddingHorizontal: 14,
+      //             borderRadius: 16,
+      //             backgroundColor: "white",
+      //           }}
+      //         >
+      //           <Text
+      //             style={{
+      //               fontWeight: "bold",
+      //               textAlign: "center",
+      //               fontSize: 18,
+      //             }}
+      //           >
+      //             {items[0].value + " Cal"}
+      //           </Text>
+      //         </View>
+      //       </View>
+      //     );
+      //   },
+      // }}
+      />}
+
+
       {/* Button View */}
       <View
         className="flex flex-row "
@@ -474,6 +566,38 @@ export default function Graph() {
             </Pressable>
           );
         })}
+      </View>
+      <View
+      style={{
+        paddingVertical: 10,
+        justifyContent: "center",
+      alignItems: 'center'}}>
+      <Pressable
+              style={{
+                backgroundColor:"#1C1C1C",
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 4,
+                paddingHorizontal: 4,
+                borderRadius: 4,
+                elevation: 3,
+                width: 80,
+                height: 30,
+              }}
+              onPress={() => {
+                setGraphType(!graphType)
+                console.log(graphType)
+              }}
+            >
+              <Text
+                style={{
+                  color: "white",
+                  fontWeight: "300",
+                }}
+              >
+                {graphType ? "LineChart" :"BarChart"}
+              </Text>
+        </Pressable>
       </View>
     </View>
   );
