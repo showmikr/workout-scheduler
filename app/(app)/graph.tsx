@@ -23,7 +23,7 @@ export default function Graph() {
   const MONTH_MS = 2629799928;
   const YEAR_MS = 31557599136;
 
-  const myDb = useSQLiteContext();
+  const myDB = useSQLiteContext();
 
   const [workoutSessionData, setWorkoutSessionData] = useState<
     WorkoutSession[] | null
@@ -120,21 +120,24 @@ export default function Graph() {
         let avg = 0;
         while (curr < data.length && data[curr].date < last) {
           avg += data[curr].value!;
-          curr != 0 &&
-          data[curr].date.toDateString() === data[curr - 1].date.toDateString()
-            ? amt
-            : (amt += 1);
+          (
+            curr != 0 &&
+            data[curr].date.toDateString() ===
+              data[curr - 1].date.toDateString()
+          ) ?
+            amt
+          : (amt += 1);
           curr += 1;
         }
-        amt == 0
-          ? res.push({
-              value: null,
-              date: first,
-            })
-          : res.push({
-              value: Math.round(avg / amt),
-              date: first,
-            });
+        amt == 0 ?
+          res.push({
+            value: null,
+            date: first,
+          })
+        : res.push({
+            value: Math.round(avg / amt),
+            date: first,
+          });
         first = getFirstDayOfMonth(new Date(last.getTime() + 1));
         last = getLastDayOfMonth(first);
       }
@@ -152,21 +155,24 @@ export default function Graph() {
         let avg = 0;
         while (curr < data.length && data[curr].date < last) {
           avg += data[curr].value!;
-          curr != 0 &&
-          data[curr].date.toDateString() === data[curr - 1].date.toDateString()
-            ? amt
-            : (amt += 1);
+          (
+            curr != 0 &&
+            data[curr].date.toDateString() ===
+              data[curr - 1].date.toDateString()
+          ) ?
+            amt
+          : (amt += 1);
           curr += 1;
         }
-        amt == 0
-          ? res.push({
-              value: null,
-              date: first,
-            })
-          : res.push({
-              value: Math.round(avg / amt),
-              date: first,
-            });
+        amt == 0 ?
+          res.push({
+            value: null,
+            date: first,
+          })
+        : res.push({
+            value: Math.round(avg / amt),
+            date: first,
+          });
         first = getFirstDayOfWeek(new Date(last.getTime() + 1));
         last = getLastDayOfWeek(first);
       }
@@ -191,15 +197,15 @@ export default function Graph() {
           curr += 1;
         }
         //console.log(data[curr].date.toDateString() + "---");
-        total === 0
-          ? res.push({
-              value: 0,
-              date: first,
-            })
-          : res.push({
-              value: Math.round(total),
-              date: first,
-            });
+        total === 0 ?
+          res.push({
+            value: 0,
+            date: first,
+          })
+        : res.push({
+            value: Math.round(total),
+            date: first,
+          });
         first = new Date(first.getTime() + DAY_MS);
       }
     } else {
@@ -217,17 +223,17 @@ export default function Graph() {
           total += data[curr].value!;
           curr += 1;
         }
-        total == 0
-          ? res.push({
-              value: 0,
-              date: first,
-              label: getDayOfWeekString(first.getDay()),
-            })
-          : res.push({
-              value: Math.round(total),
-              date: first,
-              label: getDayOfWeekString(first.getDay()),
-            });
+        total == 0 ?
+          res.push({
+            value: 0,
+            date: first,
+            label: getDayOfWeekString(first.getDay()),
+          })
+        : res.push({
+            value: Math.round(total),
+            date: first,
+            label: getDayOfWeekString(first.getDay()),
+          });
         first = new Date(first.getTime() + DAY_MS);
       }
     }
@@ -236,38 +242,32 @@ export default function Graph() {
 
   // 1) Load user data
   if (!workoutSessionData) {
-    openDB().then((db) => {
-      //console.log("Reading from DB");
-      db.transaction(
-        (transaction) => {
-          transaction.executeSql(
-            "select * from workout_session as ws order by ws.date",
-            undefined,
-            (_trx, resultSet) => {
-              const rawData = resultSet.rows._array;
-
-              const workoutRows = rawData.map((row) => {
-                const { app_user_id, title, date, calories, tied_to_workout } =
-                  row;
-                const readData: WorkoutSession = {
-                  appUserId: app_user_id,
-                  title: title,
-                  date: new Date(date),
-                  calories: calories,
-                  tiedToWorkout: tied_to_workout,
-                };
-                return readData;
-              });
-
-              setWorkoutSessionData(workoutRows);
-            }
-          );
-        },
-        (err) => {
-          console.log(err);
-        }
-      );
+    myDB.getAllAsync<any>("SELECT * FROM days_of_week").then((result) => {
+      for (const row of result) {
+        console.log("Test: " + row.day);
+      }
     });
+
+    myDB
+      .getAllAsync<any>("SELECT * FROM workout_session AS ws ORDER BY ws.date")
+      .then((result) => {
+        const workoutRows = result.map((row) => {
+          const { app_user_id, title, date, calories, tied_to_workout } = row;
+          const readData: WorkoutSession = {
+            appUserId: app_user_id,
+            title: title,
+            date: new Date(date),
+            calories: calories,
+            tiedToWorkout: tied_to_workout,
+          };
+          return readData;
+        });
+
+        setWorkoutSessionData(workoutRows);
+      })
+      .catch((err) => {
+        console.log("DB READ ERROR | " + err);
+      });
   }
 
   // 2) Extract user calorie data
