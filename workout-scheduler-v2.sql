@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS "exercise" (
   "list_order" int NOT NULL,
   "initial_weight" real,
   "notes" text,
+  UNIQUE ("title", "workout_id"), -- Enforce unique exercise names on a per-workout workout basis
   FOREIGN KEY ("exercise_type_id") REFERENCES "exercise_type" ("id"),
   FOREIGN KEY ("exercise_equipment_id") REFERENCES "exercise_equipment" ("id"),
   FOREIGN KEY ("workout_id") REFERENCES "workout" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
