@@ -32,6 +32,20 @@ export default function AddWorkoutComponent() {
       [title, getLastItemPos() + 1]
     );
   };
+
+  const onSubmitWorkout = () => {
+    Keyboard.dismiss();
+    const title = workoutTitle.trim();
+    if (title.length < 1) {
+      console.log("Hey! You can't enter an empty string. Get Outta Here!");
+      setWorkoutTitle("");
+      return;
+    }
+    addWorkout(workoutTitle);
+    console.log("I hope I added", title, "to the workouts list...");
+    router.replace("/two");
+  };
+
   return (
     <SafeAreaView className="flex-1">
       <Pressable
@@ -50,20 +64,7 @@ export default function AddWorkoutComponent() {
         <Pressable className="mt-8 self-center border border-red-600 active:opacity-60">
           <Text
             className="p-1 text-2xl text-blue-500"
-            onPress={() => {
-              Keyboard.dismiss();
-              const title = workoutTitle.trim();
-              if (title.length < 1) {
-                console.log(
-                  "Hey! You can't enter an empty string. Get Outta Here!"
-                );
-                setWorkoutTitle("");
-                return;
-              }
-              addWorkout(workoutTitle);
-              console.log("I hope I added", title, "to the workouts list...");
-              router.replace("/two");
-            }}
+            onPress={onSubmitWorkout}
           >
             Submit
           </Text>
