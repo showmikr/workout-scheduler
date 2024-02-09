@@ -7,7 +7,13 @@ type WorkoutCardProps = { workout: TaggedWorkout };
 export default function WorkoutCard(props: WorkoutCardProps) {
   const { id, title, tags } = props.workout;
   return (
-    <Link href={`/workout/${id}`} asChild>
+    <Link
+      href={{
+        pathname: "/(app)/workout/[workoutId]",
+        params: { workoutId: id },
+      }}
+      asChild
+    >
       <Pressable className="h-32 w-full justify-center pl-8 active:bg-slate-200 dark:active:bg-gray-900">
         <Text className="text-2xl dark:text-white">Title: {title}</Text>
         <Text className="text-2xl dark:text-white">
