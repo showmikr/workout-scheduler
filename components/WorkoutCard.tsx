@@ -14,7 +14,7 @@ export default function WorkoutCard(props: WorkoutCardProps) {
       }}
       asChild
     >
-      <Pressable className="h-32 w-full justify-center pl-8 active:bg-slate-200 dark:active:bg-gray-900">
+      <Pressable className="h-32 w-full justify-center pl-8">
         <Text className="text-2xl dark:text-white">Title: {title}</Text>
         <Text className="text-2xl dark:text-white">
           Tags: {tags.length > 0 ? tags.join(", ") : "None"}

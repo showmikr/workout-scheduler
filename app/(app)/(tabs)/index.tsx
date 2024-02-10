@@ -53,7 +53,7 @@ export default function TabOneScreen() {
       />
       <EditScreenInfo path="app/(app)/(tabs)/" />
       <Link href="/hello" asChild>
-        <Pressable className="m-10 items-center border-2 border-solid border-slate-400 bg-slate-600 p-1 active:opacity-50">
+        <Pressable className="m-10 items-center border-2 border-solid border-slate-400 bg-slate-600 p-1">
           <Text className="text-xl">Go to Hello</Text>
         </Pressable>
       </Link>

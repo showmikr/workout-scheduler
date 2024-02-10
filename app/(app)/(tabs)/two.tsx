@@ -63,13 +63,13 @@ export default function TabTwoScreen() {
     >
       <Text style={styles.title}>Tab Two</Text>
       <Pressable
-        className="m-10 border-2 border-solid border-slate-400 bg-slate-600 p-1 active:bg-slate-700"
+        className="m-10 border-2 border-solid border-slate-400 bg-slate-600 p-1"
         onPress={() => deleteDB()}
       >
         <Text className="text-lg/10">Delete Database</Text>
       </Pressable>
       <Pressable
-        className="m-10 border-2 border-solid border-slate-400  bg-slate-600 p-1 active:bg-slate-700"
+        className="m-10 border-2 border-solid border-slate-400  bg-slate-600 p-1"
         onPress={() => readDb()}
       >
         <Text className="text-lg/10">Read From DB</Text>

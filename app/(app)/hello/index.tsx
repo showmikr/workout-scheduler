@@ -5,7 +5,7 @@ function HelloChild() {
   return (
     <>
       <Text className="text-4xl dark:text-white">Hello There</Text>
-      <Pressable className="m-10 border-2 border-solid border-slate-400 bg-slate-600 p-1 active:opacity-50">
+      <Pressable className="m-10 border-2 border-solid border-slate-400 bg-slate-600 p-1">
         <Text className="text-lg/10 dark:color-white">Do Nothing</Text>
       </Pressable>
     </>
