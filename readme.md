@@ -1,3 +1,17 @@
+# Nativewind Footgun
+
+Using the "active:" pseudo-class is a footgun. It seems to freeze or reset state within any component that uses it. I had a real nasty problem using it with a submit button that was meant to add a workout using a workout title that I set as state. I set the submit button to use "active:opacity-50" to make the button transparent on press and also log the workout title to the console. On press, the button instead didn't log anything and it was b/c it looks like the "active:" pseudo class either reset the state of the title input or froze the state. Point in case, **the "active:" pseudo class is a dangerous.** Do not use it with Nativewind.
+
+# About the sqlite db
+
+Turns out we might have to enable foreign key enforcement manually on each connection to the sqlite db because sqlite seems like it doesn't enforce this by default. For more info, look at Item 4 of the [Sqlite Docs](https://www.sqlite.org/quirks.html#foreign_key_enforcement_is_off_by_default). It states:
+
+```sql
+PRAGMA foreign_keys = ON;
+```
+
+has to be enabled for foreign keys enforcement to actually apply. I might have to add this in the future if it's not already built in to the database, but that's up to future me to figure out.
+
 # Commit 0ae21f2333c0d7f44fc1ecda2e05f579dab325af
 
 ### Date: Thurs Jan 11

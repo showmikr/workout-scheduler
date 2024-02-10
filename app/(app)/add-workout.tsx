@@ -6,6 +6,7 @@ import {
   TextInput,
   Pressable,
   Keyboard,
+  ScrollView,
 } from "react-native";
 import { router } from "expo-router";
 
@@ -36,40 +37,47 @@ export default function AddWorkoutComponent() {
   const onSubmitWorkout = () => {
     Keyboard.dismiss();
     const title = workoutTitle.trim();
-    if (title.length < 1) {
-      console.log("Hey! You can't enter an empty string. Get Outta Here!");
+    if (!title) {
       setWorkoutTitle("");
+      console.log("Hey! You can't enter an empty string. Get Outta Here!");
       return;
     }
-    addWorkout(workoutTitle);
-    console.log("I hope I added", title, "to the workouts list...");
+    addWorkout(title);
     router.replace("/two");
   };
 
   return (
     <SafeAreaView className="flex-1">
-      <Pressable
-        className="flex-1 border border-green-600 p-4"
-        onPress={() => Keyboard.dismiss()}
+      <ScrollView
+        className="border border-green-600 p-4"
+        keyboardShouldPersistTaps="handled"
       >
         <Text className="pb-4 text-center text-3xl dark:text-white">
           New Workout
         </Text>
         <Text className="text-2xl font-bold dark:text-white">Title:</Text>
         <TextInput
+          value={workoutTitle}
           onChangeText={setWorkoutTitle}
-          className="border-b border-blue-700 pb-1 text-2xl dark:text-white"
+          className={`border-b ${workoutTitle ? "border-gray-600" : "border-gray-700"} pb-1 text-2xl dark:text-white`}
           placeholder="Add workout title here"
         />
-        <Pressable className="mt-8 self-center border border-red-600 active:opacity-60">
-          <Text
-            className="p-1 text-2xl text-blue-500"
-            onPress={onSubmitWorkout}
-          >
+        <Pressable
+          disabled={workoutTitle.trim().length < 1}
+          style={({ pressed }) => ({
+            marginLeft: 14,
+            marginTop: 28,
+            borderWidth: 1,
+            borderColor: pressed ? "green" : "yellow",
+            opacity: pressed ? 0.5 : 1,
+          })}
+          onPress={onSubmitWorkout}
+        >
+          <Text className="w-24 border border-green-500 p-1 text-2xl text-blue-500">
             Submit
           </Text>
         </Pressable>
-      </Pressable>
+      </ScrollView>
     </SafeAreaView>
   );
 }
