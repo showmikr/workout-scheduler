@@ -11,13 +11,11 @@ type CardioExercise = {
   exercise_type_id: typeof CARDIO_ENUM;
   title: string;
 };
-
 type ResistanceExercise = {
   exercise_id: number;
   exercise_type_id: typeof RESISTANCE_ENUM;
   title: string;
 };
-
 type ExerciseParams = CardioExercise | ResistanceExercise;
 
 type ExerciseSetParams = {
@@ -52,9 +50,7 @@ export default function WorkoutDetails() {
 
   const sectionData = exercises.map((ex) => {
     if (ex.exercise_type_id === RESISTANCE_ENUM) {
-      // This is a hack to satisfy react's Section data prop,
-      // normally it would be more appropriate to use UnifiedResistanceSet only
-      const sets = db.getAllSync<UnifiedResistanceSet | UnifiedCardioSet>(
+      const sets = db.getAllSync<UnifiedResistanceSet>(
         `SELECT 
           exercise_set.id AS exercise_set_id,
           exercise_set.list_order,
@@ -70,14 +66,11 @@ export default function WorkoutDetails() {
       );
       return {
         exercise: ex,
-        exerciseType: ex.exercise_type_id,
         data: sets,
         key: ex.exercise_id.toString(),
       };
     }
-    // This is a hack to satisfy react's Section data prop,
-    // normally it would be more appropriate to use UnifiedCardioSet only
-    const sets = db.getAllSync<UnifiedCardioSet | UnifiedResistanceSet>(
+    const sets = db.getAllSync<UnifiedCardioSet>(
       `SELECT
         exercise_set.id AS exercise_set_id,
         exercise_set.list_order,
@@ -95,12 +88,23 @@ export default function WorkoutDetails() {
     );
     return {
       exercise: ex,
-      exerciseType: ex.exercise_type_id,
       data: sets,
       key: ex.exercise_id.toString(),
     };
   });
 
+  type AppeaseReactSectionType = (
+    | {
+        exercise: ResistanceExercise;
+        data: (UnifiedResistanceSet | UnifiedCardioSet)[];
+        key: string;
+      }
+    | {
+        exercise: CardioExercise;
+        data: (UnifiedResistanceSet | UnifiedCardioSet)[];
+        key: string;
+      }
+  )[];
   return (
     <SafeAreaView className="flex-1 justify-center">
       <View className="items-center pb-8 pt-8">
@@ -110,7 +114,14 @@ export default function WorkoutDetails() {
         <Text className="text-3xl dark:text-white">Exercise List</Text>
       </View>
       <SectionList
-        sections={sectionData}
+        sections={
+          sectionData as AppeaseReactSectionType
+          // Had to cast sectionData to appease the sections type requirements.
+          // The "data" key has to be a unified array
+          // i.e (UnfifiedResistanceSet | UnifiedCardioSet)[]
+          // and not UnifiedResistanceSet[] | UnfifiedCardioSet[]
+          // where the latter is the true type of sectionData's data property
+        }
         keyExtractor={(item, _index) => {
           return item.exercise_set_id.toString();
         }}
