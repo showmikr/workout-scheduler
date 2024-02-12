@@ -3,17 +3,19 @@ import { useSQLiteContext } from "expo-sqlite/next";
 import { Text, SafeAreaView, View, SectionList } from "react-native";
 
 // hard coded constants based on the sqlite db table "exercise_type"
-const RESISTANCE_ENUM = 1;
-const CARDIO_ENUM = 2;
+const exerciseEnums = {
+  RESISTANCE_ENUM: 1,
+  CARDIO_ENUM: 2,
+} as const;
 
 type CardioExercise = {
   exercise_id: number;
-  exercise_type_id: typeof CARDIO_ENUM;
+  exercise_type_id: typeof exerciseEnums.CARDIO_ENUM;
   title: string;
 };
 type ResistanceExercise = {
   exercise_id: number;
-  exercise_type_id: typeof RESISTANCE_ENUM;
+  exercise_type_id: typeof exerciseEnums.RESISTANCE_ENUM;
   title: string;
 };
 type ExerciseParams = CardioExercise | ResistanceExercise;
@@ -49,7 +51,7 @@ export default function WorkoutDetails() {
   );
 
   const sectionData = exercises.map((ex) => {
-    if (ex.exercise_type_id === RESISTANCE_ENUM) {
+    if (ex.exercise_type_id === exerciseEnums.RESISTANCE_ENUM) {
       const sets = db.getAllSync<UnifiedResistanceSet>(
         `SELECT 
           exercise_set.id AS exercise_set_id,
