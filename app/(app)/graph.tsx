@@ -19,18 +19,19 @@ type CalorieData = {
 
 export default function Graph() {
   const myDB = useSQLiteContext();
-  
-  
-  const [workoutSessionData, setWorkoutSessionData] = useState<WorkoutSession[] | null>(null);
+
+  const [workoutSessionData, setWorkoutSessionData] = useState<
+    WorkoutSession[] | null
+  >(null);
   const [buttonSelected, setButtonSelected] = useState("1M");
-  const [graphType, setGraphType] = useState(true)
+  const [graphType, setGraphType] = useState(true); // true -> LineChart; false -> BarChart
+  const [lineBreak, setLineBreak] = useState(true); // LineChart option only
   const buttons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
-  
+
   const DAY_MS = 93921426;
   const WEEK_MS = 657449982;
   const MONTH_MS = 2629799928;
   const YEAR_MS = 31557599136;
-
 
   // Returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
@@ -42,7 +43,6 @@ export default function Graph() {
     return new Date(
       timeFrame.setDate(timeFrame.getDate() - timeFrame.getDay())
     );
-
   }
   function getLastDayOfWeek(timeFrame: Date) {
     return new Date(
@@ -92,7 +92,7 @@ export default function Graph() {
       res = [
         {
           value: 404,
-          date: new Date(new Date().getTime() - DAY_MS  * 2),
+          date: new Date(new Date().getTime() - DAY_MS * 2),
         },
         { value: 404, date: new Date(new Date().getTime() - DAY_MS) },
         { value: 404, date: new Date(new Date().getTime()) },
@@ -123,7 +123,7 @@ export default function Graph() {
         }
         amt == 0 ?
           res.push({
-            value: null,
+            value: 0,
             date: first,
           })
         : res.push({
@@ -196,7 +196,7 @@ export default function Graph() {
             value: Math.round(total),
             date: first,
           });
-        first.setHours(0,0,0,0)
+        first.setHours(0, 0, 0, 0);
         first = new Date(first.getTime() + DAY_MS);
       }
     } else {
@@ -216,7 +216,7 @@ export default function Graph() {
         }
         total == 0 ?
           res.push({
-            value: 0,
+            value: null,
             date: first,
             label: getDayOfWeekString(first.getDay()),
           })
@@ -228,6 +228,7 @@ export default function Graph() {
         first = new Date(first.getTime() + DAY_MS);
       }
     }
+    console.log(res);
     return res;
   }
 
@@ -328,207 +329,141 @@ export default function Graph() {
       }}
     >
       {/* Chart View */}
-      {graphType ? <LineChart
-        areaChart
-        // Chart //
-        isAnimated={true}
-        animationDuration={1000}
-        //animateOnDataChange={true}
-        adjustToWidth={true}
-        disableScroll={true}
-        data={graphInput}
-        //https://github.com/Abhinandan-Kushwaha/react-native-gifted-charts/issues/149
-        //xAxisLabelTextStyle // The key to making labels better?
-        //labelTextStyle={} // The key to making labels better?
-        rotateLabel
-        width={345}
-        overflowTop={70}
-        // Data //
-        onlyPositive={true}
-        hideDataPoints={true}
-        dataPointsColor="#A53535"
-        // interpolateMissingValue={false}
-        // focusEnabled={true}
-        // showDataPointOnFocus={false}
-        // showStripOnFocus={false}
-        // stripOpacity={2}
-        // Gradient //
-        color="#A53535"
-        thickness={2}
-        startFillColor="rgba(165,53,53,1)"
-        endFillColor="rgba(165,53,53,1)"
-        startOpacity={0.6}
-        endOpacity={0.1}
-        initialSpacing={7.5}
-        noOfSections={4}
-        maxValue={
-          Math.ceil((maxGraphValue ? maxGraphValue?.value! : 400) / 100) * 100
-        }
-        yAxisColor="#575757"
-        yAxisThickness={0}
-        yAxisTextStyle={{ color: "gray" }}
-        yAxisSide={yAxisSides.LEFT}
-        xAxisColor="#575757"
-        rulesColor="#252525"
-        pointerConfig={{
-          pointerStripHeight: 250,
-          pointerStripColor: "lightgray",
-          pointerStripWidth: 2,
-          pointerColor: "white",
-          radius: 6,
-          pointerLabelWidth: 100,
-          pointerLabelHeight: 90,
-          activatePointersOnLongPress: false,
+      {graphType ?
+        <LineChart
+          areaChart
+          // Chart //
+          isAnimated={true}
+          animationDuration={1000}
+          //animateOnDataChange={true}
+          adjustToWidth={true}
+          disableScroll={true}
+          data={graphInput}
+          //https://github.com/Abhinandan-Kushwaha/react-native-gifted-charts/issues/149
+          //xAxisLabelTextStyle // The key to making labels better?
+          //labelTextStyle={} // The key to making labels better?
+          rotateLabel
+          width={345}
+          overflowTop={70}
+          // Data //
+          onlyPositive={true}
+          hideDataPoints={true}
+          dataPointsColor="#A53535"
+          interpolateMissingValues={lineBreak}
+          // focusEnabled={true}
+          // showDataPointOnFocus={false}
+          // showStripOnFocus={false}
+          // stripOpacity={2}
 
-          autoAdjustPointerLabelPosition: false,
-          pointerLabelComponent: (
-            items: {
-              value: number;
-              date: Date;
-              label: string;
-              labelTextStyle?: {
-                color: string;
-                width: number;
-              };
-            }[]
-          ) => {
-            return (
-              <View
-                style={{
-                  flex: 1,
-                  borderRadius: 16,
-                  justifyContent: "center",
-                  paddingVertical: 5,
-                  paddingHorizontal: 5,
-                  marginVertical: 20,
-                  marginHorizontal: -10,
-                  backgroundColor: "#0D0D0D",
-                }}
-              >
-                <Text
-                  style={{
-                    color: "white",
-                    fontSize: 14,
-                    marginBottom: 6,
-                    textAlign: "center",
-                    fontWeight: "300",
-                  }}
-                >
-                  {items[0].date
-                    .toDateString()
-                    .substring(4, items[0].date.toDateString().length)}
-                </Text>
+          // Gradient //
+          color="#A53535"
+          thickness={2}
+          startFillColor="rgba(165,53,53,1)"
+          endFillColor="rgba(165,53,53,1)"
+          startOpacity={0.6}
+          endOpacity={0.1}
+          initialSpacing={7.5}
+          noOfSections={4}
+          maxValue={
+            Math.ceil((maxGraphValue ? maxGraphValue?.value! : 400) / 100) * 100
+          }
+          yAxisColor="#575757"
+          yAxisThickness={0}
+          yAxisTextStyle={{ color: "gray" }}
+          yAxisSide={yAxisSides.LEFT}
+          xAxisColor="#575757"
+          rulesColor="#252525"
+          pointerConfig={{
+            pointerStripHeight: 250,
+            pointerStripColor: "lightgray",
+            pointerStripWidth: 2,
+            pointerColor: "white",
+            radius: 6,
+            pointerLabelWidth: 100,
+            pointerLabelHeight: 90,
+            activatePointersOnLongPress: false,
+
+            autoAdjustPointerLabelPosition: false,
+            pointerLabelComponent: (
+              items: {
+                value: number;
+                date: Date;
+                label: string;
+                labelTextStyle?: {
+                  color: string;
+                  width: number;
+                };
+              }[]
+            ) => {
+              return (
                 <View
                   style={{
-                    paddingHorizontal: 14,
+                    flex: 1,
                     borderRadius: 16,
-                    backgroundColor: "white",
+                    justifyContent: "center",
+                    paddingVertical: 5,
+                    paddingHorizontal: 5,
+                    marginVertical: 20,
+                    marginHorizontal: -10,
+                    backgroundColor: "#0D0D0D",
                   }}
                 >
                   <Text
                     style={{
-                      fontWeight: "bold",
+                      color: "white",
+                      fontSize: 14,
+                      marginBottom: 6,
                       textAlign: "center",
-                      fontSize: 18,
+                      fontWeight: "300",
                     }}
                   >
-                    {items[0].value + " Cal"}
+                    {items[0].date
+                      .toDateString()
+                      .substring(4, items[0].date.toDateString().length)}
                   </Text>
+                  <View
+                    style={{
+                      paddingHorizontal: 14,
+                      borderRadius: 16,
+                      backgroundColor: "white",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontWeight: "bold",
+                        textAlign: "center",
+                        fontSize: 18,
+                      }}
+                    >
+                      {items[0].value + " Cal"}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            );
-          },
-        }}
-      /> : <BarChart
-      width={345}
-      adjustToWidth={true}
-      barWidth={5}
-      overflowTop={70}
-      frontColor="#A53535"
-      noOfSections={4}
-      maxValue={
-        Math.ceil((maxGraphValue ? maxGraphValue?.value! : 400) / 100) * 100
+              );
+            },
+          }}
+        />
+      : <BarChart
+          width={345}
+          adjustToWidth={true}
+          barWidth={5}
+          overflowTop={70}
+          frontColor="#A53535"
+          noOfSections={4}
+          maxValue={
+            Math.ceil((maxGraphValue ? maxGraphValue?.value! : 400) / 100) * 100
+          }
+          spacing={2}
+          initialSpacing={7.5}
+          yAxisColor="#575757"
+          yAxisThickness={0}
+          yAxisTextStyle={{ color: "gray" }}
+          yAxisSide={yAxisSides.LEFT}
+          xAxisColor="#575757"
+          rulesColor="#252525"
+          data={graphInput}
+        />
       }
-      spacing={2}
-      initialSpacing={7.5}
-      yAxisColor="#575757"
-      yAxisThickness={0}
-      yAxisTextStyle={{ color: "gray" }}
-      yAxisSide={yAxisSides.LEFT}
-      xAxisColor="#575757"
-      rulesColor="#252525"
-      data={graphInput}
-      // pointerConfig={{
-      //   pointerStripHeight: 250,
-      //   pointerStripColor: "lightgray",
-      //   pointerStripWidth: 2,
-      //   pointerColor: "white",
-      //   radius: 6,
-      //   pointerLabelWidth: 100,
-      //   pointerLabelHeight: 90,
-      //   activatePointersOnLongPress: false,
-
-      //   autoAdjustPointerLabelPosition: false,
-      //   pointerLabelComponent: (
-      //     items: {
-      //       value: number;
-      //       date: Date;
-      //       label: string;
-      //       labelTextStyle?: {
-      //         color: string;
-      //         width: number;
-      //       };
-      //     }[]
-      //   ) => {
-      //     return (
-      //       <View
-      //         style={{
-      //           flex: 1,
-      //           borderRadius: 16,
-      //           justifyContent: "center",
-      //           paddingVertical: 5,
-      //           paddingHorizontal: 5,
-      //           marginVertical: 20,
-      //           marginHorizontal: -10,
-      //           backgroundColor: "#0D0D0D",
-      //         }}
-      //       >
-      //         <Text
-      //           style={{
-      //             color: "white",
-      //             fontSize: 14,
-      //             marginBottom: 6,
-      //             textAlign: "center",
-      //             fontWeight: "300",
-      //           }}
-      //         >
-      //           {items[0].date
-      //             .toDateString()
-      //             .substring(4, items[0].date.toDateString().length)}
-      //         </Text>
-      //         <View
-      //           style={{
-      //             paddingHorizontal: 14,
-      //             borderRadius: 16,
-      //             backgroundColor: "white",
-      //           }}
-      //         >
-      //           <Text
-      //             style={{
-      //               fontWeight: "bold",
-      //               textAlign: "center",
-      //               fontSize: 18,
-      //             }}
-      //           >
-      //             {items[0].value + " Cal"}
-      //           </Text>
-      //         </View>
-      //       </View>
-      //     );
-      //   },
-      // }}
-      />}
-
 
       {/* Button View */}
       <View
@@ -567,38 +502,87 @@ export default function Graph() {
           );
         })}
       </View>
+      {/*Chart Button*/}
       <View
-      style={{
-        paddingVertical: 10,
-        justifyContent: "center",
-      alignItems: 'center'}}>
-      <Pressable
+        style={{
+          paddingVertical: 10,
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#0D0D0D",
+        }}
+      >
+        <Pressable
+          style={{
+            marginHorizontal: 5,
+            backgroundColor: "#1C1C1C",
+            alignItems: "center",
+            justifyContent: "center",
+            paddingVertical: 4,
+            paddingHorizontal: 4,
+            borderRadius: 4,
+            elevation: 3,
+            width: 100,
+            height: 30,
+          }}
+          onPress={() => {
+            setGraphType(!graphType);
+            console.log(graphType);
+          }}
+        >
+          <Text
+            style={{
+              color: "white",
+              fontWeight: "300",
+            }}
+          >
+            {graphType ? "BarChart" : "LineChart"}
+          </Text>
+        </Pressable>
+
+        {graphType && (
+          <Pressable
+            style={{
+              marginHorizontal: 5,
+              backgroundColor: "#1C1C1C",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingVertical: 4,
+              paddingHorizontal: 4,
+              borderRadius: 4,
+              elevation: 3,
+              width: 100,
+              height: 30,
+            }}
+            onPress={() => {
+              setLineBreak(!lineBreak);
+            }}
+          >
+            <Text
               style={{
-                backgroundColor:"#1C1C1C",
-                alignItems: "center",
-                justifyContent: "center",
-                paddingVertical: 4,
-                paddingHorizontal: 4,
-                borderRadius: 4,
-                elevation: 3,
-                width: 80,
-                height: 30,
-              }}
-              onPress={() => {
-                setGraphType(!graphType)
-                console.log(graphType)
+                color: "white",
+                fontWeight: "300",
               }}
             >
-              <Text
-                style={{
-                  color: "white",
-                  fontWeight: "300",
-                }}
-              >
-                {graphType ? "LineChart" :"BarChart"}
-              </Text>
-        </Pressable>
+              {lineBreak ? "Break" : "Continuous"}
+            </Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );
 }
+
+/*
+1) Average out data points (Done)
+2) Remove extra range buttons (Done)
+3) Ensure interpolation for null values do not display (Not concerned)
+4) Correctly space out each day on graph (Done)
+-CHECK ON (FIX) 3 MONTH DATAPOINTS (done)
+6) Calculate total calorie if user worked out multiple times in a day (done)
+
+9) Add toggles to displaying bar / line cut off graph (get an idea of model works best for displaying to the user) (done w/ data issues)
+5) Make Label Text "White" / Add Labels for every month
+7) Center and prevent tooltip from cutting out of bounds
+8) Create a nav bottom bar
+*/
