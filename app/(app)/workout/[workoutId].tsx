@@ -1,6 +1,7 @@
+import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
-import { Text, SafeAreaView, View, SectionList } from "react-native";
+import { Text, SafeAreaView, View, SectionList, Pressable } from "react-native";
 
 // hard coded constants based on the sqlite db table "exercise_type"
 const exerciseEnums = {
@@ -159,6 +160,21 @@ export default function WorkoutDetails() {
           );
         }}
       />
+      <Pressable
+        style={({ pressed }) => ({
+          flexDirection: "row",
+          marginLeft: 14,
+          marginBottom: 17.5,
+          borderWidth: 1,
+          alignSelf: "baseline",
+          opacity: pressed ? 0.7 : 1,
+        })}
+      >
+        <FontAwesome className="mr-1 self-center" name="plus" color="#1FD8E0" />
+        <Text className="text-2xl text-black dark:text-white">
+          Add Exercise
+        </Text>
+      </Pressable>
     </SafeAreaView>
   );
 }
