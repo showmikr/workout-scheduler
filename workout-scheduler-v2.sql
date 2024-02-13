@@ -664,7 +664,8 @@ INSERT INTO workout_session (app_user_id, title, date, calories, tied_to_workout
     (1, 'Upperbody',                '2024-02-03T07:34:12',   322,    False),
     (1, 'Upperbody',                '2024-02-05T07:34:12',   322,    False),
     (1, 'Upperbody',                '2024-02-05T09:34:12',   402,    False),
-    (1, 'Upperbody',                '2024-02-07T07:34:12',   244,    False);
+    (1, 'Upperbody',                '2024-02-07T07:34:12',   244,    False),
+    (1, 'Upperbody',                '2024-02-10T07:34:12',   886,    False);
 
 
 INSERT INTO exercise_session (workout_session_id, pr_history_id, exercise_type_id, title, list_order, initial_weight, was_completed)

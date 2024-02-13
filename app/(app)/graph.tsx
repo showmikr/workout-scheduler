@@ -158,7 +158,7 @@ export default function Graph() {
         }
         amt == 0 ?
           res.push({
-            value: null,
+            value: curr === data.length ? 0 : null,
             date: first,
           })
         : res.push({
@@ -189,7 +189,7 @@ export default function Graph() {
         }
         total === 0 ?
           res.push({
-            value: null,
+            value: curr === data.length ? 0 : null,
             date: first,
           })
         : res.push({
@@ -205,18 +205,21 @@ export default function Graph() {
       let curr = 0;
       let first = new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS);
       let last = new Date();
+      console.log("data length: " + data.length);
       while (first <= last) {
         let total = 0;
+
         while (
           curr < data.length &&
           first.toDateString() === data[curr].date.toDateString()
         ) {
           total += data[curr].value!;
+          console.log("curr data -> " + data[curr].value);
           curr += 1;
         }
         total == 0 ?
           res.push({
-            value: null,
+            value: 20,
             date: first,
             label: getDayOfWeekString(first.getDay()),
           })
@@ -225,10 +228,13 @@ export default function Graph() {
             date: first,
             label: getDayOfWeekString(first.getDay()),
           });
+        first.setHours(0, 0, 0, 0);
         first = new Date(first.getTime() + DAY_MS);
       }
     }
-    console.log(res);
+    res.forEach((idx) => {
+      console.log(idx.value);
+    });
     return res;
   }
 
