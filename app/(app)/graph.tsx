@@ -121,9 +121,9 @@ export default function Graph() {
           : (amt += 1);
           curr += 1;
         }
-        amt == 0 ?
+        amt === 0 ?
           res.push({
-            value: 0,
+            value: curr === data.length ? 0 : null,
             date: first,
           })
         : res.push({
@@ -137,7 +137,6 @@ export default function Graph() {
       MONTH_MS * 3 <
       data[data.length - 1].date.getTime() - data[0].date.getTime()
     ) {
-      // Greater than 6 months -> average weeks
       console.log("Greater than 3 months");
       let curr = 0;
       let first = getFirstDayOfWeek(data[0].date);
@@ -156,7 +155,7 @@ export default function Graph() {
           : (amt += 1);
           curr += 1;
         }
-        amt == 0 ?
+        amt === 0 ?
           res.push({
             value: curr === data.length ? 0 : null,
             date: first,
@@ -205,19 +204,16 @@ export default function Graph() {
       let curr = 0;
       let first = new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS);
       let last = new Date();
-      console.log("data length: " + data.length);
       while (first <= last) {
         let total = 0;
-
         while (
           curr < data.length &&
           first.toDateString() === data[curr].date.toDateString()
         ) {
           total += data[curr].value!;
-          console.log("curr data -> " + data[curr].value);
           curr += 1;
         }
-        total == 0 ?
+        total === 0 ?
           res.push({
             value: 20,
             date: first,
@@ -232,9 +228,6 @@ export default function Graph() {
         first = new Date(first.getTime() + DAY_MS);
       }
     }
-    res.forEach((idx) => {
-      console.log(idx.value);
-    });
     return res;
   }
 
@@ -270,6 +263,10 @@ export default function Graph() {
     };
   });
 
+  console.log(
+    new Date(getPriorTime(1, 0, 0).getTime() + DAY_MS).toDateString()
+  );
+
   // Button range logic
   let maxGraphValue = graphData?.reduce((p, c) =>
     p.value! > c.value! ? p : c
@@ -277,7 +274,10 @@ export default function Graph() {
   let graphInput = graphData;
   if (buttonSelected === "1W") {
     (graphInput = averagePlotData(
-      graphData?.filter((wk) => new Date(wk.date) > getPriorTime(1, 0, 0))
+      graphData?.filter(
+        (wk) =>
+          new Date(wk.date) > new Date(getPriorTime(1, 0, 0).getTime() + DAY_MS)
+      )
     )),
       (maxGraphValue = averagePlotData(graphInput)?.reduce((p, c) =>
         p.value! > c.value! ? p : c
@@ -580,15 +580,16 @@ export default function Graph() {
 }
 
 /*
-1) Average out data points (Done)
-2) Remove extra range buttons (Done)
-3) Ensure interpolation for null values do not display (Not concerned)
-4) Correctly space out each day on graph (Done)
--CHECK ON (FIX) 3 MONTH DATAPOINTS (done)
-6) Calculate total calorie if user worked out multiple times in a day (done)
+- Average out data points (Done)
+- Remove extra range buttons (Done)
+- Ensure interpolation for null values do not display (Not concerned)
+- Correctly space out each day on graph (Done)
+- CHECK ON (FIX) 3 MONTH DATAPOINTS (done)
+- Calculate total calorie if user worked out multiple times in a day (done)
+- Add toggles to displaying bar / line cut off graph (get an idea of model works best for displaying to the user) (done w/ data issues)
 
-9) Add toggles to displaying bar / line cut off graph (get an idea of model works best for displaying to the user) (done w/ data issues)
-5) Make Label Text "White" / Add Labels for every month
-7) Center and prevent tooltip from cutting out of bounds
-8) Create a nav bottom bar
+- Fix issue: Week view doesn't display data (all data is null); maybe inputData is being modified somehow
+- Make Label Text "White" / Add Labels for every month
+- Center and prevent tooltip from cutting out of bounds
+- Create a nav bottom bar
 */
