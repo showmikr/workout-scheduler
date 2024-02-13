@@ -17,7 +17,7 @@ export interface AppUser {
   user_name?: string | null;
 }
 export interface CardioSet {
-  exercise_set_id: string;
+  exercise_set_id: number;
   id?: number | null;
   target_distance?: number | null;
   target_speed?: number | null;
@@ -28,18 +28,18 @@ export interface CardioSetSession {
   actual_speed?: number | null;
   actual_time?: number | null;
   id?: number | null;
-  set_session_id: string;
+  set_session_id: number;
   target_distance?: number | null;
   target_speed?: number | null;
   target_time?: number | null;
 }
 export interface CustomCategoryPr {
-  custom_category_pr_id: string;
+  custom_category_pr_id: number;
   id?: number | null;
-  pr_history_id: string;
+  pr_history_id: number;
 }
 export interface CustomExerciseCategory {
-  app_user_id: string;
+  app_user_id: number;
   id?: number | null;
   title: string;
 }
@@ -47,33 +47,33 @@ export interface DaysOfWeek {
   day: string;
 }
 export interface Exercise {
-  custom_exercise_category_id?: string | null;
-  exercise_equipment_id?: string | null;
-  exercise_type_id: string;
+  custom_exercise_category_id?: number | null;
+  exercise_equipment_id?: number | null;
+  exercise_type_id: number;
   id?: number | null;
   initial_weight?: number | null;
   list_order: number;
   notes?: string | null;
-  standard_exercise_category_id?: string | null;
+  standard_exercise_category_id?: number | null;
   title: string;
-  workout_id: string;
+  workout_id: number;
 }
 export interface ExerciseEquipment {
   id?: number | null;
   title: string;
 }
 export interface ExerciseSession {
-  exercise_type_id: string;
+  exercise_type_id: number;
   id?: number | null;
   initial_weight?: number | null;
   list_order: number;
-  pr_history_id?: string | null;
+  pr_history_id?: number | null;
   title: string;
   was_completed?: boolean;
-  workout_session_id: string;
+  workout_session_id: number;
 }
 export interface ExerciseSet {
-  exercise_id: string;
+  exercise_id: number;
   id?: number | null;
   list_order: number;
   reps?: number;
@@ -86,8 +86,8 @@ export interface ExerciseType {
 }
 export interface LinkTagWorkout {
   id?: number | null;
-  workout_id: string;
-  workout_tag_id: string;
+  workout_id: number;
+  workout_tag_id: number;
 }
 export interface PrHistory {
   date: string;
@@ -99,18 +99,18 @@ export interface PrHistory {
   weight?: number | null;
 }
 export interface ResistanceSet {
-  exercise_set_id: string;
+  exercise_set_id: number;
   id?: number | null;
   total_weight?: number | null;
 }
 export interface ResistanceSetSession {
   id?: number | null;
-  set_session_id: string;
+  set_session_id: number;
   total_weight?: number | null;
 }
 export interface SetSession {
   elapsed_time?: number;
-  exercise_session_id: string;
+  exercise_session_id: number;
   id?: number | null;
   list_order: number;
   reps?: number;
@@ -119,15 +119,15 @@ export interface SetSession {
 }
 export interface StandardCategoryPr {
   id?: number | null;
-  pr_history_id: string;
-  standard_category_pr_id: string;
+  pr_history_id: number;
+  standard_category_pr_id: number;
 }
 export interface StandardExerciseCategory {
   id?: number | null;
   title: string;
 }
 export interface TrainingCycle {
-  app_user_id: string;
+  app_user_id: number;
   id?: number | null;
   list_order: number;
   title: string;
@@ -135,29 +135,29 @@ export interface TrainingCycle {
 export interface TrainingDay {
   id?: number | null;
   list_order: number;
-  training_cycle_id: string;
+  training_cycle_id: number;
 }
 export interface UserBodyweight {
-  app_user_id: string;
+  app_user_id: number;
   date: string;
   id?: number | null;
   weight: number;
 }
 export interface Workout {
-  app_user_id: string;
+  app_user_id: number;
   id?: number | null;
   last_session?: string | null;
   list_order: number;
   title: string;
-  training_day_id?: string | null;
+  training_day_id?: number | null;
 }
 export interface WorkoutDays {
   day: any;
   id?: number | null;
-  workout_id?: string | null;
+  workout_id?: number | null;
 }
 export interface WorkoutSession {
-  app_user_id: string;
+  app_user_id: number;
   calories?: number | null;
   date: string;
   id?: number | null;
@@ -165,7 +165,7 @@ export interface WorkoutSession {
   title: string;
 }
 export interface WorkoutTag {
-  app_user_id: string;
+  app_user_id: number;
   id?: number | null;
   title: string;
 }

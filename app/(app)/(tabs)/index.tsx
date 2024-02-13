@@ -53,7 +53,7 @@ export default function TabOneScreen() {
       />
       <EditScreenInfo path="app/(app)/(tabs)/" />
       <Link href="/hello" asChild>
-        <Pressable className="m-10 items-center border-2 border-solid border-slate-400 bg-slate-600 p-1 active:opacity-50">
+        <Pressable className="m-10 items-center border-2 border-solid border-slate-400 bg-slate-600 p-1">
           <Text className="text-xl">Go to Hello</Text>
         </Pressable>
       </Link>
@@ -76,7 +76,9 @@ export default function TabOneScreen() {
           )
         : null}
       </Text>
-      <Link className="text-center text-xl dark:text-white" href={"/graph"}>Go To Graph Page</Link>
+      <Link className="text-center text-xl dark:text-white" href="/graph">
+        Go To Graph Page
+      </Link>
       <View
         className="my-8 h-px w-4/5 self-center" // Replaces styles.separator native styling
         //style={styles.separator}

@@ -4,7 +4,8 @@ import { deleteDB } from "../../../db-utils";
 import { useSQLiteContext } from "expo-sqlite/next";
 import WorkoutCard from "../../../components/WorkoutCard";
 
-type TaggedWorkout = { id: number; title: string; tags: string[] };
+export type TaggedWorkout = { id: number; title: string; tags: string[] };
+
 export default function TabTwoScreen() {
   const db = useSQLiteContext();
   const getWorkouts = () => {
@@ -13,7 +14,7 @@ export default function TabTwoScreen() {
       SELECT wk.id, wk.title as wk_title, wkt.title FROM workout AS wk
       LEFT JOIN link_tag_workout AS ltw ON ltw.workout_id = wk.id
       LEFT JOIN workout_tag AS wkt ON ltw.workout_tag_id = wkt.id
-      WHERE wk.app_user_id = 1
+      WHERE wk.app_user_id = 1 AND wk.training_day_id IS NULL
       ORDER BY wk.id;
       `,
       null
@@ -43,6 +44,18 @@ export default function TabTwoScreen() {
 
   const workouts = getWorkouts();
 
+  const readDb = () => {
+    const results = db.getAllSync<any>(
+      `
+      SELECT title FROM workout WHERE app_user_id = 1
+      UNION
+      SELECT day FROM days_of_week;
+      `,
+      null
+    );
+    console.log(results);
+  };
+
   return (
     <View
       className="flex-1 items-center justify-center" // NATIVEWIND WORKS BABY!!!!!
@@ -50,10 +63,16 @@ export default function TabTwoScreen() {
     >
       <Text style={styles.title}>Tab Two</Text>
       <Pressable
-        className="m-10 border-2 border-solid border-slate-400 bg-slate-600 p-1 active:opacity-50"
+        className="m-10 border-2 border-solid border-slate-400 bg-slate-600 p-1"
         onPress={() => deleteDB()}
       >
         <Text className="text-lg/10">Delete Database</Text>
+      </Pressable>
+      <Pressable
+        className="m-10 border-2 border-solid border-slate-400  bg-slate-600 p-1"
+        onPress={() => readDb()}
+      >
+        <Text className="text-lg/10">Read From DB</Text>
       </Pressable>
       <Text className="-mb-6 text-2xl">Workouts</Text>
       <View
