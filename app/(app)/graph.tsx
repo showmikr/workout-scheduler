@@ -33,6 +33,24 @@ export default function Graph() {
   const MONTH_MS = 2629799928;
   const YEAR_MS = 31557599136;
 
+  const customLabel = (val: string) => {
+    return (
+      <View
+        style={{
+          width: 14,
+          marginLeft: 25,
+          backgroundColor: "#0D0D0D", //#0D0D0D
+          alignItems: "center",
+          justifyContent: "space-evenly",
+          // borderWidth: 1,
+          // borderColor: "white",
+        }}
+      >
+        <Text style={{ color: "white", fontWeight: "bold" }}>{val}</Text>
+      </View>
+    );
+  };
+
   // Returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
     return new Date(
@@ -87,6 +105,7 @@ export default function Graph() {
   function averagePlotData(data: CalorieData[] | undefined) {
     // Looks messy, code clean up if possible
     let res = [];
+    let firstCopy = new Date();
     if (!data || data.length < 1) {
       console.log("Not enough data or data does not exist.");
       res = [
@@ -121,15 +140,17 @@ export default function Graph() {
           : (amt += 1);
           curr += 1;
         }
-        amt === 0 ?
-          res.push({
-            value: curr === data.length ? 0 : null,
-            date: first,
-          })
-        : res.push({
-            value: Math.round(avg / amt),
-            date: first,
-          });
+
+        res.push({
+          value:
+            amt === 0 ?
+              curr === data.length ?
+                0
+              : null
+            : Math.round(avg / amt),
+          date: first,
+        });
+
         first = getFirstDayOfMonth(new Date(last.getTime() + 1));
         last = getLastDayOfMonth(first);
       }
@@ -155,15 +176,16 @@ export default function Graph() {
           : (amt += 1);
           curr += 1;
         }
-        amt === 0 ?
-          res.push({
-            value: curr === data.length ? 0 : null,
-            date: first,
-          })
-        : res.push({
-            value: Math.round(avg / amt),
-            date: first,
-          });
+        res.push({
+          value:
+            amt === 0 ?
+              curr === data.length ?
+                0
+              : null
+            : Math.round(avg / amt),
+          date: first,
+        });
+
         first = getFirstDayOfWeek(new Date(last.getTime() + 1));
         last = getLastDayOfWeek(first);
       }
@@ -186,15 +208,17 @@ export default function Graph() {
           total += data[curr].value!;
           curr += 1;
         }
-        total === 0 ?
-          res.push({
-            value: curr === data.length ? 0 : null,
-            date: first,
-          })
-        : res.push({
-            value: Math.round(total),
-            date: first,
-          });
+
+        res.push({
+          value:
+            total === 0 ?
+              curr === data.length ?
+                0
+              : null
+            : Math.round(total),
+          date: first,
+        });
+
         first.setHours(0, 0, 0, 0);
         first = new Date(first.getTime() + DAY_MS);
       }
@@ -202,7 +226,9 @@ export default function Graph() {
       // Data is equal (=) or less than (<) week -> Interpolate to correctly show day to day spacing for a week
       console.log("<= 1 week");
       let curr = 0;
-      let first = new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS);
+      let first = new Date(
+        getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS * 2
+      );
       let last = new Date();
       while (first <= last) {
         let total = 0;
@@ -213,19 +239,17 @@ export default function Graph() {
           total += data[curr].value!;
           curr += 1;
         }
-        total === 0 ?
-          res.push({
-            value: 20,
-            date: first,
-            label: getDayOfWeekString(first.getDay()),
-          })
-        : res.push({
-            value: Math.round(total),
-            date: first,
-            label: getDayOfWeekString(first.getDay()),
-          });
+
+        let ChatGPT = getDayOfWeekString(first.getDay())[0];
+
+        res.push({
+          value: total === 0 ? 0 : Math.round(total),
+          date: first,
+          labelComponent: () => customLabel(ChatGPT),
+        });
         first.setHours(0, 0, 0, 0);
         first = new Date(first.getTime() + DAY_MS);
+        firstCopy = first;
       }
     }
     return res;
@@ -358,11 +382,7 @@ export default function Graph() {
           adjustToWidth={true}
           disableScroll={true}
           data={graphInput}
-          //https://github.com/Abhinandan-Kushwaha/react-native-gifted-charts/issues/149
-          //xAxisLabelTextStyle // The key to making labels better?
-          //labelTextStyle={} // The key to making labels better?
-          rotateLabel
-          width={345}
+          width={347}
           overflowTop={70}
           // Data //
           onlyPositive={true}
@@ -546,7 +566,6 @@ export default function Graph() {
           }}
           onPress={() => {
             setGraphType(!graphType);
-            console.log(graphType);
           }}
         >
           <Text
@@ -593,10 +612,10 @@ export default function Graph() {
 }
 
 /*
-- Average out data points (Done)
-- Remove extra range buttons (Done)
-- Ensure interpolation for null values do not display (Not concerned)
-- Correctly space out each day on graph (Done)
+- Average out data points (done)
+- Remove extra range buttons (done)
+- Ensure interpolation for null values do not display (not concerned)
+- Correctly space out each day on graph (done)
 - CHECK ON (FIX) 3 MONTH DATAPOINTS (done)
 - Calculate total calorie if user worked out multiple times in a day (done)
 - Add toggles to displaying bar / line cut off graph (get an idea of model works best for displaying to the user) (done w/ data issues)
