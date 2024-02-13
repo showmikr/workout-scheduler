@@ -33,13 +33,31 @@ export default function Graph() {
   const MONTH_MS = 2629799928;
   const YEAR_MS = 31557599136;
 
-  const customLabel = (val: string) => {
+  const weekLabel = (val: string) => {
     return (
       <View
         style={{
           width: 14,
           marginLeft: 25,
           backgroundColor: "#0D0D0D", //#0D0D0D
+          alignItems: "center",
+          justifyContent: "space-evenly",
+          // borderWidth: 1,
+          // borderColor: "white",
+        }}
+      >
+        <Text style={{ color: "white", fontWeight: "bold" }}>{val}</Text>
+      </View>
+    );
+  };
+
+  const weekPlusLabel = (val: string) => {
+    return (
+      <View
+        style={{
+          width: 30,
+          marginLeft: -5,
+          backgroundColor: "grey", //#0D0D0D
           alignItems: "center",
           justifyContent: "space-evenly",
           // borderWidth: 1,
@@ -59,7 +77,9 @@ export default function Graph() {
   }
   function getFirstDayOfWeek(timeFrame: Date) {
     return new Date(
-      timeFrame.setDate(timeFrame.getDate() - timeFrame.getDay())
+      new Date(
+        timeFrame.setDate(timeFrame.getDate() - timeFrame.getDay())
+      ).setHours(0, 0, 0, 0)
     );
   }
   function getLastDayOfWeek(timeFrame: Date) {
@@ -196,7 +216,7 @@ export default function Graph() {
       // Greater than 1 week -> keep data as is (just calculate totals)
       console.log("Greater than 1 week");
       let curr = 0;
-      let first = new Date(data[0].date);
+      let first = new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0));
       let last = new Date();
       while (first < last) {
         let total = 0;
@@ -208,6 +228,24 @@ export default function Graph() {
           total += data[curr].value!;
           curr += 1;
         }
+        let label = getDayOfWeekString(first.getDay())[0];
+        // console.log(
+        //   "First: " +
+        //     first.toDateString() +
+        //     ", Curr: " +
+        //     data[
+        //       curr < data.length && curr > 0 ? curr - 1 : 0
+        //     ].date.toDateString() +
+        //     " | " +
+        //     (first.toDateString() ===
+        //       data[
+        //         curr < data.length && curr > 0 ? curr - 1 : 0
+        //       ].date.toDateString())
+        // );
+
+        //let labelBool = (first.toDateString() === getFirstDayOfWeek(first).toDateString());
+        // console.log("First: " + first.toDateString())
+        // console.log("Week:  " +  getFirstDayOfWeek(first).toDateString());
 
         res.push({
           value:
@@ -217,6 +255,7 @@ export default function Graph() {
               : null
             : Math.round(total),
           date: first,
+          labelComponent: () => (false ? weekPlusLabel(label) : null),
         });
 
         first.setHours(0, 0, 0, 0);
@@ -240,12 +279,12 @@ export default function Graph() {
           curr += 1;
         }
 
-        let ChatGPT = getDayOfWeekString(first.getDay())[0];
+        let label = getDayOfWeekString(first.getDay())[0];
 
         res.push({
           value: total === 0 ? 0 : Math.round(total),
           date: first,
-          labelComponent: () => customLabel(ChatGPT),
+          labelComponent: () => weekLabel(label),
         });
         first.setHours(0, 0, 0, 0);
         first = new Date(first.getTime() + DAY_MS);
@@ -254,6 +293,8 @@ export default function Graph() {
     }
     return res;
   }
+
+  console.log("Start of Week: " + getLastDayOfWeek(new Date()));
 
   // 1) Load user data
   if (!workoutSessionData) {
@@ -621,7 +662,8 @@ export default function Graph() {
 - Add toggles to displaying bar / line cut off graph (get an idea of model works best for displaying to the user) (done w/ data issues)
 - Fix issue: Week view doesn't display data (all data is null); maybe inputData is being modified somehow (done)
 
-- Make Label Text "White" / Add Labels for every month
+- Make Label Text "White" / Add Labels for every month (done w/ initial label spacing issue)
+- 
 - Center and prevent tooltip from cutting out of bounds
 - Create a nav bottom bar
 */
