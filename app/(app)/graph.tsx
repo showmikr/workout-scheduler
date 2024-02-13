@@ -263,10 +263,6 @@ export default function Graph() {
     };
   });
 
-  console.log(
-    new Date(getPriorTime(1, 0, 0).getTime() + DAY_MS).toDateString()
-  );
-
   // Button range logic
   let maxGraphValue = graphData?.reduce((p, c) =>
     p.value! > c.value! ? p : c
@@ -276,7 +272,8 @@ export default function Graph() {
     (graphInput = averagePlotData(
       graphData?.filter(
         (wk) =>
-          new Date(wk.date) > new Date(getPriorTime(1, 0, 0).getTime() + DAY_MS)
+          new Date(wk.date) >
+          new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS)
       )
     )),
       (maxGraphValue = averagePlotData(graphInput)?.reduce((p, c) =>
@@ -284,21 +281,33 @@ export default function Graph() {
       ));
   } else if (buttonSelected === "1M") {
     (graphInput = averagePlotData(
-      graphData?.filter((wk) => new Date(wk.date) > getPriorTime(0, 1, 0))
+      graphData?.filter(
+        (wk) =>
+          new Date(wk.date) >
+          new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0))
+      )
     )),
       (maxGraphValue = graphInput?.reduce((p, c) =>
         p.value! > c.value! ? p : c
       ));
   } else if (buttonSelected === "3M") {
     (graphInput = averagePlotData(
-      graphData?.filter((wk) => new Date(wk.date) > getPriorTime(0, 3, 0))
+      graphData?.filter(
+        (wk) =>
+          new Date(wk.date) >
+          new Date(getPriorTime(0, 3, 0).setHours(0, 0, 0, 0))
+      )
     )),
       (maxGraphValue = graphInput?.reduce((p, c) =>
         p.value! > c.value! ? p : c
       ));
   } else if (buttonSelected === "6M") {
     (graphInput = averagePlotData(
-      graphData?.filter((wk) => new Date(wk.date) > getPriorTime(0, 6, 0))
+      graphData?.filter(
+        (wk) =>
+          new Date(wk.date) >
+          new Date(getPriorTime(0, 6, 0).setHours(0, 0, 0, 0))
+      )
     )),
       (maxGraphValue = graphInput?.reduce((p, c) =>
         p.value! > c.value! ? p : c
@@ -314,7 +323,11 @@ export default function Graph() {
       ));
   } else if (buttonSelected === "1Y") {
     (graphInput = averagePlotData(
-      graphData?.filter((wk) => new Date(wk.date) > getPriorTime(0, 0, 1))!
+      graphData?.filter(
+        (wk) =>
+          new Date(wk.date) >
+          new Date(getPriorTime(0, 0, 1).setHours(0, 0, 0, 0))
+      )!
     )),
       (maxGraphValue = graphInput?.reduce((p, c) =>
         p.value! > c.value! ? p : c
@@ -587,8 +600,8 @@ export default function Graph() {
 - CHECK ON (FIX) 3 MONTH DATAPOINTS (done)
 - Calculate total calorie if user worked out multiple times in a day (done)
 - Add toggles to displaying bar / line cut off graph (get an idea of model works best for displaying to the user) (done w/ data issues)
+- Fix issue: Week view doesn't display data (all data is null); maybe inputData is being modified somehow (done)
 
-- Fix issue: Week view doesn't display data (all data is null); maybe inputData is being modified somehow
 - Make Label Text "White" / Add Labels for every month
 - Center and prevent tooltip from cutting out of bounds
 - Create a nav bottom bar
