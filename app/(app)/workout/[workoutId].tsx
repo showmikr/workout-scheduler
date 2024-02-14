@@ -1,11 +1,11 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { Text, SafeAreaView, View, SectionList, Pressable } from "react-native";
 import { twColors } from "../../../constants/Colors";
 
 // hard coded constants based on the sqlite db table "exercise_type"
-const exerciseEnums = {
+export const exerciseEnums = {
   RESISTANCE_ENUM: 1,
   CARDIO_ENUM: 2,
 } as const;
@@ -22,25 +22,25 @@ type ResistanceExercise = {
 };
 type ExerciseParams = CardioExercise | ResistanceExercise;
 
-type ExerciseSetParams = {
+export type ExerciseSetParams = {
   exercise_set_id: number;
   list_order: number;
   reps: number;
   rest_time: number;
   title: string | null;
 };
-type ResistanceSetParams = {
+export type ResistanceSetParams = {
   resistance_set_id: number;
-  total_weight: number | null;
+  total_weight: number;
 };
-type CardioSetParams = {
+export type CardioSetParams = {
   cardio_set_id: number;
   target_distance: number | null;
   target_speed: number | null;
   target_time: number | null;
 };
-type UnifiedResistanceSet = ExerciseSetParams & ResistanceSetParams;
-type UnifiedCardioSet = ExerciseSetParams & CardioSetParams;
+export type UnifiedResistanceSet = ExerciseSetParams & ResistanceSetParams;
+export type UnifiedCardioSet = ExerciseSetParams & CardioSetParams;
 
 export default function WorkoutDetails() {
   const { workoutId } = useLocalSearchParams<{ workoutId: string }>();
@@ -170,6 +170,12 @@ export default function WorkoutDetails() {
           alignSelf: "baseline",
           opacity: pressed ? 0.7 : 1,
         })}
+        onPress={() => {
+          router.push({
+            pathname: "/(app)/workout/add-exercise/[workoutId]",
+            params: { workoutId: workoutId },
+          });
+        }}
       >
         <FontAwesome
           className="mr-1 self-center"
