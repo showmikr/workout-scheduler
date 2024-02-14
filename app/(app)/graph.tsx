@@ -33,7 +33,7 @@ export default function Graph() {
   const MONTH_MS = 2629799928;
   const YEAR_MS = 31557599136;
 
-  const weekLabel = (val: string) => {
+  const dailyLabel = (val: string) => {
     return (
       <View
         style={{
@@ -51,13 +51,14 @@ export default function Graph() {
     );
   };
 
-  const weekPlusLabel = (val: string) => {
+  const weeklyLabel = (val: string) => {
     return (
       <View
         style={{
-          width: 30,
-          marginLeft: -5,
-          backgroundColor: "grey", //#0D0D0D
+          width: 50,
+          marginLeft: -15,
+
+          backgroundColor: "#0D0D0D", //#0D0D0D
           alignItems: "center",
           justifyContent: "space-evenly",
           // borderWidth: 1,
@@ -228,24 +229,12 @@ export default function Graph() {
           total += data[curr].value!;
           curr += 1;
         }
-        let label = getDayOfWeekString(first.getDay())[0];
-        // console.log(
-        //   "First: " +
-        //     first.toDateString() +
-        //     ", Curr: " +
-        //     data[
-        //       curr < data.length && curr > 0 ? curr - 1 : 0
-        //     ].date.toDateString() +
-        //     " | " +
-        //     (first.toDateString() ===
-        //       data[
-        //         curr < data.length && curr > 0 ? curr - 1 : 0
-        //       ].date.toDateString())
-        // );
+        let label = first.toDateString().substring(4, 10);
+        console.log(label);
 
-        //let labelBool = (first.toDateString() === getFirstDayOfWeek(first).toDateString());
-        // console.log("First: " + first.toDateString())
-        // console.log("Week:  " +  getFirstDayOfWeek(first).toDateString());
+        let labelBool =
+          first.toDateString() ===
+          getFirstDayOfWeek(new Date(first)).toDateString();
 
         res.push({
           value:
@@ -255,7 +244,7 @@ export default function Graph() {
               : null
             : Math.round(total),
           date: first,
-          labelComponent: () => (false ? weekPlusLabel(label) : null),
+          labelComponent: () => (labelBool ? weeklyLabel(label) : null),
         });
 
         first.setHours(0, 0, 0, 0);
@@ -265,9 +254,8 @@ export default function Graph() {
       // Data is equal (=) or less than (<) week -> Interpolate to correctly show day to day spacing for a week
       console.log("<= 1 week");
       let curr = 0;
-      let first = new Date(
-        getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS * 2
-      );
+      let first = new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS);
+      console.log(first);
       let last = new Date();
       while (first <= last) {
         let total = 0;
@@ -284,7 +272,7 @@ export default function Graph() {
         res.push({
           value: total === 0 ? 0 : Math.round(total),
           date: first,
-          labelComponent: () => weekLabel(label),
+          labelComponent: () => dailyLabel(label),
         });
         first.setHours(0, 0, 0, 0);
         first = new Date(first.getTime() + DAY_MS);
@@ -293,8 +281,6 @@ export default function Graph() {
     }
     return res;
   }
-
-  console.log("Start of Week: " + getLastDayOfWeek(new Date()));
 
   // 1) Load user data
   if (!workoutSessionData) {
@@ -327,7 +313,6 @@ export default function Graph() {
       date: ws.date,
     };
   });
-
   // Button range logic
   let maxGraphValue = graphData?.reduce((p, c) =>
     p.value! > c.value! ? p : c
@@ -418,6 +403,7 @@ export default function Graph() {
           areaChart
           // Chart //
           isAnimated={true}
+          rotateLabel={buttonSelected === "1M"}
           animationDuration={1000}
           //animateOnDataChange={true}
           adjustToWidth={true}
@@ -666,4 +652,9 @@ export default function Graph() {
 - 
 - Center and prevent tooltip from cutting out of bounds
 - Create a nav bottom bar
+
+
+CAUTION: 
+1) using iterative date variable "first" as a parameter for getFirstDayOfWeek() result in infinite loop; for some reason.
+    -  temp fix | surround first within new Date -> getFirstDayOfWeek(new Date(first))
 */
