@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 
-export default function () {
+export default function AppLayout() {
   return (
     <Stack screenOptions={{ animation: "default", headerShown: true }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
