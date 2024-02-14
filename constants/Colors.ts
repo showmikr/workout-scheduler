@@ -1,7 +1,7 @@
 const tintColorLight = "#2f95dc";
 const tintColorDark = "#fff";
 
-const twNeutralColors = {
+const twColors = {
   neutral50: "rgb(250 250 250)",
   neutral100: "rgb(245 245 245)",
   neutral200: "rgb(229 229 229)",
@@ -32,4 +32,4 @@ export default {
   },
 };
 
-export { twNeutralColors };
+export { twColors };

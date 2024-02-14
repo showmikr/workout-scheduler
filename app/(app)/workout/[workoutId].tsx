@@ -2,6 +2,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { Text, SafeAreaView, View, SectionList, Pressable } from "react-native";
+import { twColors } from "../../../constants/Colors";
 
 // hard coded constants based on the sqlite db table "exercise_type"
 const exerciseEnums = {
@@ -170,7 +171,11 @@ export default function WorkoutDetails() {
           opacity: pressed ? 0.7 : 1,
         })}
       >
-        <FontAwesome className="mr-1 self-center" name="plus" color="#1FD8E0" />
+        <FontAwesome
+          className="mr-1 self-center"
+          name="plus"
+          color={twColors.neutral500}
+        />
         <Text className="text-2xl text-black dark:text-white">
           Add Exercise
         </Text>
