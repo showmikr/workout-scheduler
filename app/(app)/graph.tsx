@@ -77,19 +77,21 @@ export default function Graph() {
     );
   }
   function getFirstDayOfWeek(timeFrame: Date) {
+    let copyDate = new Date(timeFrame);
     return new Date(
       new Date(
-        timeFrame.setDate(timeFrame.getDate() - timeFrame.getDay())
+        copyDate.setDate(copyDate.getDate() - copyDate.getDay())
       ).setHours(0, 0, 0, 0)
     );
   }
   function getLastDayOfWeek(timeFrame: Date) {
+    let copyDate = new Date(timeFrame);
     return new Date(
-      timeFrame.setDate(timeFrame.getDate() - timeFrame.getDay() + 6) +
-        (24 - timeFrame.getHours()) * 3600000 -
-        timeFrame.getMinutes() * 60000 -
-        timeFrame.getSeconds() * 1000 -
-        timeFrame.getMilliseconds() -
+      copyDate.setDate(copyDate.getDate() - copyDate.getDay() + 6) +
+        (24 - copyDate.getHours()) * 3600000 -
+        copyDate.getMinutes() * 60000 -
+        copyDate.getSeconds() * 1000 -
+        copyDate.getMilliseconds() -
         1
     );
   }
@@ -660,7 +662,7 @@ export default function Graph() {
 - Adjust bottom nav to reflex prototype app design
 
 
-CAUTION: 
+caution not an issue: (function mutated incomming argument; should be resolved now)
 1) using iterative date variable "first" as a parameter for getFirstDayOfWeek() result in infinite loop; for some reason.
     -  temp fix | surround first within new Date -> getFirstDayOfWeek(new Date(first))
     -  common issue: react+ts likes to reference an pointer to an old object even when the variable gets updated; happens when passing variables into functions; it seems.
