@@ -125,8 +125,8 @@ export default function Graph() {
   // Averages data bases on the length of time given
   function averagePlotData(data: CalorieData[] | undefined) {
     // Looks messy, code clean up if possible
+    // going to change logic to be more "functional" in the future...
     let res = [];
-    let firstCopy = new Date();
     if (!data || data.length < 1) {
       console.log("Not enough data or data does not exist.");
       res = [
@@ -137,12 +137,9 @@ export default function Graph() {
         { value: 404, date: new Date(new Date().getTime() - DAY_MS) },
         { value: 404, date: new Date(new Date().getTime()) },
       ];
-    } else if (
-      YEAR_MS <
-      data[data.length - 1].date.getTime() - data[0].date.getTime()
-    ) {
+    } else if (YEAR_MS < Date.now() - data[0].date.getTime()) {
       // Greater than 1 year -> average months
-      console.log("Greater than 1 year");
+      console.log("1 year view");
       let curr = 0;
       let first = getFirstDayOfMonth(data[0].date);
       let last = getLastDayOfMonth(data[0].date);
@@ -173,16 +170,14 @@ export default function Graph() {
         });
 
         first = getFirstDayOfMonth(new Date(last.getTime() + 1));
-        last = getLastDayOfMonth(first);
+        last = getLastDayOfMonth(new Date(first));
       }
-    } else if (
-      MONTH_MS * 3 <
-      data[data.length - 1].date.getTime() - data[0].date.getTime()
-    ) {
-      console.log("Greater than 3 months");
+    } else if (MONTH_MS < Date.now() - data[0].date.getTime()) {
+      console.log("3-6 month view");
       let curr = 0;
       let first = getFirstDayOfWeek(data[0].date);
       let last = getLastDayOfWeek(data[0].date);
+      let currMonth = getFirstDayOfMonth(data[0].date);
       while (curr < data.length && first < data[data.length - 1].date) {
         let amt = 0;
         let avg = 0;
@@ -197,6 +192,12 @@ export default function Graph() {
           : (amt += 1);
           curr += 1;
         }
+        if (first > currMonth) {
+          console.log(currMonth.toDateString());
+        }
+        let labelBool = first > currMonth;
+        let labelText = currMonth.toDateString().substring(4, 10);
+
         res.push({
           value:
             amt === 0 ?
@@ -205,19 +206,24 @@ export default function Graph() {
               : null
             : Math.round(avg / amt),
           date: first,
+          labelComponent: () => (labelBool ? weeklyLabel(labelText) : null),
         });
+        // console.log("First: " + first.toDateString());
+        // console.log("Curr: " + currMonth.toDateString());
+        if (first > currMonth) {
+          currMonth = new Date(
+            getLastDayOfMonth(new Date(currMonth)).getTime() + 1
+          );
+        }
 
         first = getFirstDayOfWeek(new Date(last.getTime() + 1));
-        last = getLastDayOfWeek(first);
+        last = getLastDayOfWeek(new Date(first));
       }
-    } else if (
-      WEEK_MS <
-      data[data.length - 1].date.getTime() - data[0].date.getTime()
-    ) {
-      // Greater than 1 week -> keep data as is (just calculate totals)
-      console.log("Greater than 1 week");
+    } else if (WEEK_MS < Date.now() - data[0].date.getTime()) {
+      // Greater than 1 month -> keep data as is (just calculate totals)
+      console.log("1 month view");
       let curr = 0;
-      let first = new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0));
+      let first = new Date(data[0].date);
       let last = new Date();
       while (first < last) {
         let total = 0;
@@ -231,7 +237,6 @@ export default function Graph() {
         }
         let label = first.toDateString().substring(4, 10);
         console.log(label);
-
         let labelBool =
           first.toDateString() ===
           getFirstDayOfWeek(new Date(first)).toDateString();
@@ -255,7 +260,6 @@ export default function Graph() {
       console.log("<= 1 week");
       let curr = 0;
       let first = new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS);
-      console.log(first);
       let last = new Date();
       while (first <= last) {
         let total = 0;
@@ -276,7 +280,6 @@ export default function Graph() {
         });
         first.setHours(0, 0, 0, 0);
         first = new Date(first.getTime() + DAY_MS);
-        firstCopy = first;
       }
     }
     return res;
@@ -403,7 +406,7 @@ export default function Graph() {
           areaChart
           // Chart //
           isAnimated={true}
-          rotateLabel={buttonSelected === "1M"}
+          rotateLabel={WEEK_MS < Date.now() - graphInput[0].date.getTime()}
           animationDuration={1000}
           //animateOnDataChange={true}
           adjustToWidth={true}
@@ -534,7 +537,11 @@ export default function Graph() {
       {/* Button View */}
       <View
         className="flex flex-row "
-        style={{ backgroundColor: "#0D0D0D", justifyContent: "space-evenly" }}
+        style={{
+          backgroundColor: "#0D0D0D",
+          justifyContent: "space-evenly",
+          marginTop: 20,
+        }}
       >
         {buttons.map((title) => {
           return (
@@ -648,8 +655,11 @@ export default function Graph() {
 - Add toggles to displaying bar / line cut off graph (get an idea of model works best for displaying to the user) (done w/ data issues)
 - Fix issue: Week view doesn't display data (all data is null); maybe inputData is being modified somehow (done)
 
-- Make Label Text "White" / Add Labels for every month (done w/ initial label spacing issue)
-- 
+- Make Label Text "White" / Add Labels for every month (curr)
+    * 1week view (done) ISSUE w/ initial label spacing
+    * 1month view (done) ISSUE w/ label cuts off from range buttons
+    * all other views
+    * Fix slanted labels from cutting off
 - Center and prevent tooltip from cutting out of bounds
 - Create a nav bottom bar
 
