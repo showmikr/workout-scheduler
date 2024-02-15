@@ -107,48 +107,14 @@ export default function AddExerciseComponent() {
           style={{ columnGap: 14 * 2 }}
           className="flex-1 flex-row items-baseline"
         >
-          <Pressable
-            disabled={exerciseType === exerciseEnums.RESISTANCE_ENUM}
-            style={[
-              styles.exerciseTypeBtn,
-              exerciseType === exerciseEnums.RESISTANCE_ENUM &&
-                styles.selectedExerciseBtn,
-            ]}
-            onPress={() =>
-              exerciseFormDispatch({ type: "toggle_exercise_type" })
-            }
-          >
-            <Text
-              style={
-                exerciseType === exerciseEnums.RESISTANCE_ENUM &&
-                styles.selectedExerciseText
-              }
-              className="text-center text-xl text-black dark:text-white"
-            >
-              Resistance
-            </Text>
-          </Pressable>
-          <Pressable
-            disabled={exerciseType === exerciseEnums.CARDIO_ENUM}
-            style={[
-              styles.exerciseTypeBtn,
-              exerciseType === exerciseEnums.CARDIO_ENUM &&
-                styles.selectedExerciseBtn,
-            ]}
-            onPress={() =>
-              exerciseFormDispatch({ type: "toggle_exercise_type" })
-            }
-          >
-            <Text
-              style={
-                exerciseType === exerciseEnums.CARDIO_ENUM &&
-                styles.selectedExerciseText
-              }
-              className="text-center text-xl text-black dark:text-white"
-            >
-              Cardio
-            </Text>
-          </Pressable>
+          {Object.values(exerciseEnums).map((buttonType) => (
+            <ExerciseTypeToggle
+              key={buttonType}
+              expectedType={buttonType}
+              currentType={exerciseType}
+              dispatch={exerciseFormDispatch}
+            />
+          ))}
         </View>
         <Text className="text-2xl font-bold dark:text-white">Title:</Text>
         <TextInput
@@ -181,6 +147,37 @@ export default function AddExerciseComponent() {
         </Pressable>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+type ExerciseTypeToggleProps = {
+  expectedType: (typeof exerciseEnums)[keyof typeof exerciseEnums];
+  currentType: (typeof exerciseEnums)[keyof typeof exerciseEnums];
+  dispatch: React.Dispatch<ExerciseInputFormAction>;
+};
+function ExerciseTypeToggle({
+  expectedType,
+  currentType,
+  dispatch,
+}: ExerciseTypeToggleProps) {
+  return (
+    <Pressable
+      disabled={expectedType === currentType}
+      style={[
+        styles.exerciseTypeBtn,
+        expectedType === currentType && styles.selectedExerciseBtn,
+      ]}
+      onPress={() => dispatch({ type: "toggle_exercise_type" })}
+    >
+      <Text
+        style={expectedType === currentType && styles.selectedExerciseText}
+        className="text-center text-xl text-black dark:text-white"
+      >
+        {expectedType === exerciseEnums.RESISTANCE_ENUM ?
+          "Resistance"
+        : "Cardio"}
+      </Text>
+    </Pressable>
   );
 }
 
