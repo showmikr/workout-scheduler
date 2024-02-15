@@ -1,6 +1,6 @@
 import { BarChart, LineChart, yAxisSides } from "react-native-gifted-charts";
 import { View } from "../../components/Themed";
-import { Text, Button, Pressable } from "react-native";
+import { Text, Button, Pressable, StyleSheet, TextStyle } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
 
@@ -15,6 +15,8 @@ type WorkoutSession = {
 type CalorieData = {
   value: number | null;
   date: Date;
+  label?: string | null;
+  labelTextStyle?: TextStyle;
 };
 
 export default function Graph() {
@@ -32,43 +34,6 @@ export default function Graph() {
   const WEEK_MS = 657449982;
   const MONTH_MS = 2629799928;
   const YEAR_MS = 31557599136;
-
-  const dailyLabel = (val: string) => {
-    return (
-      <View
-        style={{
-          width: 14,
-          marginLeft: 25,
-          backgroundColor: "#0D0D0D", //#0D0D0D
-          alignItems: "center",
-          justifyContent: "space-evenly",
-          // borderWidth: 1,
-          // borderColor: "white",
-        }}
-      >
-        <Text style={{ color: "white", fontWeight: "bold" }}>{val}</Text>
-      </View>
-    );
-  };
-
-  const weeklyLabel = (val: string) => {
-    return (
-      <View
-        style={{
-          width: 50,
-          marginLeft: -15,
-
-          backgroundColor: "#0D0D0D", //#0D0D0D
-          alignItems: "center",
-          justifyContent: "space-evenly",
-          // borderWidth: 1,
-          // borderColor: "white",
-        }}
-      >
-        <Text style={{ color: "white", fontWeight: "bold" }}>{val}</Text>
-      </View>
-    );
-  };
 
   // Returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
@@ -128,7 +93,7 @@ export default function Graph() {
   function averagePlotData(data: CalorieData[] | undefined) {
     // Looks messy, code clean up if possible
     // going to change logic to be more "functional" in the future...
-    let res = [];
+    let res: CalorieData[] = [];
     if (!data || data.length < 1) {
       console.log("Not enough data or data does not exist.");
       res = [
@@ -141,34 +106,45 @@ export default function Graph() {
       ];
     } else if (MONTH_MS * 6 < Date.now() - data[0].date.getTime()) {
       // Greater than 1 year -> average months
+      // data.forEach((obj) => {
+      //   console.log(obj);
+      // });
       console.log("1 year view");
-      let curr = 0;
+      let idx = 0;
       let first = getFirstDayOfMonth(data[0].date);
       let last = getLastDayOfMonth(data[0].date);
-
       while (first < data[data.length - 1].date) {
         let amt = 0;
         let avg = 0;
-        while (curr < data.length && data[curr].date < last) {
-          avg += data[curr].value!;
+        while (idx < data.length && data[idx].date < last) {
+          avg += data[idx].value!;
           (
-            curr != 0 &&
-            data[curr].date.toDateString() ===
-              data[curr - 1].date.toDateString()
+            idx != 0 &&
+            data[idx].date.toDateString() === data[idx - 1].date.toDateString()
           ) ?
             amt
           : (amt += 1);
-          curr += 1;
+          idx += 1;
         }
 
         res.push({
           value:
             amt === 0 ?
-              curr === data.length ?
+              idx === data.length ?
                 0
               : null
             : Math.round(avg / amt),
           date: first,
+          label:
+            buttonSelected === "ALL" ?
+              first.getMonth() === 1 ?
+                first.toDateString().substring(11)
+              : null
+            : first.toDateString().substring(4, 7),
+          labelTextStyle:
+            buttonSelected === "ALL" ?
+              graphStyle.allLabel
+            : graphStyle.yearLabel,
         });
 
         first = getFirstDayOfMonth(new Date(last.getTime() + 1));
@@ -176,37 +152,39 @@ export default function Graph() {
       }
     } else if (MONTH_MS < Date.now() - data[0].date.getTime()) {
       console.log("3-6 month view");
-      let curr = 0;
+      let idx = 0;
       let first = getFirstDayOfWeek(data[0].date);
       let last = getLastDayOfWeek(data[0].date);
-      let currMonth = getFirstDayOfMonth(data[0].date);
-      while (curr < data.length && first < data[data.length - 1].date) {
+      let currMonth = getFirstDayOfMonth(
+        new Date(
+          data[0].date.getTime() + (buttonSelected === "YTD" ? 0 : MONTH_MS)
+        )
+      );
+      while (idx < data.length && first < data[data.length - 1].date) {
         let amt = 0;
         let avg = 0;
-        while (curr < data.length && data[curr].date < last) {
-          avg += data[curr].value!;
+        while (idx < data.length && data[idx].date < last) {
+          avg += data[idx].value!;
           (
-            curr != 0 &&
-            data[curr].date.toDateString() ===
-              data[curr - 1].date.toDateString()
+            idx != 0 &&
+            data[idx].date.toDateString() === data[idx - 1].date.toDateString()
           ) ?
             amt
           : (amt += 1);
-          curr += 1;
+          idx += 1;
         }
-
-        let labelBool = first > currMonth;
-        let labelText = currMonth.toDateString().substring(4, 10);
 
         res.push({
           value:
             amt === 0 ?
-              curr === data.length ?
+              idx === data.length ?
                 0
               : null
             : Math.round(avg / amt),
           date: first,
-          labelComponent: () => (labelBool ? weeklyLabel(labelText) : null),
+          label:
+            first > currMonth ? currMonth.toDateString().substring(4, 8) : null,
+          labelTextStyle: graphStyle.weekLabel,
         });
         if (first > currMonth) {
           currMonth = new Date(
@@ -220,33 +198,33 @@ export default function Graph() {
     } else if (WEEK_MS < Date.now() - data[0].date.getTime()) {
       // Greater than 1 month -> keep data as is (just calculate totals)
       console.log("1 month view");
-      let curr = 0;
+      let idx = 0;
       let first = new Date(data[0].date);
       let last = new Date();
       while (first < last) {
         let total = 0;
 
         while (
-          curr < data.length &&
-          first.toDateString() === data[curr].date.toDateString()
+          idx < data.length &&
+          first.toDateString() === data[idx].date.toDateString()
         ) {
-          total += data[curr].value!;
-          curr += 1;
+          total += data[idx].value!;
+          idx += 1;
         }
-        let label = first.toDateString().substring(4, 10);
-        let labelBool =
-          first.toDateString() ===
-          getFirstDayOfWeek(new Date(first)).toDateString();
 
         res.push({
           value:
             total === 0 ?
-              curr === data.length ?
+              idx === data.length ?
                 0
               : null
             : Math.round(total),
           date: first,
-          labelComponent: () => (labelBool ? weeklyLabel(label) : null),
+          label:
+            first.toDateString() === getFirstDayOfWeek(first).toDateString() ?
+              first.toDateString().substring(4, 10)
+            : null,
+          labelTextStyle: graphStyle.weekLabel,
         });
 
         first.setHours(0, 0, 0, 0);
@@ -255,26 +233,26 @@ export default function Graph() {
     } else {
       // Data is equal (=) or less than (<) week -> Interpolate to correctly show day to day spacing for a week
       console.log("1 week view");
-      let curr = 0;
+      let idx = 0;
       let first = new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS);
-      let last = new Date();
+      const last = new Date();
       while (first <= last) {
         let total = 0;
         while (
-          curr < data.length &&
-          first.toDateString() === data[curr].date.toDateString()
+          idx < data.length &&
+          first.toDateString() === data[idx].date.toDateString()
         ) {
-          total += data[curr].value!;
-          curr += 1;
+          total += data[idx].value!;
+          idx += 1;
         }
 
-        let label = getDayOfWeekString(first.getDay())[0];
-
         res.push({
-          value: total === 0 ? 0 : Math.round(total),
+          value: total && Math.round(total),
           date: first,
-          labelComponent: () => dailyLabel(label),
+          label: getDayOfWeekString(first.getDay())[0],
+          labelTextStyle: graphStyle.dailyLabel,
         });
+
         first.setHours(0, 0, 0, 0);
         first = new Date(first.getTime() + DAY_MS);
       }
@@ -305,7 +283,7 @@ export default function Graph() {
         console.log("DB READ ERROR | " + err);
       });
   }
-
+  console.log(new Date(getPriorTime(0, 0, 1)).toDateString());
   // 2) Extract user calorie data
   const graphData: CalorieData[] | undefined = workoutSessionData?.map((ws) => {
     return {
@@ -376,7 +354,11 @@ export default function Graph() {
       graphData?.filter(
         (wk) =>
           new Date(wk.date) >
-          new Date(getPriorTime(0, 0, 1).setHours(0, 0, 0, 0))
+          new Date(
+            getLastDayOfMonth(
+              new Date(getPriorTime(0, 0, 1).getTime() + 1)
+            ).setHours(0, 0, 0, 0)
+          )
       )!
     )),
       (maxGraphValue = graphInput?.reduce((p, c) =>
@@ -403,7 +385,7 @@ export default function Graph() {
           areaChart
           // Chart //
           isAnimated={true}
-          rotateLabel={WEEK_MS < Date.now() - graphInput[0].date.getTime()}
+          //rotateLabel={WEEK_MS < Date.now() - graphInput[0].date.getTime()}
           animationDuration={1000}
           //animateOnDataChange={true}
           adjustToWidth={true}
@@ -642,6 +624,31 @@ export default function Graph() {
   );
 }
 
+const graphStyle = StyleSheet.create({
+  dailyLabel: {
+    color: "white",
+    width: 12,
+    marginLeft: 26,
+    justifyContent: "center",
+  },
+  weekLabel: {
+    color: "white",
+    width: 50,
+    marginLeft: -14,
+  },
+  yearLabel: {
+    color: "white",
+    fontSize: 10,
+    width: 50,
+    marginLeft: -5,
+  },
+  allLabel: {
+    color: "white",
+    width: 50,
+    marginLeft: -26,
+  },
+});
+
 /*
 - Average out data points (done)
 - Remove extra range buttons (done)
@@ -652,18 +659,15 @@ export default function Graph() {
 - Add toggles to displaying bar / line cut off graph (get an idea of model works best for displaying to the user) (done w/ data issues)
 - Fix issue: Week view doesn't display data (all data is null); maybe inputData is being modified somehow (done)
 
-- Make Label Text "White" / Add Labels for every month (curr)
+- Make Label Text "White" / Add Labels for every month (idx)
     * 1week view (done) ISSUE w/ initial label spacing
     * 1month view (done) ISSUE w/ label cuts off from range buttons
-    * all other views
-    * Fix slanted labels from cutting off
-- Pretty up BarChart
+    * all other views (done)
+    * Fix slanted labels from cutting off (not need)
+
 - Center and prevent tooltip from cutting out of bounds
+- fixed up BarChart to better reflex linechart style
+- add more functionality to summary page
 - Adjust bottom nav to reflex prototype app design
 
-
-caution not an issue: (function mutated incomming argument; should be resolved now)
-1) using iterative date variable "first" as a parameter for getFirstDayOfWeek() result in infinite loop; for some reason.
-    -  temp fix | surround first within new Date -> getFirstDayOfWeek(new Date(first))
-    -  common issue: react+ts likes to reference an pointer to an old object even when the variable gets updated; happens when passing variables into functions; it seems.
 */
