@@ -137,7 +137,7 @@ export default function Graph() {
         { value: 404, date: new Date(new Date().getTime() - DAY_MS) },
         { value: 404, date: new Date(new Date().getTime()) },
       ];
-    } else if (YEAR_MS < Date.now() - data[0].date.getTime()) {
+    } else if (MONTH_MS * 6 < Date.now() - data[0].date.getTime()) {
       // Greater than 1 year -> average months
       console.log("1 year view");
       let curr = 0;
@@ -192,9 +192,7 @@ export default function Graph() {
           : (amt += 1);
           curr += 1;
         }
-        if (first > currMonth) {
-          console.log(currMonth.toDateString());
-        }
+
         let labelBool = first > currMonth;
         let labelText = currMonth.toDateString().substring(4, 10);
 
@@ -208,8 +206,6 @@ export default function Graph() {
           date: first,
           labelComponent: () => (labelBool ? weeklyLabel(labelText) : null),
         });
-        // console.log("First: " + first.toDateString());
-        // console.log("Curr: " + currMonth.toDateString());
         if (first > currMonth) {
           currMonth = new Date(
             getLastDayOfMonth(new Date(currMonth)).getTime() + 1
@@ -236,7 +232,6 @@ export default function Graph() {
           curr += 1;
         }
         let label = first.toDateString().substring(4, 10);
-        console.log(label);
         let labelBool =
           first.toDateString() ===
           getFirstDayOfWeek(new Date(first)).toDateString();
@@ -257,7 +252,7 @@ export default function Graph() {
       }
     } else {
       // Data is equal (=) or less than (<) week -> Interpolate to correctly show day to day spacing for a week
-      console.log("<= 1 week");
+      console.log("1 week view");
       let curr = 0;
       let first = new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS);
       let last = new Date();
@@ -660,11 +655,13 @@ export default function Graph() {
     * 1month view (done) ISSUE w/ label cuts off from range buttons
     * all other views
     * Fix slanted labels from cutting off
+- Pretty up BarChart
 - Center and prevent tooltip from cutting out of bounds
-- Create a nav bottom bar
+- Adjust bottom nav to reflex prototype app design
 
 
 CAUTION: 
 1) using iterative date variable "first" as a parameter for getFirstDayOfWeek() result in infinite loop; for some reason.
     -  temp fix | surround first within new Date -> getFirstDayOfWeek(new Date(first))
+    -  common issue: react+ts likes to reference an pointer to an old object even when the variable gets updated; happens when passing variables into functions; it seems.
 */
