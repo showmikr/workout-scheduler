@@ -5,7 +5,7 @@ import {
   ExerciseSetParams,
   ResistanceSetParams,
 } from "../[workoutId]";
-import { useState } from "react";
+import { useReducer } from "react";
 import {
   SafeAreaView,
   View,
@@ -38,16 +38,65 @@ type ExerciseInputForm = (ResistanceInputForm | CardioInputForm) & {
   exerciseTitle: string;
 };
 
+type ExerciseInputFormAction =
+  | { type: "toggle_exercise_type" }
+  | { type: "change_exercise_title"; newTitle: string };
+
+function ExerciseFormReducer(
+  state: ExerciseInputForm,
+  action: ExerciseInputFormAction
+) {
+  switch (action.type) {
+    case "toggle_exercise_type": {
+      const { exerciseType: currentType } = state;
+      const newData =
+        currentType === exerciseEnums.RESISTANCE_ENUM ?
+          {
+            exerciseType: exerciseEnums.CARDIO_ENUM,
+            formRows: [
+              {
+                title: "",
+                reps: 1,
+                rest_time: 0,
+                target_distance: 0,
+                target_time: 0,
+                target_speed: 0,
+              },
+            ],
+          }
+        : {
+            exerciseType: exerciseEnums.RESISTANCE_ENUM,
+            formRows: [{ title: "", reps: 1, rest_time: 0, total_weight: 0 }],
+          };
+      return {
+        exerciseTitle: "",
+        ...newData,
+      };
+    }
+    case "change_exercise_title":
+      return {
+        ...state,
+        exerciseTitle: action.newTitle,
+      } satisfies ExerciseInputForm;
+    default:
+      const _unreachableCase: never = action;
+      return _unreachableCase;
+  }
+}
+
+const initialExerciseAddFormState = {
+  exerciseTitle: "",
+  exerciseType: exerciseEnums.RESISTANCE_ENUM,
+  formRows: [{ title: "", reps: 1, rest_time: 0, total_weight: 0 }],
+};
+
 export default function AddExerciseComponent() {
   const db = useSQLiteContext();
-  const [exerciseInputForm, setExerciseInputForm] = useState<ExerciseInputForm>(
-    {
-      exerciseTitle: "",
-      exerciseType: exerciseEnums.RESISTANCE_ENUM,
-      formRows: [{ title: "", reps: 1, rest_time: 0, total_weight: 0 }],
-    }
+  const [exerciseFormState, exerciseFormDispatch] = useReducer(
+    ExerciseFormReducer,
+    initialExerciseAddFormState
   );
-  const { exerciseType, exerciseTitle, formRows } = exerciseInputForm;
+  const { exerciseType, exerciseTitle, formRows } = exerciseFormState;
   return (
     <SafeAreaView className="flex-1">
       <ScrollView className="ml-4 mr-4 mt-4 flex-1">
@@ -65,13 +114,9 @@ export default function AddExerciseComponent() {
               exerciseType === exerciseEnums.RESISTANCE_ENUM &&
                 styles.selectedExerciseBtn,
             ]}
-            onPress={() => {
-              setExerciseInputForm({
-                ...exerciseInputForm,
-                exerciseType: exerciseEnums.RESISTANCE_ENUM,
-                formRows: [],
-              });
-            }}
+            onPress={() =>
+              exerciseFormDispatch({ type: "toggle_exercise_type" })
+            }
           >
             <Text
               style={
@@ -84,21 +129,15 @@ export default function AddExerciseComponent() {
             </Text>
           </Pressable>
           <Pressable
-            disabled={
-              exerciseInputForm.exerciseType === exerciseEnums.CARDIO_ENUM
-            }
+            disabled={exerciseType === exerciseEnums.CARDIO_ENUM}
             style={[
               styles.exerciseTypeBtn,
               exerciseType === exerciseEnums.CARDIO_ENUM &&
                 styles.selectedExerciseBtn,
             ]}
-            onPress={() => {
-              setExerciseInputForm({
-                ...exerciseInputForm,
-                exerciseType: exerciseEnums.CARDIO_ENUM,
-                formRows: [],
-              });
-            }}
+            onPress={() =>
+              exerciseFormDispatch({ type: "toggle_exercise_type" })
+            }
           >
             <Text
               style={
@@ -113,11 +152,14 @@ export default function AddExerciseComponent() {
         </View>
         <Text className="text-2xl font-bold dark:text-white">Title:</Text>
         <TextInput
-          value={exerciseInputForm.exerciseTitle}
+          value={exerciseTitle}
           onChangeText={(text) =>
-            setExerciseInputForm({ ...exerciseInputForm, exerciseTitle: text })
+            exerciseFormDispatch({
+              type: "change_exercise_title",
+              newTitle: text,
+            })
           }
-          className={` border-b pb-1 ${exerciseInputForm.exerciseTitle ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
+          className={` border-b pb-1 ${exerciseTitle ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
           placeholder="Add exercise title here"
         />
         <Pressable
