@@ -13,6 +13,7 @@ import {
   TextInput,
   Pressable,
   ScrollView,
+  StyleSheet,
 } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { twColors } from "../../../../constants/Colors";
@@ -46,25 +47,71 @@ export default function AddExerciseComponent() {
       formRows: [{ title: "", reps: 1, rest_time: 0, total_weight: 0 }],
     }
   );
+  const { exerciseType, exerciseTitle, formRows } = exerciseInputForm;
   return (
     <SafeAreaView className="flex-1">
-      <ScrollView className="ml-4 mr-4 mt-4">
+      <ScrollView className="ml-4 mr-4 mt-4 flex-1">
         <Text className="text-2xl font-bold text-black dark:text-white">
           Exercise Type:
         </Text>
-        <View className="flex-1 flex-row justify-between">
-          <Pressable className="flex-1 border border-blue-500">
-            <Text className="text-xl text-black dark:text-white">
+        <View
+          style={{ columnGap: 14 * 2 }}
+          className="flex-1 flex-row items-baseline"
+        >
+          <Pressable
+            disabled={exerciseType === exerciseEnums.RESISTANCE_ENUM}
+            style={[
+              styles.exerciseTypeBtn,
+              exerciseType === exerciseEnums.RESISTANCE_ENUM &&
+                styles.selectedExerciseBtn,
+            ]}
+            onPress={() => {
+              setExerciseInputForm({
+                ...exerciseInputForm,
+                exerciseType: exerciseEnums.RESISTANCE_ENUM,
+                formRows: [],
+              });
+            }}
+          >
+            <Text
+              style={
+                exerciseType === exerciseEnums.RESISTANCE_ENUM &&
+                styles.selectedExerciseText
+              }
+              className="text-center text-xl text-black dark:text-white"
+            >
               Resistance
             </Text>
           </Pressable>
-          <Pressable className="flex-1 border border-blue-500">
-            <Text className="text-xl text-black dark:text-white">Cardio</Text>
+          <Pressable
+            disabled={
+              exerciseInputForm.exerciseType === exerciseEnums.CARDIO_ENUM
+            }
+            style={[
+              styles.exerciseTypeBtn,
+              exerciseType === exerciseEnums.CARDIO_ENUM &&
+                styles.selectedExerciseBtn,
+            ]}
+            onPress={() => {
+              setExerciseInputForm({
+                ...exerciseInputForm,
+                exerciseType: exerciseEnums.CARDIO_ENUM,
+                formRows: [],
+              });
+            }}
+          >
+            <Text
+              style={
+                exerciseType === exerciseEnums.CARDIO_ENUM &&
+                styles.selectedExerciseText
+              }
+              className="text-center text-xl text-black dark:text-white"
+            >
+              Cardio
+            </Text>
           </Pressable>
         </View>
-        <Text className="self-baseline text-2xl font-bold dark:text-white">
-          Title:
-        </Text>
+        <Text className="text-2xl font-bold dark:text-white">Title:</Text>
         <TextInput
           value={exerciseInputForm.exerciseTitle}
           onChangeText={(text) =>
@@ -76,6 +123,7 @@ export default function AddExerciseComponent() {
         <Pressable
           style={({ pressed }) => ({
             flexDirection: "row",
+            columnGap: 14 * 0.25,
             marginTop: 3.5,
             marginBottom: 17.5,
             alignItems: "center",
@@ -83,7 +131,6 @@ export default function AddExerciseComponent() {
           })}
         >
           <FontAwesome
-            className="mr-1"
             size={14 * 1.25}
             name="plus"
             color={twColors.neutral500}
@@ -94,3 +141,20 @@ export default function AddExerciseComponent() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  exerciseTypeBtn: {
+    flexDirection: "row",
+    justifyContent: "center",
+    padding: 14 * 0.25,
+  },
+  selectedExerciseBtn: {
+    borderRadius: 14 * 0.5,
+    borderWidth: 1,
+    backgroundColor: twColors.neutral300,
+  },
+  selectedExerciseText: {
+    fontWeight: "bold",
+    color: twColors.neutral900,
+  },
+});
