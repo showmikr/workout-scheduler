@@ -3,6 +3,7 @@ import {
   CardioSetParams,
   exerciseEnums,
   ExerciseSetParams,
+  ExerciseType,
   ResistanceSetParams,
 } from "../[workoutId]";
 import { useReducer } from "react";
@@ -27,11 +28,11 @@ type CardioSetInput = Pick<
 > &
   ExerciseSetInput;
 type ResistanceInputForm = {
-  exerciseType: typeof exerciseEnums.RESISTANCE_ENUM;
+  exerciseType: ExerciseType["RESISTANCE_ENUM"];
   formRows: ResistanceSetInput[];
 };
 type CardioInputForm = {
-  exerciseType: typeof exerciseEnums.CARDIO_ENUM;
+  exerciseType: ExerciseType["CARDIO_ENUM"];
   formRows: CardioSetInput[];
 };
 type ExerciseInputForm = (ResistanceInputForm | CardioInputForm) & {
@@ -151,8 +152,8 @@ export default function AddExerciseComponent() {
 }
 
 type ExerciseTypeToggleProps = {
-  expectedType: (typeof exerciseEnums)[keyof typeof exerciseEnums];
-  currentType: (typeof exerciseEnums)[keyof typeof exerciseEnums];
+  expectedType: ExerciseType[keyof ExerciseType];
+  currentType: ExerciseType[keyof ExerciseType];
   dispatch: React.Dispatch<ExerciseInputFormAction>;
 };
 function ExerciseTypeToggle({
