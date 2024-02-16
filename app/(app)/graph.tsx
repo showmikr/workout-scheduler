@@ -1,6 +1,6 @@
 import { BarChart, LineChart, yAxisSides } from "react-native-gifted-charts";
 import { View } from "../../components/Themed";
-import { Text, Button, Pressable, StyleSheet, TextStyle } from "react-native";
+import { Text, Pressable, StyleSheet, TextStyle } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
 
@@ -27,7 +27,6 @@ export default function Graph() {
   >(null);
   const [buttonSelected, setButtonSelected] = useState("1M");
   const [graphType, setGraphType] = useState(true); // true -> LineChart; false -> BarChart
-  const [lineBreak, setLineBreak] = useState(true); // LineChart option only
   const buttons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
 
   const DAY_MS = 93921426;
@@ -249,7 +248,7 @@ export default function Graph() {
         res.push({
           value: total && Math.round(total),
           date: first,
-          label: getDayOfWeekString(first.getDay())[0],
+          label: getDayOfWeekString(first.getDay()).substring(0, 3),
           labelTextStyle: graphStyle.dailyLabel,
         });
 
@@ -283,7 +282,6 @@ export default function Graph() {
         console.log("DB READ ERROR | " + err);
       });
   }
-  console.log(new Date(getPriorTime(0, 0, 1)).toDateString());
   // 2) Extract user calorie data
   const graphData: CalorieData[] | undefined = workoutSessionData?.map((ws) => {
     return {
@@ -397,7 +395,7 @@ export default function Graph() {
           onlyPositive={true}
           hideDataPoints={true}
           dataPointsColor="#A53535"
-          interpolateMissingValues={lineBreak}
+          interpolateMissingValues={true}
           // focusEnabled={true}
           // showDataPointOnFocus={false}
           // showStripOnFocus={false}
@@ -590,35 +588,6 @@ export default function Graph() {
             {graphType ? "BarChart" : "LineChart"}
           </Text>
         </Pressable>
-
-        {graphType && (
-          <Pressable
-            style={{
-              marginHorizontal: 5,
-              backgroundColor: "#1C1C1C",
-              alignItems: "center",
-              justifyContent: "center",
-              paddingVertical: 4,
-              paddingHorizontal: 4,
-              borderRadius: 4,
-              elevation: 3,
-              width: 100,
-              height: 30,
-            }}
-            onPress={() => {
-              setLineBreak(!lineBreak);
-            }}
-          >
-            <Text
-              style={{
-                color: "white",
-                fontWeight: "300",
-              }}
-            >
-              {lineBreak ? "Break" : "Continuous"}
-            </Text>
-          </Pressable>
-        )}
       </View>
     </View>
   );
@@ -626,46 +595,38 @@ export default function Graph() {
 
 const graphStyle = StyleSheet.create({
   dailyLabel: {
-    color: "white",
-    width: 12,
-    marginLeft: 26,
+    color: "gray",
+    width: 28,
+    fontSize: 13,
+    marginLeft: 20,
     justifyContent: "center",
   },
   weekLabel: {
-    color: "white",
+    color: "gray",
+    fontSize: 13,
     width: 50,
     marginLeft: -14,
   },
   yearLabel: {
-    color: "white",
-    fontSize: 10,
+    color: "gray",
+    fontSize: 13,
     width: 50,
     marginLeft: -5,
   },
   allLabel: {
-    color: "white",
+    color: "gray",
+    fontSize: 13,
     width: 50,
     marginLeft: -26,
   },
 });
 
 /*
-- Average out data points (done)
-- Remove extra range buttons (done)
-- Ensure interpolation for null values do not display (not concerned)
-- Correctly space out each day on graph (done)
-- CHECK ON (FIX) 3 MONTH DATAPOINTS (done)
-- Calculate total calorie if user worked out multiple times in a day (done)
-- Add toggles to displaying bar / line cut off graph (get an idea of model works best for displaying to the user) (done w/ data issues)
-- Fix issue: Week view doesn't display data (all data is null); maybe inputData is being modified somehow (done)
 
-- Make Label Text "White" / Add Labels for every month (idx)
-    * 1week view (done) ISSUE w/ initial label spacing
-    * 1month view (done) ISSUE w/ label cuts off from range buttons
-    * all other views (done)
-    * Fix slanted labels from cutting off (not need)
+- tooltip modification (current)
+    * Center tooltip from focused datapoint vertical line 
+    * Prevent tooltip from reaching out of bounds
 
-- Center and prevent tooltip from cutting out of bounds
 - fixed up BarChart to better reflex linechart style
 - add more functionality to summary page
 - Adjust bottom nav to reflex prototype app design
