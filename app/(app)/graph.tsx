@@ -2,7 +2,7 @@ import { BarChart, LineChart, yAxisSides } from "react-native-gifted-charts";
 import { View } from "../../components/Themed";
 import { Text, Pressable, StyleSheet, TextStyle } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 type WorkoutSession = {
   appUserId: bigint;
@@ -25,9 +25,11 @@ export default function Graph() {
   const [workoutSessionData, setWorkoutSessionData] = useState<
     WorkoutSession[] | null
   >(null);
-  const [buttonSelected, setButtonSelected] = useState("1M");
+  const [graphRange, setGraphRange] = useState("1M");
+  const graphRangeButtons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
+  const [graphDataType, setGraphDataType] = useState("calorie"); // 0: calories, 1: body-weight, 2: personal-records
+  const graphDataTypeButtons = ["calorie", "weight", "personal-records"];
   const [graphType, setGraphType] = useState(true); // true -> LineChart; false -> BarChart
-  const buttons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
 
   const DAY_MS = 93921426;
   const WEEK_MS = 657449982;
@@ -135,15 +137,13 @@ export default function Graph() {
             : Math.round(avg / amt),
           date: first,
           label:
-            buttonSelected === "ALL" ?
+            graphRange === "ALL" ?
               first.getMonth() === 1 ?
                 first.toDateString().substring(11)
               : null
             : first.toDateString().substring(4, 7),
           labelTextStyle:
-            buttonSelected === "ALL" ?
-              graphStyle.allLabel
-            : graphStyle.yearLabel,
+            graphRange === "ALL" ? graphStyle.allLabel : graphStyle.yearLabel,
         });
 
         first = getFirstDayOfMonth(new Date(last.getTime() + 1));
@@ -155,9 +155,7 @@ export default function Graph() {
       let first = getFirstDayOfWeek(data[0].date);
       let last = getLastDayOfWeek(data[0].date);
       let currMonth = getFirstDayOfMonth(
-        new Date(
-          data[0].date.getTime() + (buttonSelected === "YTD" ? 0 : MONTH_MS)
-        )
+        new Date(data[0].date.getTime() + (graphRange === "YTD" ? 0 : MONTH_MS))
       );
       while (idx < data.length && first < data[data.length - 1].date) {
         let amt = 0;
@@ -294,7 +292,7 @@ export default function Graph() {
     p.value! > c.value! ? p : c
   );
   let graphInput = graphData;
-  if (buttonSelected === "1W") {
+  if (graphRange === "1W") {
     (graphInput = averagePlotData(
       graphData?.filter(
         (wk) =>
@@ -305,7 +303,7 @@ export default function Graph() {
       (maxGraphValue = averagePlotData(graphInput)?.reduce((p, c) =>
         p.value! > c.value! ? p : c
       ));
-  } else if (buttonSelected === "1M") {
+  } else if (graphRange === "1M") {
     (graphInput = averagePlotData(
       graphData?.filter(
         (wk) =>
@@ -316,7 +314,7 @@ export default function Graph() {
       (maxGraphValue = graphInput?.reduce((p, c) =>
         p.value! > c.value! ? p : c
       ));
-  } else if (buttonSelected === "3M") {
+  } else if (graphRange === "3M") {
     (graphInput = averagePlotData(
       graphData?.filter(
         (wk) =>
@@ -327,7 +325,7 @@ export default function Graph() {
       (maxGraphValue = graphInput?.reduce((p, c) =>
         p.value! > c.value! ? p : c
       ));
-  } else if (buttonSelected === "6M") {
+  } else if (graphRange === "6M") {
     (graphInput = averagePlotData(
       graphData?.filter(
         (wk) =>
@@ -338,7 +336,7 @@ export default function Graph() {
       (maxGraphValue = graphInput?.reduce((p, c) =>
         p.value! > c.value! ? p : c
       ));
-  } else if (buttonSelected === "YTD") {
+  } else if (graphRange === "YTD") {
     (graphInput = averagePlotData(
       graphData?.filter(
         (wk) => new Date(wk.date) > new Date(new Date().getFullYear(), 0, 1)
@@ -347,7 +345,7 @@ export default function Graph() {
       (maxGraphValue = graphInput?.reduce((p, c) =>
         p.value! > c.value! ? p : c
       ));
-  } else if (buttonSelected === "1Y") {
+  } else if (graphRange === "1Y") {
     (graphInput = averagePlotData(
       graphData?.filter(
         (wk) =>
@@ -517,21 +515,20 @@ export default function Graph() {
         />
       }
 
-      {/* Button View */}
+      {/* Chart Range Buttons*/}
       <View
         className="flex flex-row "
         style={{
           backgroundColor: "#0D0D0D",
           justifyContent: "space-evenly",
-          marginTop: 20,
+          marginTop: 15,
         }}
       >
-        {buttons.map((title) => {
+        {graphRangeButtons.map((title) => {
           return (
             <Pressable
               style={{
-                backgroundColor:
-                  buttonSelected === title ? "#343434" : "#1C1C1C",
+                backgroundColor: graphRange === title ? "#343434" : "#1C1C1C",
                 alignItems: "center",
                 justifyContent: "center",
                 paddingVertical: 4,
@@ -542,14 +539,14 @@ export default function Graph() {
                 height: 30,
               }}
               onPress={() => {
-                setButtonSelected(title);
+                setGraphRange(title);
               }}
               key={title}
             >
               <Text
                 style={{
                   color: "white",
-                  fontWeight: buttonSelected === title ? "bold" : "300",
+                  fontWeight: graphRange === title ? "bold" : "300",
                 }}
               >
                 {title}
@@ -558,10 +555,51 @@ export default function Graph() {
           );
         })}
       </View>
-      {/*Chart Button*/}
+      {/* Graph Data Buttons */}
+      <View
+        className="flex flex-row "
+        style={{
+          backgroundColor: "#0D0D0D",
+          justifyContent: "space-evenly",
+          marginTop: 20,
+        }}
+      >
+        {graphDataTypeButtons.map((title) => {
+          return (
+            <Pressable
+              style={{
+                backgroundColor:
+                  graphDataType === title ? "#343434" : "#1C1C1C",
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 4,
+                paddingHorizontal: 4,
+                borderRadius: 4,
+                elevation: 3,
+                width: 120,
+                height: 30,
+              }}
+              onPress={() => {
+                setGraphDataType(title);
+              }}
+              key={title}
+            >
+              <Text
+                style={{
+                  color: "white",
+                  fontWeight: graphDataType === title ? "bold" : "300",
+                }}
+              >
+                {title}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      {/*Graph Type Button*/}
       <View
         style={{
-          paddingVertical: 10,
+          paddingVertical: 20,
           flexDirection: "row",
           justifyContent: "center",
           alignItems: "center",
@@ -630,10 +668,12 @@ const graphStyle = StyleSheet.create({
 
 /*
 
-- tooltip modification (current)
+- display weight on graph (current)
+
+- tooltip modification (not priority)
     * Center tooltip from focused datapoint vertical line 
     * Prevent tooltip from reaching out of bounds
-    * Round interpolated values
+    * Round interpolated values (done)
 
 - fixed up BarChart to better reflex linechart style
 - add more functionality to summary page
