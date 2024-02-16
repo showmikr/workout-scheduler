@@ -2,7 +2,7 @@ import { BarChart, LineChart, yAxisSides } from "react-native-gifted-charts";
 import { View } from "../../components/Themed";
 import { Text, Pressable, StyleSheet, TextStyle } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 type WorkoutSession = {
   appUserId: bigint;
@@ -396,6 +396,7 @@ export default function Graph() {
           hideDataPoints={true}
           dataPointsColor="#A53535"
           interpolateMissingValues={true}
+          leftShiftForTooltip={400}
           // focusEnabled={true}
           // showDataPointOnFocus={false}
           // showStripOnFocus={false}
@@ -420,16 +421,17 @@ export default function Graph() {
           xAxisColor="#575757"
           rulesColor="#252525"
           pointerConfig={{
-            pointerStripHeight: 250,
+            //pointerStripUptoDataPoint: true,
+            pointerStripHeight: 235,
             pointerStripColor: "lightgray",
             pointerStripWidth: 2,
             pointerColor: "white",
+            //showPointerStrip: false,
             radius: 6,
-            pointerLabelWidth: 100,
+            pointerLabelWidth: 110,
             pointerLabelHeight: 90,
-            activatePointersOnLongPress: false,
-
-            autoAdjustPointerLabelPosition: false,
+            //activatePointersOnLongPress: false,
+            //autoAdjustPointerLabelPosition: true,
             pointerLabelComponent: (
               items: {
                 value: number;
@@ -444,7 +446,9 @@ export default function Graph() {
               return (
                 <View
                   style={{
-                    flex: 1,
+                    position: "absolute",
+                    width: 110,
+                    left: -30,
                     borderRadius: 16,
                     justifyContent: "center",
                     paddingVertical: 5,
@@ -452,6 +456,8 @@ export default function Graph() {
                     marginVertical: 20,
                     marginHorizontal: -10,
                     backgroundColor: "#0D0D0D",
+                    borderWidth: 1,
+                    borderColor: "white",
                   }}
                 >
                   <Text
@@ -481,7 +487,7 @@ export default function Graph() {
                         fontSize: 18,
                       }}
                     >
-                      {items[0].value + " Cal"}
+                      {Math.round(items[0].value) + " Cal"}
                     </Text>
                   </View>
                 </View>
@@ -619,6 +625,7 @@ const graphStyle = StyleSheet.create({
     width: 50,
     marginLeft: -26,
   },
+  toolTip: {},
 });
 
 /*
@@ -626,6 +633,7 @@ const graphStyle = StyleSheet.create({
 - tooltip modification (current)
     * Center tooltip from focused datapoint vertical line 
     * Prevent tooltip from reaching out of bounds
+    * Round interpolated values
 
 - fixed up BarChart to better reflex linechart style
 - add more functionality to summary page

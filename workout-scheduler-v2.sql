@@ -432,7 +432,13 @@ INSERT INTO cardio_set (exercise_set_id, target_distance, target_speed, target_t
 INSERT INTO user_bodyweight (app_user_id, weight, date)
     VALUES
     (1, 158, '2023-11-07T14:12:34.000Z'),
-    (1, 162, '2023-11-15T07:34:12.000Z');
+    (1, 162, '2023-11-15T07:34:12.000Z'),
+    (1, 168, '2023-12-02T07:34:12.000Z'),
+    (1, 171, '2023-12-15T07:34:12.000Z'),
+    (1, 174, '2023-12-30T07:34:12.000Z'),
+    (1, 170, '2023-01-15T07:34:12.000Z'),
+    (1, 167, '2023-01-29T07:34:12.000Z'),
+    (1, 162, '2024-02-16T07:34:12.000Z');
 
 INSERT INTO workout_days (workout_id, day)
     VALUES
@@ -646,7 +652,7 @@ INSERT INTO workout_session (app_user_id, title, date, calories, tied_to_workout
     (1, 'Upperbody',                '2024-02-05T07:34:12',   322,    False),
     (1, 'Upperbody',                '2024-02-05T09:34:12',   402,    False),
     (1, 'Upperbody',                '2024-02-07T07:34:12',   244,    False),
-    (1, 'Upperbody',                '2024-02-10T07:34:12',   886,    False),
+    (1, 'Upperbody',                '2024-02-10T07:34:12',   286,    False),
     (1, 'Upperbody',                '2024-02-14T07:34:12',   329,    False);
 
 
