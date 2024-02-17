@@ -12,7 +12,20 @@ type WorkoutSession = {
   tiedToWorkout: boolean;
 };
 
+type UserBodyWeight = {
+  appUserId: bigint;
+  weight: number;
+  date: Date;
+};
+
 type CalorieData = {
+  value: number | null;
+  date: Date;
+  label?: string | null;
+  labelTextStyle?: TextStyle;
+};
+
+type UserBodyWeightData = {
   value: number | null;
   date: Date;
   label?: string | null;
@@ -25,10 +38,13 @@ export default function Graph() {
   const [workoutSessionData, setWorkoutSessionData] = useState<
     WorkoutSession[] | null
   >(null);
+  const [bodyWeightData, setBodyWeightData] = useState<UserBodyWeight[] | null>(
+    null
+  );
   const [graphRange, setGraphRange] = useState("1M");
   const graphRangeButtons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
   const [graphDataType, setGraphDataType] = useState("calorie"); // 0: calories, 1: body-weight, 2: personal-records
-  const graphDataTypeButtons = ["calorie", "weight", "personal-records"];
+  const graphDataTypeButtons = ["calorie", "bodyweight"];
   const [graphType, setGraphType] = useState(true); // true -> LineChart; false -> BarChart
 
   const DAY_MS = 93921426;
@@ -91,7 +107,9 @@ export default function Graph() {
     }
   }
   // Averages data bases on the length of time given
-  function averagePlotData(data: CalorieData[] | undefined) {
+  function averagePlotData(
+    data: CalorieData[] | UserBodyWeightData[] | undefined
+  ) {
     // Looks messy, code clean up if possible
     // going to change logic to be more "functional" in the future...
     let res: CalorieData[] = [];
@@ -170,6 +188,13 @@ export default function Graph() {
           : (amt += 1);
           idx += 1;
         }
+        console.log(
+          Math.round(avg / amt) +
+            " | " +
+            first.toDateString() +
+            " | " +
+            last.toDateString()
+        );
 
         res.push({
           value:
@@ -256,13 +281,23 @@ export default function Graph() {
     }
     return res;
   }
-
-  // 1) Load user data
+  // Returns data based selected data type from buttons selection
+  function getSelectedData(selectedData: string) {
+    switch (selectedData) {
+      case "calorie":
+        return graphCalorieData;
+      case "bodyweight":
+        return graphBodyWeightData;
+      default:
+        return graphCalorieData;
+    }
+  }
+  // 1) Load calorie data
   if (!workoutSessionData) {
     myDB
       .getAllAsync<any>("SELECT * FROM workout_session AS ws ORDER BY ws.date")
       .then((result) => {
-        const workoutRows = result.map((row) => {
+        const queryRows = result.map((row) => {
           const { app_user_id, title, date, calories, tied_to_workout } = row;
           const readData: WorkoutSession = {
             appUserId: app_user_id,
@@ -274,29 +309,64 @@ export default function Graph() {
           return readData;
         });
 
-        setWorkoutSessionData(workoutRows);
+        setWorkoutSessionData(queryRows);
       })
       .catch((err) => {
         console.log("DB READ ERROR | " + err);
       });
   }
-  // 2) Extract user calorie data
-  const graphData: CalorieData[] | undefined = workoutSessionData?.map((ws) => {
-    return {
-      value: ws.calories,
-      date: ws.date,
-    };
-  });
+  // 2) Extract calorie data
+  const graphCalorieData: CalorieData[] | undefined = workoutSessionData?.map(
+    (ws) => {
+      return {
+        value: ws.calories,
+        date: ws.date,
+      };
+    }
+  );
+
+  // 1) Load body-weight data
+  if (!bodyWeightData) {
+    myDB
+      .getAllAsync<any>(
+        "SELECT * FROM user_bodyweight AS ubw ORDER BY ubw.date"
+      )
+      .then((result) => {
+        const queryRows = result.map((row) => {
+          const { app_user_id, weight, date } = row;
+          const readData: UserBodyWeight = {
+            appUserId: app_user_id,
+            weight: weight,
+            date: new Date(date),
+          };
+          return readData;
+        });
+
+        setBodyWeightData(queryRows);
+      })
+      .catch((err) => {
+        console.log("DB READ ERROR | " + err);
+      });
+  }
+  // 2) Extract body-weight data
+  const graphBodyWeightData: UserBodyWeightData[] | undefined =
+    bodyWeightData?.map((ubw) => {
+      return {
+        value: ubw.weight,
+        date: ubw.date,
+      };
+    });
+
   // Button range logic
-  let maxGraphValue = graphData?.reduce((p, c) =>
+  let maxGraphValue = getSelectedData(graphDataType)?.reduce((p, c) =>
     p.value! > c.value! ? p : c
   );
-  let graphInput = graphData;
+  let graphInput = getSelectedData(graphDataType);
   if (graphRange === "1W") {
     (graphInput = averagePlotData(
-      graphData?.filter(
-        (wk) =>
-          new Date(wk.date) >
+      getSelectedData(graphDataType)?.filter(
+        (obj) =>
+          new Date(obj.date) >
           new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS)
       )
     )),
@@ -305,9 +375,9 @@ export default function Graph() {
       ));
   } else if (graphRange === "1M") {
     (graphInput = averagePlotData(
-      graphData?.filter(
-        (wk) =>
-          new Date(wk.date) >
+      getSelectedData(graphDataType)?.filter(
+        (obj) =>
+          new Date(obj.date) >
           new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0))
       )
     )),
@@ -316,9 +386,9 @@ export default function Graph() {
       ));
   } else if (graphRange === "3M") {
     (graphInput = averagePlotData(
-      graphData?.filter(
-        (wk) =>
-          new Date(wk.date) >
+      getSelectedData(graphDataType)?.filter(
+        (obj) =>
+          new Date(obj.date) >
           new Date(getPriorTime(0, 3, 0).setHours(0, 0, 0, 0))
       )
     )),
@@ -327,9 +397,9 @@ export default function Graph() {
       ));
   } else if (graphRange === "6M") {
     (graphInput = averagePlotData(
-      graphData?.filter(
-        (wk) =>
-          new Date(wk.date) >
+      getSelectedData(graphDataType)?.filter(
+        (obj) =>
+          new Date(obj.date) >
           new Date(getPriorTime(0, 6, 0).setHours(0, 0, 0, 0))
       )
     )),
@@ -338,8 +408,8 @@ export default function Graph() {
       ));
   } else if (graphRange === "YTD") {
     (graphInput = averagePlotData(
-      graphData?.filter(
-        (wk) => new Date(wk.date) > new Date(new Date().getFullYear(), 0, 1)
+      getSelectedData(graphDataType)?.filter(
+        (obj) => new Date(obj.date) > new Date(new Date().getFullYear(), 0, 1)
       )!
     )),
       (maxGraphValue = graphInput?.reduce((p, c) =>
@@ -347,9 +417,9 @@ export default function Graph() {
       ));
   } else if (graphRange === "1Y") {
     (graphInput = averagePlotData(
-      graphData?.filter(
-        (wk) =>
-          new Date(wk.date) >
+      getSelectedData(graphDataType)?.filter(
+        (obj) =>
+          new Date(obj.date) >
           new Date(
             getLastDayOfMonth(
               new Date(getPriorTime(0, 0, 1).getTime() + 1)
@@ -361,7 +431,7 @@ export default function Graph() {
         p.value! > c.value! ? p : c
       ));
   } else {
-    graphInput = averagePlotData(graphData!);
+    graphInput = averagePlotData(getSelectedData(graphDataType)!);
   }
 
   return (
@@ -485,7 +555,8 @@ export default function Graph() {
                         fontSize: 18,
                       }}
                     >
-                      {Math.round(items[0].value) + " Cal"}
+                      {Math.round(items[0].value) +
+                        (graphDataType === "calorie" ? " Cal" : " Lbs")}
                     </Text>
                   </View>
                 </View>
@@ -555,6 +626,7 @@ export default function Graph() {
           );
         })}
       </View>
+
       {/* Graph Data Buttons */}
       <View
         className="flex flex-row "
@@ -596,6 +668,7 @@ export default function Graph() {
           );
         })}
       </View>
+
       {/*Graph Type Button*/}
       <View
         style={{
