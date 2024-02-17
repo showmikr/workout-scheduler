@@ -125,9 +125,6 @@ export default function Graph() {
       ];
     } else if (MONTH_MS * 6 < Date.now() - data[0].date.getTime()) {
       // Greater than 1 year -> average months
-      // data.forEach((obj) => {
-      //   console.log(obj);
-      // });
       console.log("1 year view");
       let idx = 0;
       let first = getFirstDayOfMonth(data[0].date);
@@ -137,12 +134,7 @@ export default function Graph() {
         let avg = 0;
         while (idx < data.length && data[idx].date < last) {
           avg += data[idx].value!;
-          (
-            idx != 0 &&
-            data[idx].date.toDateString() === data[idx - 1].date.toDateString()
-          ) ?
-            amt
-          : (amt += 1);
+          amt += 1;
           idx += 1;
         }
 
@@ -178,23 +170,15 @@ export default function Graph() {
       while (idx < data.length && first < data[data.length - 1].date) {
         let amt = 0;
         let avg = 0;
-        while (idx < data.length && data[idx].date < last) {
+        while (
+          idx < data.length &&
+          getFirstDayOfWeek(data[idx].date).toDateString() ===
+            getFirstDayOfWeek(first).toDateString()
+        ) {
           avg += data[idx].value!;
-          (
-            idx != 0 &&
-            data[idx].date.toDateString() === data[idx - 1].date.toDateString()
-          ) ?
-            amt
-          : (amt += 1);
+          amt += 1;
           idx += 1;
         }
-        console.log(
-          Math.round(avg / amt) +
-            " | " +
-            first.toDateString() +
-            " | " +
-            last.toDateString()
-        );
 
         res.push({
           value:
@@ -225,12 +209,13 @@ export default function Graph() {
       let last = new Date();
       while (first < last) {
         let total = 0;
-
+        let amt = 0;
         while (
           idx < data.length &&
           first.toDateString() === data[idx].date.toDateString()
         ) {
           total += data[idx].value!;
+          amt += 1;
           idx += 1;
         }
 
@@ -240,7 +225,7 @@ export default function Graph() {
               idx === data.length ?
                 0
               : null
-            : Math.round(total),
+            : Math.round(graphDataType === "calorie" ? total : total / amt),
           date: first,
           label:
             first.toDateString() === getFirstDayOfWeek(first).toDateString() ?
@@ -524,8 +509,8 @@ export default function Graph() {
                     marginVertical: 20,
                     marginHorizontal: -10,
                     backgroundColor: "#0D0D0D",
-                    borderWidth: 1,
-                    borderColor: "white",
+                    // borderWidth: 1,
+                    // borderColor: "white",
                   }}
                 >
                   <Text
@@ -537,9 +522,13 @@ export default function Graph() {
                       fontWeight: "300",
                     }}
                   >
-                    {items[0].date
-                      .toDateString()
-                      .substring(4, items[0].date.toDateString().length)}
+                    {graphRange === "ALL" || graphRange === "1Y" ?
+                      items[0].date.toDateString().substring(4, 7) +
+                      items[0].date.toDateString().substring(10)
+                    : items[0].date
+                        .toDateString()
+                        .substring(4, items[0].date.toDateString().length)
+                    }
                   </Text>
                   <View
                     style={{
