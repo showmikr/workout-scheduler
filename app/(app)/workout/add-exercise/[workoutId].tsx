@@ -84,11 +84,12 @@ function ExerciseFormReducer(
         : blankResistanceFormState;
       return newData;
     }
-    case "change_exercise_title":
+    case "change_exercise_title": {
       return {
         ...state,
         exerciseTitle: action.newTitle,
       } satisfies ExerciseInputForm;
+    }
     default:
       const _unreachableCase: never = action;
       return _unreachableCase;
