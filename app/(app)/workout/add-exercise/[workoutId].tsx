@@ -126,7 +126,7 @@ export default function AddExerciseComponent() {
               newTitle: text,
             })
           }
-          className={` border-b pb-1 ${exerciseTitle ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
+          className={`border-b pb-1 ${exerciseTitle ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
           placeholder="Add exercise title here"
         />
         <Pressable
