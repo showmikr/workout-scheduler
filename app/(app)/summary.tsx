@@ -2,7 +2,7 @@ import { BarChart, LineChart, yAxisSides } from "react-native-gifted-charts";
 import { View } from "../../components/Themed";
 import { Text, Pressable, StyleSheet, TextStyle } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 
 type WorkoutSession = {
   appUserId: bigint;
@@ -423,7 +423,6 @@ export default function Graph() {
     <View
       style={{
         flex: 1,
-        //alignItems: 'center',
         justifyContent: "center",
         paddingVertical: 134,
         paddingLeft: 0,
@@ -577,7 +576,7 @@ export default function Graph() {
 
       {/* Chart Range Buttons*/}
       <View
-        className="flex flex-row "
+        className="flex flex-row"
         style={{
           backgroundColor: "#0D0D0D",
           justifyContent: "space-evenly",
@@ -695,6 +694,38 @@ export default function Graph() {
           </Text>
         </Pressable>
       </View>
+
+      <View
+        style={{
+          justifyContent: "center",
+          backgroundColor: "#0D0D0D",
+          marginLeft: 26,
+        }}
+      >
+        <Text style={[summaryGrid.mainTitle]}>Workout Summary</Text>
+        <View className="flex flex-row " style={[summaryGrid.viewRows]}>
+          <Text style={[summaryGrid.text, { color: "grey" }]}></Text>
+          <Text style={[summaryGrid.text, { color: "grey" }]}>Total</Text>
+          <Text style={[summaryGrid.text, { color: "grey" }]}>Average</Text>
+        </View>
+        <View className="flex flex-row " style={summaryGrid.viewRows}>
+          <Text style={summaryGrid.text}>Workouts</Text>
+          <Text style={[summaryGrid.text, { color: "grey" }]}>15</Text>
+          <Text style={summaryGrid.text}></Text>
+        </View>
+        <View className="flex flex-row " style={summaryGrid.viewRows}>
+          <Text style={summaryGrid.text}>Time</Text>
+          <Text style={[summaryGrid.text, { color: "#AD760A" }]}>9:35:16</Text>
+          <Text style={[summaryGrid.text, { color: "#AD760A" }]}>0:38:01</Text>
+        </View>
+        <View className="flex flex-row " style={summaryGrid.viewRows}>
+          <Text style={summaryGrid.text}>Calories</Text>
+          <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+            3,870 CAL
+          </Text>
+          <Text style={[summaryGrid.text, { color: "#A53535" }]}>258 CAL</Text>
+        </View>
+      </View>
     </View>
   );
 }
@@ -728,17 +759,42 @@ const graphStyle = StyleSheet.create({
   toolTip: {},
 });
 
-/*
+const summaryGrid = StyleSheet.create({
+  viewRows: {
+    justifyContent: "space-evenly",
+    backgroundColor: "#0D0D0D",
+    marginTop: 10,
+  },
+  mainTitle: {
+    color: "#BDBDBD",
+    fontWeight: "bold",
+    fontSize: 20,
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: "300",
+    color: "#BDBDBD",
+    // borderWidth: 1,
+    // borderColor: "white",
+    width: 360 / 3,
+  },
+});
 
-- display weight on graph (current)
+/* Summary Page Tasks - Priority is functionality
 
+Other
+- create workout summary view; based on range selection (current)
+- add goals button
+- display activity cards
+- refactor code to reduce repeated code [averaging function for example]
+- pretty up "figmatize" page
+
+Graph Section
+- display weight on graph (done)
+- display personal record lines
+- fixed up BarChart to better reflex linechart style
 - tooltip modification (not priority)
     * Center tooltip from focused datapoint vertical line 
     * Prevent tooltip from reaching out of bounds
     * Round interpolated values (done)
-
-- fixed up BarChart to better reflex linechart style
-- add more functionality to summary page
-- Adjust bottom nav to reflex prototype app design
-
 */
