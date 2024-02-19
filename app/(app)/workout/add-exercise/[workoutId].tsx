@@ -43,6 +43,34 @@ type ExerciseInputFormAction =
   | { type: "toggle_exercise_type" }
   | { type: "change_exercise_title"; newTitle: string };
 
+const blankResistanceFormState = {
+  exerciseTitle: "",
+  exerciseType: exerciseEnums.RESISTANCE_ENUM,
+  formRows: [
+    {
+      title: "",
+      reps: 0,
+      rest_time: 0,
+      total_weight: 0,
+    },
+  ],
+};
+
+const blankCardioFormState = {
+  exerciseTitle: "",
+  exerciseType: exerciseEnums.CARDIO_ENUM,
+  formRows: [
+    {
+      title: "",
+      reps: 1,
+      rest_time: 0,
+      target_distance: 10,
+      target_time: 0,
+      target_speed: 0,
+    },
+  ],
+};
+
 function ExerciseFormReducer(
   state: ExerciseInputForm,
   action: ExerciseInputFormAction
@@ -52,27 +80,9 @@ function ExerciseFormReducer(
       const { exerciseType: currentType } = state;
       const newData =
         currentType === exerciseEnums.RESISTANCE_ENUM ?
-          {
-            exerciseType: exerciseEnums.CARDIO_ENUM,
-            formRows: [
-              {
-                title: "",
-                reps: 1,
-                rest_time: 0,
-                target_distance: 0,
-                target_time: 0,
-                target_speed: 0,
-              },
-            ],
-          }
-        : {
-            exerciseType: exerciseEnums.RESISTANCE_ENUM,
-            formRows: [{ title: "", reps: 1, rest_time: 0, total_weight: 0 }],
-          };
-      return {
-        exerciseTitle: "",
-        ...newData,
-      };
+          blankCardioFormState
+        : blankResistanceFormState;
+      return newData;
     }
     case "change_exercise_title":
       return {
@@ -85,17 +95,11 @@ function ExerciseFormReducer(
   }
 }
 
-const initialExerciseAddFormState = {
-  exerciseTitle: "",
-  exerciseType: exerciseEnums.RESISTANCE_ENUM,
-  formRows: [{ title: "", reps: 1, rest_time: 0, total_weight: 0 }],
-};
-
 export default function AddExerciseComponent() {
   const db = useSQLiteContext();
   const [exerciseFormState, exerciseFormDispatch] = useReducer(
     ExerciseFormReducer,
-    initialExerciseAddFormState
+    blankResistanceFormState
   );
   const { exerciseType, exerciseTitle, formRows } = exerciseFormState;
   return (
