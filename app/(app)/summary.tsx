@@ -1,4 +1,9 @@
-import { BarChart, LineChart, yAxisSides } from "react-native-gifted-charts";
+import {
+  BarChart,
+  LineChart,
+  yAxisSides,
+  ruleTypes,
+} from "react-native-gifted-charts";
 import { View } from "../../components/Themed";
 import { Text, Pressable, StyleSheet, TextStyle } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
@@ -32,6 +37,15 @@ type UserBodyWeightData = {
   labelTextStyle?: TextStyle;
 };
 
+type DataBaseQueryTest = {
+  id: number;
+  title: string;
+  calories: number;
+  elapsedTime: number;
+  date: Date;
+  majorityCategory: string;
+};
+
 export default function Graph() {
   const myDB = useSQLiteContext();
 
@@ -51,6 +65,9 @@ export default function Graph() {
   const WEEK_MS = 657449982;
   const MONTH_MS = 2629799928;
   const YEAR_MS = 31557599136;
+
+  let rawInputLength: number | undefined = 0;
+  let rawInputCalories: number = 0;
 
   // Returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
@@ -112,6 +129,11 @@ export default function Graph() {
   ) {
     // Looks messy, code clean up if possible
     // going to change logic to be more "functional" in the future...
+    rawInputLength = data?.length;
+    rawInputCalories = 0;
+    data?.forEach((obj) => {
+      rawInputCalories += obj.value ? obj.value : 0;
+    });
     let res: CalorieData[] = [];
     if (!data || data.length < 1) {
       console.log("Not enough data or data does not exist.");
@@ -342,66 +364,93 @@ export default function Graph() {
       };
     });
 
+  // TESTING DB QUERY
+  console.log("Attempting DB Test Query");
+  myDB
+    .getAllAsync<any>(
+      `
+        SELECT wks.id, wks.title, wks.calories, wks.sum AS elapsed_time, wks.date, et.title AS majority_category 
+        FROM (SELECT ws.id, ws.title, ws.calories, SUM(elapsed_time), ws.date,
+        mode() WITHIN GROUP (ORDER BY exercise_type_id) AS modal_value
+        FROM workout_session AS ws
+        LEFT JOIN exercise_session AS es ON ws.id = es.workout_session_id 
+        LEFT JOIN exercise_set_session AS ess ON es.id = ess.exercise_session_id
+        WHERE ws.app_user_id = 1
+        GROUP BY ws.id) AS wks
+        LEFT JOIN exercise_type AS et ON et.id = modal_value;
+        `
+    )
+    .then((result) => {
+      console.log("Result: " + result);
+      const queryRows = result.map((row) => {
+        const { id, title, calories, elapsed_time, date, majority_category } =
+          row;
+        const readData: DataBaseQueryTest = {
+          id: id,
+          title: title,
+          calories: calories,
+          elapsedTime: elapsed_time,
+          date: new Date(date),
+          majorityCategory: majority_category,
+        };
+        return readData;
+      });
+    })
+    .catch((err) => {
+      console.log("DB READ ERROR | " + err);
+    });
+  console.log("Finishing DB Test Query");
+
   // Button range logic
   let maxGraphValue = getSelectedData(graphDataType)?.reduce((p, c) =>
     p.value! > c.value! ? p : c
   );
   let graphInput = getSelectedData(graphDataType);
   if (graphRange === "1W") {
-    (graphInput = averagePlotData(
+    graphInput = averagePlotData(
       getSelectedData(graphDataType)?.filter(
         (obj) =>
           new Date(obj.date) >
           new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS)
       )
-    )),
-      (maxGraphValue = averagePlotData(graphInput)?.reduce((p, c) =>
-        p.value! > c.value! ? p : c
-      ));
+    );
+    maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "1M") {
-    (graphInput = averagePlotData(
+    graphInput = averagePlotData(
       getSelectedData(graphDataType)?.filter(
         (obj) =>
           new Date(obj.date) >
           new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0))
       )
-    )),
-      (maxGraphValue = graphInput?.reduce((p, c) =>
-        p.value! > c.value! ? p : c
-      ));
+    );
+    maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "3M") {
-    (graphInput = averagePlotData(
+    graphInput = averagePlotData(
       getSelectedData(graphDataType)?.filter(
         (obj) =>
           new Date(obj.date) >
           new Date(getPriorTime(0, 3, 0).setHours(0, 0, 0, 0))
       )
-    )),
-      (maxGraphValue = graphInput?.reduce((p, c) =>
-        p.value! > c.value! ? p : c
-      ));
+    );
+    maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "6M") {
-    (graphInput = averagePlotData(
+    graphInput = averagePlotData(
       getSelectedData(graphDataType)?.filter(
         (obj) =>
           new Date(obj.date) >
           new Date(getPriorTime(0, 6, 0).setHours(0, 0, 0, 0))
       )
-    )),
-      (maxGraphValue = graphInput?.reduce((p, c) =>
-        p.value! > c.value! ? p : c
-      ));
+    );
+    maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "YTD") {
-    (graphInput = averagePlotData(
+    graphInput = averagePlotData(
       getSelectedData(graphDataType)?.filter(
         (obj) => new Date(obj.date) > new Date(new Date().getFullYear(), 0, 1)
       )!
-    )),
-      (maxGraphValue = graphInput?.reduce((p, c) =>
-        p.value! > c.value! ? p : c
-      ));
+    );
+    maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "1Y") {
-    (graphInput = averagePlotData(
+    graphInput = averagePlotData(
       getSelectedData(graphDataType)?.filter(
         (obj) =>
           new Date(obj.date) >
@@ -411,10 +460,8 @@ export default function Graph() {
             ).setHours(0, 0, 0, 0)
           )
       )!
-    )),
-      (maxGraphValue = graphInput?.reduce((p, c) =>
-        p.value! > c.value! ? p : c
-      ));
+    );
+    maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else {
     graphInput = averagePlotData(getSelectedData(graphDataType)!);
   }
@@ -471,7 +518,8 @@ export default function Graph() {
           yAxisTextStyle={{ color: "gray" }}
           yAxisSide={yAxisSides.LEFT}
           xAxisColor="#575757"
-          rulesColor="#252525"
+          rulesType="solid"
+          rulesColor="#202020"
           pointerConfig={{
             //pointerStripUptoDataPoint: true,
             pointerStripHeight: 235,
@@ -574,7 +622,7 @@ export default function Graph() {
         />
       }
 
-      {/* Chart Range Buttons*/}
+      {/* Chart Range Buttons */}
       <View
         className="flex flex-row"
         style={{
@@ -657,7 +705,7 @@ export default function Graph() {
         })}
       </View>
 
-      {/*Graph Type Button*/}
+      {/* Graph Type Button */}
       <View
         style={{
           paddingVertical: 20,
@@ -695,6 +743,7 @@ export default function Graph() {
         </Pressable>
       </View>
 
+      {/* Workout Summary View */}
       <View
         style={{
           justifyContent: "center",
@@ -710,7 +759,9 @@ export default function Graph() {
         </View>
         <View className="flex flex-row " style={summaryGrid.viewRows}>
           <Text style={summaryGrid.text}>Workouts</Text>
-          <Text style={[summaryGrid.text, { color: "grey" }]}>15</Text>
+          <Text style={[summaryGrid.text, { color: "grey" }]}>
+            {rawInputLength}
+          </Text>
           <Text style={summaryGrid.text}></Text>
         </View>
         <View className="flex flex-row " style={summaryGrid.viewRows}>
@@ -721,9 +772,11 @@ export default function Graph() {
         <View className="flex flex-row " style={summaryGrid.viewRows}>
           <Text style={summaryGrid.text}>Calories</Text>
           <Text style={[summaryGrid.text, { color: "#A53535" }]}>
-            3,870 CAL
+            {rawInputCalories.toLocaleString()} CAL
           </Text>
-          <Text style={[summaryGrid.text, { color: "#A53535" }]}>258 CAL</Text>
+          <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+            {Math.round(rawInputCalories / rawInputLength)} CAL
+          </Text>
         </View>
       </View>
     </View>
@@ -768,7 +821,7 @@ const summaryGrid = StyleSheet.create({
   mainTitle: {
     color: "#BDBDBD",
     fontWeight: "bold",
-    fontSize: 20,
+    fontSize: 22,
   },
   text: {
     fontSize: 16,
@@ -791,6 +844,7 @@ Other
 
 Graph Section
 - display weight on graph (done)
+- fix maxGraphValue to display proper max after filtering
 - display personal record lines
 - fixed up BarChart to better reflex linechart style
 - tooltip modification (not priority)
