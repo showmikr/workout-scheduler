@@ -10,16 +10,16 @@ export const exerciseEnums = {
   CARDIO_ENUM: 2,
 } as const;
 
-export type ExerciseType = typeof exerciseEnums;
+export type ExerciseEnums = typeof exerciseEnums;
 
 type CardioExercise = {
   exercise_id: number;
-  exercise_type_id: ExerciseType["CARDIO_ENUM"];
+  exercise_type_id: ExerciseEnums["CARDIO_ENUM"];
   title: string;
 };
 type ResistanceExercise = {
   exercise_id: number;
-  exercise_type_id: ExerciseType["RESISTANCE_ENUM"];
+  exercise_type_id: ExerciseEnums["RESISTANCE_ENUM"];
   title: string;
 };
 type ExerciseParams = CardioExercise | ResistanceExercise;
