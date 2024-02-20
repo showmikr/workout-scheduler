@@ -37,14 +37,14 @@ type UserBodyWeightData = {
   labelTextStyle?: TextStyle;
 };
 
-type DataBaseQueryTest = {
-  id: number;
-  title: string;
-  calories: number;
-  elapsedTime: number;
-  date: Date;
-  majorityCategory: string;
-};
+// type DataBaseQueryTest = {
+//   id: number;
+//   title: string;
+//   calories: number;
+//   elapsedTime: number;
+//   date: Date;
+//   majorityCategory: string;
+// };
 
 export default function Graph() {
   const myDB = useSQLiteContext();
@@ -364,42 +364,41 @@ export default function Graph() {
       };
     });
 
-  // TESTING DB QUERY
-  console.log("Attempting DB Test Query");
-  myDB
-    .getAllAsync<any>(
-      `
-        SELECT wks.id, wks.title, wks.calories, wks.sum AS elapsed_time, wks.date, et.title AS majority_category 
-        FROM (SELECT ws.id, ws.title, ws.calories, SUM(elapsed_time), ws.date,
-        mode() WITHIN GROUP (ORDER BY exercise_type_id) AS modal_value
-        FROM workout_session AS ws
-        LEFT JOIN exercise_session AS es ON ws.id = es.workout_session_id 
-        LEFT JOIN exercise_set_session AS ess ON es.id = ess.exercise_session_id
-        WHERE ws.app_user_id = 1
-        GROUP BY ws.id) AS wks
-        LEFT JOIN exercise_type AS et ON et.id = modal_value;
-        `
-    )
-    .then((result) => {
-      console.log("Result: " + result);
-      const queryRows = result.map((row) => {
-        const { id, title, calories, elapsed_time, date, majority_category } =
-          row;
-        const readData: DataBaseQueryTest = {
-          id: id,
-          title: title,
-          calories: calories,
-          elapsedTime: elapsed_time,
-          date: new Date(date),
-          majorityCategory: majority_category,
-        };
-        return readData;
-      });
-    })
-    .catch((err) => {
-      console.log("DB READ ERROR | " + err);
-    });
-  console.log("Finishing DB Test Query");
+  // // TESTING DB QUERY
+  // console.log("Attempting DB Test Query");
+  // myDB
+  //   .getAllAsync<any>(
+  //     `
+  //       SELECT wks.id, wks.title, wks.calories, wks.sum AS elapsed_time, wks.date, et.title AS majority_category
+  //       FROM (SELECT ws.id, ws.title, ws.calories, SUM(elapsed_time), ws.date,
+  //       mode() WITHIN GROUP (ORDER BY exercise_type_id) AS modal_value
+  //       FROM workout_session AS ws
+  //       LEFT JOIN exercise_session AS es ON ws.id = es.workout_session_id
+  //       LEFT JOIN exercise_set_session AS ess ON es.id = ess.exercise_session_id
+  //       WHERE ws.app_user_id = 1
+  //       GROUP BY ws.id) AS wks
+  //       LEFT JOIN exercise_type AS et ON et.id = modal_value;
+  //       `
+  //   )
+  //   .then((result) => {
+  //     const queryRows = result.map((row) => {
+  //       const { id, title, calories, elapsed_time, date, majority_category } =
+  //         row;
+  //       const readData: DataBaseQueryTest = {
+  //         id: id,
+  //         title: title,
+  //         calories: calories,
+  //         elapsedTime: elapsed_time,
+  //         date: new Date(date),
+  //         majorityCategory: majority_category,
+  //       };
+  //       return readData;
+  //     });
+  //   })
+  //   .catch((err) => {
+  //     console.log("DB READ ERROR | " + err);
+  //   });
+  // console.log("Finishing DB Test Query");
 
   // Button range logic
   let maxGraphValue = getSelectedData(graphDataType)?.reduce((p, c) =>
@@ -628,7 +627,7 @@ export default function Graph() {
         style={{
           backgroundColor: "#0D0D0D",
           justifyContent: "space-evenly",
-          marginTop: 15,
+          marginTop: 10,
         }}
       >
         {graphRangeButtons.map((title) => {
@@ -663,84 +662,94 @@ export default function Graph() {
         })}
       </View>
 
-      {/* Graph Data Buttons */}
+      {/* Graph Type + Data Buttons*/}
       <View
-        className="flex flex-row "
+        className="flex flex-row"
         style={{
           backgroundColor: "#0D0D0D",
           justifyContent: "space-evenly",
-          marginTop: 20,
         }}
       >
-        {graphDataTypeButtons.map((title) => {
-          return (
-            <Pressable
-              style={{
-                backgroundColor:
-                  graphDataType === title ? "#343434" : "#1C1C1C",
-                alignItems: "center",
-                justifyContent: "center",
-                paddingVertical: 4,
-                paddingHorizontal: 4,
-                borderRadius: 4,
-                elevation: 3,
-                width: 120,
-                height: 30,
-              }}
-              onPress={() => {
-                setGraphDataType(title);
-              }}
-              key={title}
-            >
-              <Text
-                style={{
-                  color: "white",
-                  fontWeight: graphDataType === title ? "bold" : "300",
-                }}
-              >
-                {title}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {/* Graph Type Button */}
-      <View
-        style={{
-          paddingVertical: 20,
-          flexDirection: "row",
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#0D0D0D",
-        }}
-      >
-        <Pressable
+        {/* Graph Data Buttons */}
+        <View
+          className="flex flex-row "
           style={{
-            marginHorizontal: 5,
-            backgroundColor: "#1C1C1C",
-            alignItems: "center",
-            justifyContent: "center",
-            paddingVertical: 4,
-            paddingHorizontal: 4,
-            borderRadius: 4,
-            elevation: 3,
-            width: 100,
-            height: 30,
-          }}
-          onPress={() => {
-            setGraphType(!graphType);
+            backgroundColor: "#0D0D0D",
+            justifyContent: "space-evenly",
+            marginTop: 20,
           }}
         >
-          <Text
+          {graphDataTypeButtons.map((title) => {
+            return (
+              <Pressable
+                style={{
+                  backgroundColor:
+                    graphDataType === title ? "#343434" : "#1C1C1C",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingVertical: 4,
+                  paddingHorizontal: 4,
+                  marginLeft: 7,
+                  borderRadius: 4,
+                  elevation: 3,
+                  width: 120,
+                  height: 30,
+                }}
+                onPress={() => {
+                  setGraphDataType(title);
+                }}
+                key={title}
+              >
+                <Text
+                  style={{
+                    color: "white",
+                    fontWeight: graphDataType === title ? "bold" : "300",
+                  }}
+                >
+                  {title}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {/* Graph Type Button */}
+        <View
+          style={{
+            paddingVertical: 20,
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#0D0D0D",
+          }}
+        >
+          <Pressable
             style={{
-              color: "white",
-              fontWeight: "300",
+              marginHorizontal: 5,
+              backgroundColor: "#1C1C1C",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingVertical: 4,
+              paddingHorizontal: 4,
+              borderRadius: 4,
+              elevation: 3,
+              width: 120,
+              height: 30,
+            }}
+            onPress={() => {
+              setGraphType(!graphType);
             }}
           >
-            {graphType ? "BarChart" : "LineChart"}
-          </Text>
-        </Pressable>
+            <Text
+              style={{
+                color: "white",
+                fontWeight: "300",
+              }}
+            >
+              {graphType ? "BarChart" : "LineChart"}
+            </Text>
+          </Pressable>
+        </View>
       </View>
 
       {/* Workout Summary View */}
@@ -748,11 +757,12 @@ export default function Graph() {
         style={{
           justifyContent: "center",
           backgroundColor: "#0D0D0D",
-          marginLeft: 26,
+          marginLeft: 10,
+          marginTop: 0,
         }}
       >
         <Text style={[summaryGrid.mainTitle]}>Workout Summary</Text>
-        <View className="flex flex-row " style={[summaryGrid.viewRows]}>
+        <View className="flex flex-row" style={[summaryGrid.viewRows]}>
           <Text style={[summaryGrid.text, { color: "grey" }]}></Text>
           <Text style={[summaryGrid.text, { color: "grey" }]}>Total</Text>
           <Text style={[summaryGrid.text, { color: "grey" }]}>Average</Text>
@@ -766,8 +776,12 @@ export default function Graph() {
         </View>
         <View className="flex flex-row " style={summaryGrid.viewRows}>
           <Text style={summaryGrid.text}>Time</Text>
-          <Text style={[summaryGrid.text, { color: "#AD760A" }]}>9:35:16</Text>
-          <Text style={[summaryGrid.text, { color: "#AD760A" }]}>0:38:01</Text>
+          <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+            -- : -- : --
+          </Text>
+          <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+            -- : -- : --
+          </Text>
         </View>
         <View className="flex flex-row " style={summaryGrid.viewRows}>
           <Text style={summaryGrid.text}>Calories</Text>
@@ -836,7 +850,10 @@ const summaryGrid = StyleSheet.create({
 /* Summary Page Tasks - Priority is functionality
 
 Other
-- create workout summary view; based on range selection (current)
+- create workout summary view; based on range selection
+    * # of workouts row (done)
+    * time row
+    * calories row (done)
 - add goals button
 - display activity cards
 - refactor code to reduce repeated code [averaging function for example]
@@ -844,6 +861,7 @@ Other
 
 Graph Section
 - display weight on graph (done)
+- add goal line across graph
 - fix maxGraphValue to display proper max after filtering
 - display personal record lines
 - fixed up BarChart to better reflex linechart style
