@@ -183,6 +183,7 @@ export default function Graph() {
       }
     } else if (MONTH_MS < Date.now() - data[0].date.getTime()) {
       console.log("3-6 month view");
+
       let idx = 0;
       let first = getFirstDayOfWeek(data[0].date);
       let last = getLastDayOfWeek(data[0].date);
@@ -309,7 +310,7 @@ export default function Graph() {
           LEFT JOIN exercise_session AS es ON ws.id = es.workout_session_id 
           LEFT JOIN set_session AS ess ON es.id = ess.exercise_session_id
           WHERE ws.app_user_id = 1
-          GROUP BY ws.id
+          GROUP BY ws.id ORDER BY ws.date
         `
       )
       .then((result) => {
@@ -321,7 +322,6 @@ export default function Graph() {
             elapsedTime: elapsed_time,
             date: new Date(date),
           };
-          console.log(readData);
           return readData;
         });
 
@@ -860,6 +860,8 @@ Other
 - pretty up "figmatize" page
 
 Graph Section
+- bug: 6 month view on calories goes to the moon [interpolation, ranging issue assumed] (fixed: query)
+- looking into keeping summary details constant throughout switching from different graph views [e.i. calories -> body weight -> personal records]
 - display weight on graph (done)
 - add goal line across graph
 - fix maxGraphValue to display proper max after filtering
@@ -870,4 +872,5 @@ Graph Section
     * Center tooltip from focused datapoint vertical line 
     * Prevent tooltip from reaching out of bounds
     * Round interpolated values (done)
+
 */

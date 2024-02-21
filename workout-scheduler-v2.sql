@@ -825,11 +825,11 @@ INSERT INTO workout_session (app_user_id, title, date, calories, tied_to_workout
     (1, 'Upperbody',                '2023-10-31T07:34:12',   310,    False),
     
     (1, 'Warmup Stretches',         '2023-11-07T14:12:34',   34,     False),
-    (1, 'Upperbody',                '2023-11-07T14:12:34',   200,    True), /* id: 156 */
-    (1, 'Legday workout + core',    '2023-11-15T07:34:12',   200,    True), /* id: 157 */
-    (1, 'Upperbody',                '2023-11-15T07:34:12',   200,    False),
+    (1, 'Upperbody',                '2023-11-07T14:12:34',   205,    True), /* id: 156 */
     (1, 'Daily Jog',                '2023-11-07T14:12:34',   134,    False),
     (1, 'Daily Jog',                '2023-11-11T17:05:03',   120,    False),
+    (1, 'Legday workout + core',    '2023-11-15T07:34:12',   204,    True), /* id: 159 */
+    (1, 'Upperbody',                '2023-11-15T07:34:12',   203,    False),
     (1, 'Upperbody',                '2023-11-23T07:34:12',   296,    False),
     (1, 'Upperbody',                '2023-11-28T07:34:12',   274,    False),
 
@@ -869,12 +869,12 @@ INSERT INTO exercise_session (workout_session_id, pr_history_id, exercise_type_i
     (156, NULL,   1,  'Rows',                 5,  NULL,   True), 
     (156, 7,      1,  'Tricep Extensions',    6,  NULL,   True),
 
-    (157, NULL,   1,  'Leg Curls',            1,  NULL,   True), /*Legs*/
-    (157, NULL,   1,  'Calf Raises',          2,  20,     True),
-    (157, NULL,   1,  'Core push-ins',        3,  20,     True),
-    (157, NULL,   1,  'Leg Press',            4,  50,     True),
-    (157, 4,      1,  'Squats',               5,  45,     True),
-    (157, NULL,   2,  'Skipped Jog',          6,  NULL,   False),
+    (159, NULL,   1,  'Leg Curls',            1,  NULL,   True), /*Legs*/
+    (159, NULL,   1,  'Calf Raises',          2,  20,     True),
+    (159, NULL,   1,  'Core push-ins',        3,  20,     True),
+    (159, NULL,   1,  'Leg Press',            4,  50,     True),
+    (159, 4,      1,  'Squats',               5,  45,     True),
+    (159, NULL,   2,  'Skipped Jog',          6,  NULL,   False),
 
     (185, 2,      1,  'Bench',                1,  45,     True), /*Upperbody*/
     (185, NULL,   1,  'Pull-Ups',             2,  162,    True),
