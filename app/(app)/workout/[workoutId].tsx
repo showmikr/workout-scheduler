@@ -12,17 +12,17 @@ export const exerciseEnums = {
 
 export type ExerciseEnums = typeof exerciseEnums;
 
-type CardioExercise = {
+type CardioExerciseParams = {
   exercise_id: number;
   exercise_type_id: ExerciseEnums["CARDIO_ENUM"];
   title: string;
 };
-type ResistanceExercise = {
+type ResistanceExerciseParams = {
   exercise_id: number;
   exercise_type_id: ExerciseEnums["RESISTANCE_ENUM"];
   title: string;
 };
-type ExerciseParams = CardioExercise | ResistanceExercise;
+type ExerciseParams = CardioExerciseParams | ResistanceExerciseParams;
 
 export type ExerciseSetParams = {
   exercise_set_id: number;
