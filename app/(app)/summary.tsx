@@ -305,12 +305,12 @@ export default function Graph() {
     myDB
       .getAllAsync<any>(
         `
-        SELECT ws.title, ws.calories, SUM(elapsed_time) AS elapsed_time, ws.date
+        SELECT ws.title, ws.calories, SUM(elapsed_time + rest_time) AS elapsed_time, ws.date
           FROM workout_session AS ws
           LEFT JOIN exercise_session AS es ON ws.id = es.workout_session_id 
           LEFT JOIN set_session AS ess ON es.id = ess.exercise_session_id
           WHERE ws.app_user_id = 1
-          GROUP BY ws.id ORDER BY ws.date
+          GROUP BY ws.id
         `
       )
       .then((result) => {
@@ -861,6 +861,7 @@ Other
 
 Graph Section
 - bug: 6 month view on calories goes to the moon [interpolation, ranging issue assumed] (fixed: query)
+- bug: query doesn't appear to be taking account of the 'rest time' for the total elaped_time
 - looking into keeping summary details constant throughout switching from different graph views [e.i. calories -> body weight -> personal records]
 - display weight on graph (done)
 - add goal line across graph
