@@ -1,7 +1,14 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
-import { Text, SafeAreaView, View, SectionList, Pressable } from "react-native";
+import {
+  Text,
+  SafeAreaView,
+  View,
+  SectionList,
+  Pressable,
+  SectionListData,
+} from "react-native";
 import { twColors } from "../../../constants/Colors";
 
 // hard coded constants based on the sqlite db table "exercise_type"
@@ -56,61 +63,48 @@ export default function WorkoutDetails() {
 
   const sectionData = exercises.map((ex) => {
     if (ex.exercise_type_id === exerciseEnums.RESISTANCE_ENUM) {
-      const sets = db.getAllSync<UnifiedResistanceSet>(
-        `SELECT 
-          exercise_set.id AS exercise_set_id,
-          exercise_set.list_order,
-          exercise_set.reps,
-          exercise_set.rest_time,
-          exercise_set.title,
-          resistance_set.id AS resistance_set_id,
-          resistance_set.total_weight
-        FROM exercise_set 
-        INNER JOIN resistance_set ON exercise_set.id = resistance_set.exercise_set_id 
-        WHERE exercise_set.exercise_id = ?`,
-        ex.exercise_id
-      );
       return {
-        exercise: ex,
-        data: sets,
+        exercise: ex as ResistanceExerciseParams,
+        data: db.getAllSync<UnifiedResistanceSet>(
+          `SELECT 
+            exercise_set.id AS exercise_set_id,
+            exercise_set.list_order,
+            exercise_set.reps,
+            exercise_set.rest_time,
+            exercise_set.title,
+            resistance_set.id AS resistance_set_id,
+            resistance_set.total_weight
+            FROM exercise_set 
+            INNER JOIN resistance_set ON exercise_set.id = resistance_set.exercise_set_id 
+            WHERE exercise_set.exercise_id = ?`,
+          ex.exercise_id
+        ),
+        key: ex.exercise_id.toString(),
+      };
+    } else {
+      return {
+        exercise: ex as CardioExerciseParams,
+        data: db.getAllSync<UnifiedCardioSet>(
+          `SELECT
+            exercise_set.id AS exercise_set_id,
+            exercise_set.list_order,
+            exercise_set.reps,
+            exercise_set.rest_time,
+            exercise_set.title,
+            cardio_set.id AS cardio_set_id,
+            cardio_set.target_distance,
+            cardio_set.target_speed,
+            cardio_set.target_time
+            FROM exercise_set 
+            INNER JOIN cardio_set ON exercise_set.id = cardio_set.exercise_set_id 
+            WHERE exercise_set.exercise_id = ?`,
+          ex.exercise_id
+        ),
         key: ex.exercise_id.toString(),
       };
     }
-    const sets = db.getAllSync<UnifiedCardioSet>(
-      `SELECT
-        exercise_set.id AS exercise_set_id,
-        exercise_set.list_order,
-        exercise_set.reps,
-        exercise_set.rest_time,
-        exercise_set.title,
-        cardio_set.id AS cardio_set_id,
-        cardio_set.target_distance,
-        cardio_set.target_speed,
-        cardio_set.target_time
-      FROM exercise_set 
-      INNER JOIN cardio_set ON exercise_set.id = cardio_set.exercise_set_id 
-      WHERE exercise_set.exercise_id = ?`,
-      ex.exercise_id
-    );
-    return {
-      exercise: ex,
-      data: sets,
-      key: ex.exercise_id.toString(),
-    };
   });
 
-  type AppeaseReactSectionType = (
-    | {
-        exercise: ResistanceExercise;
-        data: (UnifiedResistanceSet | UnifiedCardioSet)[];
-        key: string;
-      }
-    | {
-        exercise: CardioExercise;
-        data: (UnifiedResistanceSet | UnifiedCardioSet)[];
-        key: string;
-      }
-  )[];
   return (
     <SafeAreaView className="flex-1 justify-center">
       <View className="items-center pb-8 pt-8">
@@ -121,12 +115,9 @@ export default function WorkoutDetails() {
       </View>
       <SectionList
         sections={
-          sectionData as AppeaseReactSectionType
-          // Had to cast sectionData to appease the sections type requirements.
-          // The "data" key has to be a unified array
-          // i.e (UnfifiedResistanceSet | UnifiedCardioSet)[]
-          // and not UnifiedResistanceSet[] | UnfifiedCardioSet[]
-          // where the latter is the true type of sectionData's data property
+          sectionData as SectionListData<
+            UnifiedResistanceSet | UnifiedCardioSet
+          >[]
         }
         keyExtractor={(item, _index) => {
           return item.exercise_set_id.toString();
@@ -138,7 +129,7 @@ export default function WorkoutDetails() {
             </Text>
           </View>
         )}
-        renderItem={({ item, index }) => {
+        renderItem={({ item, index, section }) => {
           return (
             <Text className="pl-4 text-xl dark:text-white">
               {item.title}
