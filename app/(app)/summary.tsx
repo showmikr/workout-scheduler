@@ -1,20 +1,14 @@
-import {
-  BarChart,
-  LineChart,
-  yAxisSides,
-  ruleTypes,
-} from "react-native-gifted-charts";
+import { BarChart, LineChart, yAxisSides } from "react-native-gifted-charts";
 import { View } from "../../components/Themed";
 import { Text, Pressable, StyleSheet, TextStyle } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
 
 type WorkoutSession = {
-  appUserId: bigint;
   title: string;
-  date: Date;
   calories: number;
-  tiedToWorkout: boolean;
+  elapsedTime: number;
+  date: Date;
 };
 
 type UserBodyWeight = {
@@ -23,8 +17,9 @@ type UserBodyWeight = {
   date: Date;
 };
 
-type CalorieData = {
+type SessionData = {
   value: number | null;
+  timeEstimate?: number;
   date: Date;
   label?: string | null;
   labelTextStyle?: TextStyle;
@@ -36,15 +31,6 @@ type UserBodyWeightData = {
   label?: string | null;
   labelTextStyle?: TextStyle;
 };
-
-// type DataBaseQueryTest = {
-//   id: number;
-//   title: string;
-//   calories: number;
-//   elapsedTime: number;
-//   date: Date;
-//   majorityCategory: string;
-// };
 
 export default function Graph() {
   const myDB = useSQLiteContext();
@@ -68,6 +54,8 @@ export default function Graph() {
 
   let rawInputLength: number | undefined = 0;
   let rawInputCalories: number = 0;
+  let rawInputTime: number = 0;
+  let rawInputTimeNum: number = 0;
 
   // Returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
@@ -125,16 +113,28 @@ export default function Graph() {
   }
   // Averages data bases on the length of time given
   function averagePlotData(
-    data: CalorieData[] | UserBodyWeightData[] | undefined
+    data: SessionData[] | UserBodyWeightData[] | undefined
   ) {
     // Looks messy, code clean up if possible
     // going to change logic to be more "functional" in the future...
     rawInputLength = data?.length;
     rawInputCalories = 0;
-    data?.forEach((obj) => {
-      rawInputCalories += obj.value ? obj.value : 0;
-    });
-    let res: CalorieData[] = [];
+
+    if (data && "timeEstimate" in data[0]) {
+      data?.forEach((obj) => {
+        rawInputCalories += obj.value ? obj.value : 0;
+        if (
+          obj &&
+          "timeEstimate" in obj &&
+          typeof obj.timeEstimate === "number"
+        ) {
+          rawInputTime += obj.timeEstimate;
+          rawInputTimeNum += 1;
+        }
+      });
+    }
+
+    let res: SessionData[] = [];
     if (!data || data.length < 1) {
       console.log("Not enough data or data does not exist.");
       res = [
@@ -302,17 +302,26 @@ export default function Graph() {
   // 1) Load calorie data
   if (!workoutSessionData) {
     myDB
-      .getAllAsync<any>("SELECT * FROM workout_session AS ws ORDER BY ws.date")
+      .getAllAsync<any>(
+        `
+        SELECT ws.title, ws.calories, SUM(elapsed_time) AS elapsed_time, ws.date
+          FROM workout_session AS ws
+          LEFT JOIN exercise_session AS es ON ws.id = es.workout_session_id 
+          LEFT JOIN set_session AS ess ON es.id = ess.exercise_session_id
+          WHERE ws.app_user_id = 1
+          GROUP BY ws.id
+        `
+      )
       .then((result) => {
         const queryRows = result.map((row) => {
-          const { app_user_id, title, date, calories, tied_to_workout } = row;
+          const { title, calories, elapsed_time, date } = row;
           const readData: WorkoutSession = {
-            appUserId: app_user_id,
             title: title,
-            date: new Date(date),
             calories: calories,
-            tiedToWorkout: tied_to_workout,
+            elapsedTime: elapsed_time,
+            date: new Date(date),
           };
+          console.log(readData);
           return readData;
         });
 
@@ -323,10 +332,11 @@ export default function Graph() {
       });
   }
   // 2) Extract calorie data
-  const graphCalorieData: CalorieData[] | undefined = workoutSessionData?.map(
+  const graphCalorieData: SessionData[] | undefined = workoutSessionData?.map(
     (ws) => {
       return {
         value: ws.calories,
+        timeEstimate: ws.elapsedTime,
         date: ws.date,
       };
     }
@@ -364,47 +374,12 @@ export default function Graph() {
       };
     });
 
-  // // TESTING DB QUERY
-  // console.log("Attempting DB Test Query");
-  // myDB
-  //   .getAllAsync<any>(
-  //     `
-  //       SELECT wks.id, wks.title, wks.calories, wks.sum AS elapsed_time, wks.date, et.title AS majority_category
-  //       FROM (SELECT ws.id, ws.title, ws.calories, SUM(elapsed_time), ws.date,
-  //       mode() WITHIN GROUP (ORDER BY exercise_type_id) AS modal_value
-  //       FROM workout_session AS ws
-  //       LEFT JOIN exercise_session AS es ON ws.id = es.workout_session_id
-  //       LEFT JOIN exercise_set_session AS ess ON es.id = ess.exercise_session_id
-  //       WHERE ws.app_user_id = 1
-  //       GROUP BY ws.id) AS wks
-  //       LEFT JOIN exercise_type AS et ON et.id = modal_value;
-  //       `
-  //   )
-  //   .then((result) => {
-  //     const queryRows = result.map((row) => {
-  //       const { id, title, calories, elapsed_time, date, majority_category } =
-  //         row;
-  //       const readData: DataBaseQueryTest = {
-  //         id: id,
-  //         title: title,
-  //         calories: calories,
-  //         elapsedTime: elapsed_time,
-  //         date: new Date(date),
-  //         majorityCategory: majority_category,
-  //       };
-  //       return readData;
-  //     });
-  //   })
-  //   .catch((err) => {
-  //     console.log("DB READ ERROR | " + err);
-  //   });
-  // console.log("Finishing DB Test Query");
-
   // Button range logic
   let maxGraphValue = getSelectedData(graphDataType)?.reduce((p, c) =>
     p.value! > c.value! ? p : c
   );
   let graphInput = getSelectedData(graphDataType);
+
   if (graphRange === "1W") {
     graphInput = averagePlotData(
       getSelectedData(graphDataType)?.filter(
@@ -761,7 +736,7 @@ export default function Graph() {
           marginTop: 0,
         }}
       >
-        <Text style={[summaryGrid.mainTitle]}>Workout Summary</Text>
+        <Text style={[summaryGrid.mainTitle]}>Summary</Text>
         <View className="flex flex-row" style={[summaryGrid.viewRows]}>
           <Text style={[summaryGrid.text, { color: "grey" }]}></Text>
           <Text style={[summaryGrid.text, { color: "grey" }]}>Total</Text>
@@ -777,10 +752,35 @@ export default function Graph() {
         <View className="flex flex-row " style={summaryGrid.viewRows}>
           <Text style={summaryGrid.text}>Time</Text>
           <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
-            -- : -- : --
+            {("00" + Math.floor(rawInputTime / 3600)).slice(-2)}:
+            {("00" + Math.floor((rawInputTime % 3600) / 60)).slice(-2)}:
+            {("00" + ((rawInputTime % 3600) % 60)).slice(-2)}
           </Text>
           <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
-            -- : -- : --
+            {(
+              "00" +
+              Math.floor(
+                rawInputLength ? rawInputTime / rawInputTimeNum / 3600 : 0
+              )
+            ).slice(-2)}
+            :
+            {(
+              "00" +
+              Math.floor(
+                rawInputLength ?
+                  ((rawInputTime / rawInputTimeNum) % 3600) / 60
+                : 0
+              )
+            ).slice(-2)}
+            :
+            {(
+              "00" +
+              Math.floor(
+                rawInputLength ?
+                  ((rawInputTime / rawInputTimeNum) % 3600) % 60
+                : 0
+              )
+            ).slice(-2)}
           </Text>
         </View>
         <View className="flex flex-row " style={summaryGrid.viewRows}>
@@ -854,7 +854,7 @@ Other
     * # of workouts row (done)
     * time row
     * calories row (done)
-- add goals button
+- add goals button [top nav right side]
 - display activity cards
 - refactor code to reduce repeated code [averaging function for example]
 - pretty up "figmatize" page
@@ -865,6 +865,7 @@ Graph Section
 - fix maxGraphValue to display proper max after filtering
 - display personal record lines
 - fixed up BarChart to better reflex linechart style
+- remove early rounding for graph in averaging function
 - tooltip modification (not priority)
     * Center tooltip from focused datapoint vertical line 
     * Prevent tooltip from reaching out of bounds

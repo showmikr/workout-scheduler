@@ -825,8 +825,8 @@ INSERT INTO workout_session (app_user_id, title, date, calories, tied_to_workout
     (1, 'Upperbody',                '2023-10-31T07:34:12',   310,    False),
     
     (1, 'Warmup Stretches',         '2023-11-07T14:12:34',   34,     False),
-    (1, 'Upperbody',                '2023-11-07T14:12:34',   200,    True),
-    (1, 'Legday workout + core',    '2023-11-15T07:34:12',   200,    True),
+    (1, 'Upperbody',                '2023-11-07T14:12:34',   200,    True), /* id: 156 */
+    (1, 'Legday workout + core',    '2023-11-15T07:34:12',   200,    True), /* id: 157 */
     (1, 'Upperbody',                '2023-11-15T07:34:12',   200,    False),
     (1, 'Daily Jog',                '2023-11-07T14:12:34',   134,    False),
     (1, 'Daily Jog',                '2023-11-11T17:05:03',   120,    False),
@@ -855,24 +855,40 @@ INSERT INTO workout_session (app_user_id, title, date, calories, tied_to_workout
     (1, 'Upperbody',                '2024-02-07T07:34:12',   244,    False),
     (1, 'Upperbody',                '2024-02-10T07:34:12',   286,    False),
     (1, 'Upperbody',                '2024-02-14T07:34:12',   329,    False),
-    (1, 'Upperbody',                '2024-02-17T07:34:12',   150,    False);
+    (1, 'Upperbody',                '2024-02-17T07:34:12',   150,    False),
+    (1, 'Upperbody',                '2024-02-19T07:34:12',   230,    True), /* id: 185 */
+    (1, 'Upperbody',                '2024-02-20T07:34:12',   252,    True); /* id: 186 */
 
 
 INSERT INTO exercise_session (workout_session_id, pr_history_id, exercise_type_id, title, list_order, initial_weight, was_completed)
     VALUES
-    (2, 2,      1,  'Bench',                1,  45,     True), /*Upperbody*/
-    (2, NULL,   1,  'Pull-Ups',             2,  162,    True),
-    (2, NULL,   1,  'Overhead Press',       3,  NULL,   True),
-    (2, NULL,   1,  'Bicep Curls',          4,  NULL,   True),
-    (2, NULL,   1,  'Rows',                 5,  NULL,   True), 
-    (2, 7,      1,  'Tricep Extensions',    6,  NULL,   True),
+    (156, 2,      1,  'Bench',                1,  45,     True), /*Upperbody*/
+    (156, NULL,   1,  'Pull-Ups',             2,  162,    True),
+    (156, NULL,   1,  'Overhead Press',       3,  NULL,   True),
+    (156, NULL,   1,  'Bicep Curls',          4,  NULL,   True),
+    (156, NULL,   1,  'Rows',                 5,  NULL,   True), 
+    (156, 7,      1,  'Tricep Extensions',    6,  NULL,   True),
 
-    (3, NULL,   1,  'Leg Curls',            1,  NULL,   True), /*Legs*/
-    (3, NULL,   1,  'Calf Raises',          2,  20,     True),
-    (3, NULL,   1,  'Core push-ins',        3,  20,     True),
-    (3, NULL,   1,  'Leg Press',            4,  50,     True),
-    (3, 4,      1,  'Squats',               5,  45,     True),
-    (3, NULL,   2,  'Skipped Jog',          6,  NULL,   False);
+    (157, NULL,   1,  'Leg Curls',            1,  NULL,   True), /*Legs*/
+    (157, NULL,   1,  'Calf Raises',          2,  20,     True),
+    (157, NULL,   1,  'Core push-ins',        3,  20,     True),
+    (157, NULL,   1,  'Leg Press',            4,  50,     True),
+    (157, 4,      1,  'Squats',               5,  45,     True),
+    (157, NULL,   2,  'Skipped Jog',          6,  NULL,   False),
+
+    (185, 2,      1,  'Bench',                1,  45,     True), /*Upperbody*/
+    (185, NULL,   1,  'Pull-Ups',             2,  162,    True),
+    (185, NULL,   1,  'Overhead Press',       3,  NULL,   True),
+    (185, NULL,   1,  'Bicep Curls',          4,  NULL,   True),
+    (185, NULL,   1,  'Rows',                 5,  NULL,   True), 
+    (185, 7,      1,  'Tricep Extensions',    6,  NULL,   True),
+    
+    (186, 2,      1,  'Bench',                1,  45,     True), /*Upperbody*/
+    (186, NULL,   1,  'Pull-Ups',             2,  162,    True),
+    (186, NULL,   1,  'Overhead Press',       3,  NULL,   True),
+    (186, NULL,   1,  'Bicep Curls',          4,  NULL,   True),
+    (186, NULL,   1,  'Rows',                 5,  NULL,   True), 
+    (186, 7,      1,  'Tricep Extensions',    6,  NULL,   True);
 
 INSERT INTO set_session (exercise_session_id, title, reps, list_order, elapsed_time, rest_time)
     VALUES
@@ -893,7 +909,23 @@ INSERT INTO set_session (exercise_session_id, title, reps, list_order, elapsed_t
     (10,    'Main Set',         12,     2,  61, 180),
     (11,    'Warm-Up',          5,      1,  34, 180),
     (11,    'Main Set',         12,     2,  76, 180),
-    (12,    'Cool-Down Jog',    420,    1,  0,  0);
+    (12,    'Cool-Down Jog',    420,    1,  0,  0),
+
+    (13,     'Warm Up',          5,      1,  18, 192),
+    (13,     'Main Set',         12,     2,  47, 180),
+    (14,     'Main Set',         15,     1,  63, 180),
+    (15,     'Main Set',         10,     1,  52, 180),
+    (16,     'Main Set',         12,     1,  49, 180),
+    (17,     'Main Set',         12,     1,  72, 180),
+    (18,     'Main Set',         16,     1,  174, 0),
+    
+    (19,     'Warm Up',          5,      1,  18, 192),
+    (19,     'Main Set',         12,     2,  47, 180),
+    (20,     'Main Set',         15,     1,  63, 180),
+    (21,     'Main Set',         10,     1,  52, 180),
+    (22,     'Main Set',         12,     1,  49, 180),
+    (23,     'Main Set',         12,     1,  72, 180),
+    (24,     'Main Set',         16,     1,  174, 0);
 
 INSERT INTO resistance_set_session (set_session_id, total_weight)
     VALUES
@@ -911,7 +943,23 @@ INSERT INTO resistance_set_session (set_session_id, total_weight)
     (11,    320),
     (12,    560),
     (13,    135),
-    (14,    225);
+    (14,    225),
+
+    (16,     125),
+    (17,     175),
+    (18,     162),
+    (19,     55),
+    (20,     70),
+    (21,     150),
+    (22,     25),
+    
+    (23,     125),
+    (24,     175),
+    (25,     162),
+    (26,     55),
+    (27,     70),
+    (28,     150),
+    (29,     25);
 
 INSERT INTO cardio_set_session (set_session_id, target_distance, target_speed, target_time, actual_distance, actual_speed, actual_time)
     VALUES
