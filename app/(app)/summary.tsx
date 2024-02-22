@@ -32,6 +32,11 @@ type UserBodyWeightData = {
   labelTextStyle?: TextStyle;
 };
 
+type UserGoal = {
+  calorieGoal: number | null;
+  bodyWeightGoal: number | null;
+};
+
 export default function Graph() {
   const myDB = useSQLiteContext();
 
@@ -41,6 +46,11 @@ export default function Graph() {
   const [bodyWeightData, setBodyWeightData] = useState<UserBodyWeight[] | null>(
     null
   );
+  const [userGoalData, setUserGoalData] = useState<UserGoal | null>(null);
+  const [userBodyWeightData, setUserBodyWeightData] = useState<
+    UserGoal[] | null
+  >(null);
+
   const [graphRange, setGraphRange] = useState("1M");
   const graphRangeButtons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
   const [graphDataType, setGraphDataType] = useState("calorie"); // 0: calories, 1: body-weight, 2: personal-records
@@ -53,9 +63,12 @@ export default function Graph() {
   const YEAR_MS = 31557599136;
 
   let rawInputLength: number | undefined = 0;
-  let rawInputCalories: number = 0;
+  let rawInputValue: number = 0;
   let rawInputTime: number = 0;
   let rawInputTimeNum: number = 0;
+  let rawInputFirstIdx: number | null = 0;
+  let rawInputLastIdx: number | null = 0;
+  let customHeightInches: number = 72;
 
   // Returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
@@ -118,21 +131,21 @@ export default function Graph() {
     // Looks messy, code clean up if possible
     // going to change logic to be more "functional" in the future...
     rawInputLength = data?.length;
-    rawInputCalories = 0;
+    rawInputValue = 0;
+    rawInputFirstIdx = data ? data[0].value : 0;
+    rawInputLastIdx = data ? data[data.length - 1].value : 0;
 
-    if (data && "timeEstimate" in data[0]) {
-      data?.forEach((obj) => {
-        rawInputCalories += obj.value ? obj.value : 0;
-        if (
-          obj &&
-          "timeEstimate" in obj &&
-          typeof obj.timeEstimate === "number"
-        ) {
-          rawInputTime += obj.timeEstimate;
-          rawInputTimeNum += 1;
-        }
-      });
-    }
+    data?.forEach((obj) => {
+      rawInputValue += obj.value ? obj.value : 0;
+      if (
+        obj &&
+        "timeEstimate" in obj &&
+        typeof obj.timeEstimate === "number"
+      ) {
+        rawInputTime += obj.timeEstimate;
+        rawInputTimeNum += 1;
+      }
+    });
 
     let res: SessionData[] = [];
     if (!data || data.length < 1) {
@@ -342,7 +355,7 @@ export default function Graph() {
     }
   );
 
-  // 1) Load body-weight data
+  // 3) Load body-weight data
   if (!bodyWeightData) {
     myDB
       .getAllAsync<any>(
@@ -365,7 +378,7 @@ export default function Graph() {
         console.log("DB READ ERROR | " + err);
       });
   }
-  // 2) Extract body-weight data
+  // 4) Extract body-weight data
   const graphBodyWeightData: UserBodyWeightData[] | undefined =
     bodyWeightData?.map((ubw) => {
       return {
@@ -373,6 +386,29 @@ export default function Graph() {
         date: ubw.date,
       };
     });
+
+  // 5) Load user profile data
+  if (!userGoalData) {
+    myDB
+      .getFirstAsync<any>(
+        `
+        SELECT ap.avg_daily_calorie_goal as calorie_goal, ap.bodyweight_goal
+          FROM app_user AS ap
+          WHERE ap.id = 1
+        `
+      )
+      .then((result) => {
+        const { calorie_goal, bodyweight_goal } = result;
+        const readData: UserGoal = {
+          calorieGoal: calorie_goal,
+          bodyWeightGoal: bodyweight_goal,
+        };
+        setUserGoalData(readData);
+      })
+      .catch((err) => {
+        console.log("DB READ ERROR | " + err);
+      });
+  }
 
   // Button range logic
   let maxGraphValue = getSelectedData(graphDataType)?.reduce((p, c) =>
@@ -737,61 +773,122 @@ export default function Graph() {
         }}
       >
         <Text style={[summaryGrid.mainTitle]}>Summary</Text>
-        <View className="flex flex-row" style={[summaryGrid.viewRows]}>
-          <Text style={[summaryGrid.text, { color: "grey" }]}></Text>
-          <Text style={[summaryGrid.text, { color: "grey" }]}>Total</Text>
-          <Text style={[summaryGrid.text, { color: "grey" }]}>Average</Text>
-        </View>
-        <View className="flex flex-row " style={summaryGrid.viewRows}>
-          <Text style={summaryGrid.text}>Workouts</Text>
-          <Text style={[summaryGrid.text, { color: "grey" }]}>
-            {rawInputLength}
-          </Text>
-          <Text style={summaryGrid.text}></Text>
-        </View>
-        <View className="flex flex-row " style={summaryGrid.viewRows}>
-          <Text style={summaryGrid.text}>Time</Text>
-          <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
-            {("00" + Math.floor(rawInputTime / 3600)).slice(-2)}:
-            {("00" + Math.floor((rawInputTime % 3600) / 60)).slice(-2)}:
-            {("00" + ((rawInputTime % 3600) % 60)).slice(-2)}
-          </Text>
-          <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
-            {(
-              "00" +
-              Math.floor(
-                rawInputLength ? rawInputTime / rawInputTimeNum / 3600 : 0
-              )
-            ).slice(-2)}
-            :
-            {(
-              "00" +
-              Math.floor(
-                rawInputLength ?
-                  ((rawInputTime / rawInputTimeNum) % 3600) / 60
-                : 0
-              )
-            ).slice(-2)}
-            :
-            {(
-              "00" +
-              Math.floor(
-                rawInputLength ?
-                  ((rawInputTime / rawInputTimeNum) % 3600) % 60
-                : 0
-              )
-            ).slice(-2)}
-          </Text>
-        </View>
-        <View className="flex flex-row " style={summaryGrid.viewRows}>
-          <Text style={summaryGrid.text}>Calories</Text>
-          <Text style={[summaryGrid.text, { color: "#A53535" }]}>
-            {rawInputCalories.toLocaleString()} CAL
-          </Text>
-          <Text style={[summaryGrid.text, { color: "#A53535" }]}>
-            {Math.round(rawInputCalories / rawInputLength)} CAL
-          </Text>
-        </View>
+        {graphDataType === "calorie" ?
+          <>
+            <View className="flex flex-row" style={[summaryGrid.viewRows]}>
+              <Text style={[summaryGrid.text, { color: "grey" }]}></Text>
+              <Text style={[summaryGrid.text, { color: "grey" }]}>Total</Text>
+              <Text style={[summaryGrid.text, { color: "grey" }]}>Average</Text>
+            </View>
+            <View className="flex flex-row " style={summaryGrid.viewRows}>
+              <Text style={summaryGrid.text}>Workouts</Text>
+              <Text style={[summaryGrid.text, { color: "grey" }]}>
+                {rawInputLength}
+              </Text>
+              <Text style={summaryGrid.text}></Text>
+            </View>
+            <View className="flex flex-row " style={summaryGrid.viewRows}>
+              <Text style={summaryGrid.text}>Time</Text>
+              <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                {("00" + Math.floor(rawInputTime / 3600)).slice(-2)}:
+                {("00" + Math.floor((rawInputTime % 3600) / 60)).slice(-2)}:
+                {("00" + ((rawInputTime % 3600) % 60)).slice(-2)}
+              </Text>
+              <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                {(
+                  "00" +
+                  Math.floor(
+                    rawInputLength ? rawInputTime / rawInputTimeNum / 3600 : 0
+                  )
+                ).slice(-2)}
+                :
+                {(
+                  "00" +
+                  Math.floor(
+                    rawInputLength ?
+                      ((rawInputTime / rawInputTimeNum) % 3600) / 60
+                    : 0
+                  )
+                ).slice(-2)}
+                :
+                {(
+                  "00" +
+                  Math.floor(
+                    rawInputLength ?
+                      ((rawInputTime / rawInputTimeNum) % 3600) % 60
+                    : 0
+                  )
+                ).slice(-2)}
+              </Text>
+            </View>
+            <View className="flex flex-row " style={summaryGrid.viewRows}>
+              <Text style={summaryGrid.text}>Calories</Text>
+              <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+                {rawInputValue.toLocaleString()} cal
+              </Text>
+              <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+                {Math.round(rawInputValue / rawInputLength)} cal
+              </Text>
+            </View>
+          </>
+        : <>
+            <View className="flex flex-row" style={[summaryGrid.viewRows]}>
+              <Text style={[summaryGrid.text, { color: "grey" }]}></Text>
+              <Text style={[summaryGrid.text, { color: "grey" }]}>Trend</Text>
+              <Text style={[summaryGrid.text, { color: "grey" }]}>Current</Text>
+            </View>
+            <View className="flex flex-row " style={summaryGrid.viewRows}>
+              <Text style={summaryGrid.text}>B.M.I</Text>
+              <Text style={[summaryGrid.text, { color: "grey" }]}>
+                {(
+                  (703 * rawInputLastIdx) / Math.pow(customHeightInches, 2) -
+                    (703 * rawInputFirstIdx) / Math.pow(customHeightInches, 2) >
+                  0
+                ) ?
+                  "+" +
+                  (
+                    (703 * rawInputLastIdx) / Math.pow(customHeightInches, 2) -
+                    (703 * rawInputFirstIdx) / Math.pow(customHeightInches, 2)
+                  ).toFixed(2)
+                : (
+                    (703 * rawInputLastIdx) / Math.pow(customHeightInches, 2) -
+                    (703 * rawInputFirstIdx) / Math.pow(customHeightInches, 2)
+                  ).toFixed(2)
+                }
+              </Text>
+              <Text style={[summaryGrid.text, { color: "grey" }]}>
+                {(
+                  (703 * rawInputLastIdx) /
+                  Math.pow(customHeightInches, 2)
+                ).toFixed(2)}
+              </Text>
+            </View>
+            <View className="flex flex-row " style={summaryGrid.viewRows}>
+              <Text style={summaryGrid.text}>Goal</Text>
+              <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                {userGoalData?.bodyWeightGoal ?
+                  (rawInputLastIdx + rawInputFirstIdx) / 2 -
+                  userGoalData?.bodyWeightGoal +
+                  " lbs"
+                : "-"}
+              </Text>
+              <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                {userGoalData?.bodyWeightGoal + " lbs"}
+              </Text>
+            </View>
+            <View className="flex flex-row " style={summaryGrid.viewRows}>
+              <Text style={summaryGrid.text}>Weight</Text>
+              <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+                {(rawInputLastIdx - rawInputFirstIdx > 0 ? "+" : "") +
+                  (rawInputLastIdx - rawInputFirstIdx) +
+                  " lbs"}
+              </Text>
+              <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+                {rawInputLastIdx + " lbs"}
+              </Text>
+            </View>
+          </>
+        }
       </View>
     </View>
   );
@@ -850,6 +947,7 @@ const summaryGrid = StyleSheet.create({
 /* Summary Page Tasks - Priority is functionality
 
 Other
+- add height as a field into app_user table
 - create workout summary view; based on range selection
     * # of workouts row (done)
     * time row
@@ -861,14 +959,19 @@ Other
 
 Graph Section
 - bug: 6 month view on calories goes to the moon [interpolation, ranging issue assumed] (fixed: query)
-- bug: query doesn't appear to be taking account of the 'rest time' for the total elaped_time
-- looking into keeping summary details constant throughout switching from different graph views [e.i. calories -> body weight -> personal records]
+- bug: query doesn't appear to be taking account of the 'rest time' for the total elaped_time (fixed: query)
 - display weight on graph (done)
-- add goal line across graph
-- fix maxGraphValue to display proper max after filtering
-- display personal record lines
-- fixed up BarChart to better reflex linechart style
+- weight view will display its own summary view (done)
+
+
 - remove early rounding for graph in averaging function
+- fix maxGraphValue to display proper max after filtering
+- add goal line across graph
+- display personal record lines
+- revisit weight summary metrics to confirm stats
+- change trend formula to indecate a linear regression
+- fixed up BarChart to better reflex linechart style
+
 - tooltip modification (not priority)
     * Center tooltip from focused datapoint vertical line 
     * Prevent tooltip from reaching out of bounds

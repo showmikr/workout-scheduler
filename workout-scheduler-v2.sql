@@ -231,7 +231,7 @@ INSERT INTO days_of_week values
 
 INSERT INTO app_user (aws_cognito_sub, first_name, last_name, user_name, email, email_verified, image_url, creation_date, last_signed_in, avg_daily_calorie_goal, bodyweight_goal)
   VALUES
-	('c8bf7e34-7dcf-11ee-b962-0242ac120002', 'David', 'Shcherbina', 'kalashnikov', 'davidshcherbina@gmail.com', true, null, '2022-05-07T14:12:34.000Z', '2023-11-07T19:12:34.000Z', 150, 270);
+	('c8bf7e34-7dcf-11ee-b962-0242ac120002', 'David', 'Shcherbina', 'kalashnikov', 'davidshcherbina@gmail.com', true, null, '2022-05-07T14:12:34.000Z', '2023-11-07T19:12:34.000Z', 150, 180);
 
 INSERT INTO training_cycle (app_user_id, title, list_order)
     VALUES
@@ -639,7 +639,8 @@ INSERT INTO user_bodyweight (app_user_id, weight, date)
     (1, 171,'2024-02-07T07:34:12'),
     (1, 168,'2024-02-10T07:34:12'),
     (1, 169,'2024-02-14T07:34:12'),
-    (1, 167,'2024-02-17T07:34:12');
+    (1, 167,'2024-02-17T07:34:12'),
+    (1, 167,'2024-02-22T07:34:12');
 
 INSERT INTO workout_days (workout_id, day)
     VALUES
@@ -857,7 +858,7 @@ INSERT INTO workout_session (app_user_id, title, date, calories, tied_to_workout
     (1, 'Upperbody',                '2024-02-14T07:34:12',   329,    False),
     (1, 'Upperbody',                '2024-02-17T07:34:12',   150,    False),
     (1, 'Upperbody',                '2024-02-19T07:34:12',   230,    True), /* id: 185 */
-    (1, 'Upperbody',                '2024-02-20T07:34:12',   252,    True); /* id: 186 */
+    (1, 'Upperbody',                '2024-02-20T07:34:12',   403,    True); /* id: 186 */
 
 
 INSERT INTO exercise_session (workout_session_id, pr_history_id, exercise_type_id, title, list_order, initial_weight, was_completed)
