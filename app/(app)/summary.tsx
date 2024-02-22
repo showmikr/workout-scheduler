@@ -179,7 +179,7 @@ export default function Graph() {
               idx === data.length ?
                 0
               : null
-            : Math.round(avg / amt),
+            : avg / amt,
           date: first,
           label:
             graphRange === "ALL" ?
@@ -222,7 +222,7 @@ export default function Graph() {
               idx === data.length ?
                 0
               : null
-            : Math.round(avg / amt),
+            : avg / amt,
           date: first,
           label:
             first > currMonth ? currMonth.toDateString().substring(4, 8) : null,
@@ -261,7 +261,8 @@ export default function Graph() {
               idx === data.length ?
                 0
               : null
-            : Math.round(graphDataType === "calorie" ? total : total / amt),
+            : graphDataType === "calorie" ? total
+            : total / amt,
           date: first,
           label:
             first.toDateString() === getFirstDayOfWeek(first).toDateString() ?
@@ -290,7 +291,7 @@ export default function Graph() {
         }
 
         res.push({
-          value: total && Math.round(total),
+          value: total,
           date: first,
           label: getDayOfWeekString(first.getDay()).substring(0, 3),
           labelTextStyle: graphStyle.dailyLabel,
@@ -344,7 +345,7 @@ export default function Graph() {
         console.log("DB READ ERROR | " + err);
       });
   }
-  // 2) Extract calorie data
+  // Extract calorie data
   const graphCalorieData: SessionData[] | undefined = workoutSessionData?.map(
     (ws) => {
       return {
@@ -355,7 +356,7 @@ export default function Graph() {
     }
   );
 
-  // 3) Load body-weight data
+  // 2) Load body-weight data
   if (!bodyWeightData) {
     myDB
       .getAllAsync<any>(
@@ -378,7 +379,7 @@ export default function Graph() {
         console.log("DB READ ERROR | " + err);
       });
   }
-  // 4) Extract body-weight data
+  // Extract body-weight data
   const graphBodyWeightData: UserBodyWeightData[] | undefined =
     bodyWeightData?.map((ubw) => {
       return {
@@ -387,7 +388,7 @@ export default function Graph() {
       };
     });
 
-  // 5) Load user profile data
+  // 3) Load user profile data
   if (!userGoalData) {
     myDB
       .getFirstAsync<any>(
@@ -602,7 +603,7 @@ export default function Graph() {
                       }}
                     >
                       {Math.round(items[0].value) +
-                        (graphDataType === "calorie" ? " Cal" : " Lbs")}
+                        (graphDataType === "calorie" ? " cal" : " lbs")}
                     </Text>
                   </View>
                 </View>
