@@ -472,6 +472,18 @@ export default function Graph() {
     p.value! > c.value! ? p : c
   );
 
+  // creating goal line
+  let goalLine = [];
+  if (graphDataType === "calorie")
+    for (let i = 0; i < graphInput.length; i++) {
+      goalLine.push({ value: userGoalData?.calorieGoal });
+    }
+  else {
+    for (let i = 0; i < graphInput.length; i++) {
+      goalLine.push({ value: userGoalData?.bodyWeightGoal });
+    }
+  }
+
   return (
     <View
       style={{
@@ -488,15 +500,19 @@ export default function Graph() {
           areaChart
           // Chart //
           isAnimated={true}
+          // curved={true} // Interesting style
           animationDuration={1000}
           //animateOnDataChange={true}
           adjustToWidth={true}
           disableScroll={true}
           data={graphInput}
+          data2={goalLine}
+          showDataPointOnFocus={false}
           width={347}
           overflowTop={70}
           // Data //
           onlyPositive={true}
+          showDataPointOnFocus2={false}
           hideDataPoints={true}
           dataPointsColor="#A53535"
           interpolateMissingValues={true}
@@ -508,9 +524,12 @@ export default function Graph() {
 
           // Gradient //
           color="#A53535"
+          color2="#AD760A" //#AD760A
           thickness={2}
           startFillColor="rgba(165,53,53,1)"
+          startFillColor2="undefined"
           endFillColor="rgba(165,53,53,1)"
+          endFillColor2="undefined"
           startOpacity={0.6}
           endOpacity={0.1}
           initialSpacing={7.5}
@@ -953,7 +972,8 @@ Other
 - pretty up "figmatize" page
 
 Graph Section
-- add goal line across graph
+- add goal line across graph (curr)
+
 - display personal record lines
 - revisit weight summary metrics to confirm stats
 - change trend formula to indecate a linear regression
