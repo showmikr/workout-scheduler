@@ -88,7 +88,7 @@ const blankCardioFormState: ExerciseInputForm<ExerciseEnums["CARDIO_ENUM"]> = {
 function ExerciseFormReducer(
   state: ExerciseInputForm,
   action: ExerciseInputFormAction
-) {
+): ExerciseInputForm {
   switch (action.type) {
     case "toggle_exercise_type": {
       const { exerciseType: currentType } = state;
@@ -102,7 +102,7 @@ function ExerciseFormReducer(
       return {
         ...state,
         exerciseTitle: action.newTitle,
-      } satisfies ExerciseInputForm;
+      };
     }
     default:
       const _unreachableCase: never = action;
