@@ -30,14 +30,26 @@ type CardioSetInput = Pick<
 type ResistanceInputForm = {
   exerciseType: ExerciseEnums["RESISTANCE_ENUM"];
   formRows: ResistanceSetInput[];
+  exerciseTitle: string;
 };
 type CardioInputForm = {
   exerciseType: ExerciseEnums["CARDIO_ENUM"];
   formRows: CardioSetInput[];
-};
-type ExerciseInputForm = (ResistanceInputForm | CardioInputForm) & {
   exerciseTitle: string;
 };
+
+type ExerciseInputEnums = {
+  RESISTANCE_ENUM: ResistanceInputForm;
+  CARDIO_ENUM: CardioInputForm;
+};
+
+type ExerciseInputEnumsMap = {
+  [K in keyof ExerciseInputEnums as ExerciseEnums[K]]: ExerciseInputEnums[K];
+};
+
+type ExerciseInputForm<
+  T extends keyof ExerciseInputEnumsMap = keyof ExerciseInputEnumsMap,
+> = ExerciseInputEnumsMap[T];
 
 type ExerciseInputFormAction =
   | { type: "toggle_exercise_type" }
