@@ -70,7 +70,7 @@ export default function Graph() {
   let rawInputLastIdx: number | null = 0;
   let customHeightInches: number = 72;
 
-  // Returns a previous date (time) given # of weeks, months, years based on current time
+  // returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
     return new Date(
       Date.now() - (WEEK_MS * week + MONTH_MS * month + YEAR_MS * year)
@@ -124,7 +124,7 @@ export default function Graph() {
         return "Error: Unsupported Type | getNumberToStringDayOfWeek()";
     }
   }
-  // Averages data bases on the length of time given
+  // averages data bases on the length of time given
   function averagePlotData(
     data: SessionData[] | UserBodyWeightData[] | undefined
   ) {
@@ -303,7 +303,7 @@ export default function Graph() {
     }
     return res;
   }
-  // Returns data based selected data type from buttons selection
+  // returns data based selected data type from buttons selection
   function getSelectedData(selectedData: string) {
     switch (selectedData) {
       case "calorie":
@@ -314,7 +314,7 @@ export default function Graph() {
         return graphCalorieData;
     }
   }
-  // 1) Load calorie data
+  // 1) load calorie data
   if (!workoutSessionData) {
     myDB
       .getAllAsync<any>(
@@ -345,7 +345,7 @@ export default function Graph() {
         console.log("DB READ ERROR | " + err);
       });
   }
-  // Extract calorie data
+  // extract calorie data
   const graphCalorieData: SessionData[] | undefined = workoutSessionData?.map(
     (ws) => {
       return {
@@ -356,7 +356,7 @@ export default function Graph() {
     }
   );
 
-  // 2) Load body-weight data
+  // 2) load body-weight data
   if (!bodyWeightData) {
     myDB
       .getAllAsync<any>(
@@ -388,7 +388,7 @@ export default function Graph() {
       };
     });
 
-  // 3) Load user profile data
+  // 3) load user profile data
   if (!userGoalData) {
     myDB
       .getFirstAsync<any>(
@@ -411,12 +411,10 @@ export default function Graph() {
       });
   }
 
+  // grabs correct array
   let graphInput = getSelectedData(graphDataType);
-  // Button range logic
-  let maxGraphValue = graphInput?.reduce((p, c) =>
-    p.value! > c.value! ? p : c
-  );
 
+  // button range logic
   if (graphRange === "1W") {
     graphInput = averagePlotData(
       graphInput?.filter(
@@ -425,7 +423,6 @@ export default function Graph() {
           new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS)
       )
     );
-    maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "1M") {
     graphInput = averagePlotData(
       graphInput?.filter(
@@ -434,7 +431,6 @@ export default function Graph() {
           new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0))
       )
     );
-    maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "3M") {
     graphInput = averagePlotData(
       graphInput?.filter(
@@ -443,7 +439,6 @@ export default function Graph() {
           new Date(getPriorTime(0, 3, 0).setHours(0, 0, 0, 0))
       )
     );
-    maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "6M") {
     graphInput = averagePlotData(
       graphInput?.filter(
@@ -452,14 +447,12 @@ export default function Graph() {
           new Date(getPriorTime(0, 6, 0).setHours(0, 0, 0, 0))
       )
     );
-    maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "YTD") {
     graphInput = averagePlotData(
       graphInput?.filter(
         (obj) => new Date(obj.date) > new Date(new Date().getFullYear(), 0, 1)
       )!
     );
-    maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "1Y") {
     graphInput = averagePlotData(
       graphInput?.filter(
@@ -472,11 +465,12 @@ export default function Graph() {
           )
       )!
     );
-    maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else {
     graphInput = averagePlotData(graphInput!);
-    maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   }
+  let maxGraphValue = graphInput?.reduce((p, c) =>
+    p.value! > c.value! ? p : c
+  );
 
   return (
     <View
@@ -494,7 +488,6 @@ export default function Graph() {
           areaChart
           // Chart //
           isAnimated={true}
-          //rotateLabel={WEEK_MS < Date.now() - graphInput[0].date.getTime()}
           animationDuration={1000}
           //animateOnDataChange={true}
           adjustToWidth={true}
@@ -960,13 +953,6 @@ Other
 - pretty up "figmatize" page
 
 Graph Section
-- bug: 6 month view on calories goes to the moon [interpolation, ranging issue assumed] (fixed: query)
-- bug: query doesn't appear to be taking account of the 'rest time' for the total elaped_time (fixed: query)
-- display weight on graph (done)
-- weight view will display its own summary view (done)
-- remove early rounding for graph in averaging function (done)
-
-- fix maxGraphValue to display proper max after filtering
 - add goal line across graph
 - display personal record lines
 - revisit weight summary metrics to confirm stats
