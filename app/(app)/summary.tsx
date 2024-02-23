@@ -411,15 +411,15 @@ export default function Graph() {
       });
   }
 
+  let graphInput = getSelectedData(graphDataType);
   // Button range logic
-  let maxGraphValue = getSelectedData(graphDataType)?.reduce((p, c) =>
+  let maxGraphValue = graphInput?.reduce((p, c) =>
     p.value! > c.value! ? p : c
   );
-  let graphInput = getSelectedData(graphDataType);
 
   if (graphRange === "1W") {
     graphInput = averagePlotData(
-      getSelectedData(graphDataType)?.filter(
+      graphInput?.filter(
         (obj) =>
           new Date(obj.date) >
           new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS)
@@ -428,7 +428,7 @@ export default function Graph() {
     maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "1M") {
     graphInput = averagePlotData(
-      getSelectedData(graphDataType)?.filter(
+      graphInput?.filter(
         (obj) =>
           new Date(obj.date) >
           new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0))
@@ -437,7 +437,7 @@ export default function Graph() {
     maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "3M") {
     graphInput = averagePlotData(
-      getSelectedData(graphDataType)?.filter(
+      graphInput?.filter(
         (obj) =>
           new Date(obj.date) >
           new Date(getPriorTime(0, 3, 0).setHours(0, 0, 0, 0))
@@ -446,7 +446,7 @@ export default function Graph() {
     maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "6M") {
     graphInput = averagePlotData(
-      getSelectedData(graphDataType)?.filter(
+      graphInput?.filter(
         (obj) =>
           new Date(obj.date) >
           new Date(getPriorTime(0, 6, 0).setHours(0, 0, 0, 0))
@@ -455,14 +455,14 @@ export default function Graph() {
     maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "YTD") {
     graphInput = averagePlotData(
-      getSelectedData(graphDataType)?.filter(
+      graphInput?.filter(
         (obj) => new Date(obj.date) > new Date(new Date().getFullYear(), 0, 1)
       )!
     );
     maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else if (graphRange === "1Y") {
     graphInput = averagePlotData(
-      getSelectedData(graphDataType)?.filter(
+      graphInput?.filter(
         (obj) =>
           new Date(obj.date) >
           new Date(
@@ -474,7 +474,8 @@ export default function Graph() {
     );
     maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   } else {
-    graphInput = averagePlotData(getSelectedData(graphDataType)!);
+    graphInput = averagePlotData(graphInput!);
+    maxGraphValue = graphInput?.reduce((p, c) => (p.value! > c.value! ? p : c));
   }
 
   return (
@@ -653,7 +654,7 @@ export default function Graph() {
                 paddingHorizontal: 4,
                 borderRadius: 4,
                 elevation: 3,
-                width: title === "YTD" ? 36 : 30,
+                width: 36,
                 height: 30,
               }}
               onPress={() => {
@@ -963,9 +964,8 @@ Graph Section
 - bug: query doesn't appear to be taking account of the 'rest time' for the total elaped_time (fixed: query)
 - display weight on graph (done)
 - weight view will display its own summary view (done)
+- remove early rounding for graph in averaging function (done)
 
-
-- remove early rounding for graph in averaging function
 - fix maxGraphValue to display proper max after filtering
 - add goal line across graph
 - display personal record lines
