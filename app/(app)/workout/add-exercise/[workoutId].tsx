@@ -55,7 +55,9 @@ type ExerciseInputFormAction =
   | { type: "toggle_exercise_type" }
   | { type: "change_exercise_title"; newTitle: string };
 
-const blankResistanceFormState = {
+const blankResistanceFormState: ExerciseInputForm<
+  ExerciseEnums["RESISTANCE_ENUM"]
+> = {
   exerciseTitle: "",
   exerciseType: exerciseEnums.RESISTANCE_ENUM,
   formRows: [
@@ -68,7 +70,7 @@ const blankResistanceFormState = {
   ],
 };
 
-const blankCardioFormState = {
+const blankCardioFormState: ExerciseInputForm<ExerciseEnums["CARDIO_ENUM"]> = {
   exerciseTitle: "",
   exerciseType: exerciseEnums.CARDIO_ENUM,
   formRows: [
