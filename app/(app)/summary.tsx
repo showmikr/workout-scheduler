@@ -527,11 +527,13 @@ export default function Graph() {
           color2="#AD760A" //#AD760A
           thickness={2}
           startFillColor="rgba(165,53,53,1)"
-          startFillColor2="undefined"
           endFillColor="rgba(165,53,53,1)"
-          endFillColor2="undefined"
+          startFillColor2="rgba(173, 118, 10, 0)"
+          endFillColor2="rgba(173, 118, 10, 0)"
           startOpacity={0.6}
           endOpacity={0.1}
+          startOpacity2={0.15}
+          endOpacity2={0}
           initialSpacing={7.5}
           noOfSections={4}
           maxValue={
