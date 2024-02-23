@@ -51,6 +51,28 @@ export type CardioSetParams = {
 export type UnifiedResistanceSet = ExerciseSetParams & ResistanceSetParams;
 export type UnifiedCardioSet = ExerciseSetParams & CardioSetParams;
 
+type ResistanceSection = {
+  exercise: ResistanceExerciseParams;
+  data: UnifiedResistanceSet[];
+};
+type CardioSection = {
+  exercise: CardioExerciseParams;
+  data: UnifiedCardioSet[];
+};
+type ExerciseSectionMap = {
+  RESISTANCE_ENUM: ResistanceSection;
+  CARDIO_ENUM: CardioSection;
+};
+type ExerciseEnumsMap = {
+  [K in keyof ExerciseSectionMap as ExerciseEnums[K]]: ExerciseSectionMap[K];
+};
+
+type ExerciseSection<
+  T extends keyof ExerciseEnumsMap = keyof ExerciseEnumsMap,
+> = {
+  [K in keyof ExerciseEnumsMap]: ExerciseEnumsMap[K];
+}[T];
+
 export default function WorkoutDetails() {
   const { workoutId } = useLocalSearchParams<{ workoutId: string }>();
   const db = useSQLiteContext();
@@ -116,7 +138,8 @@ export default function WorkoutDetails() {
       <SectionList
         sections={
           sectionData as SectionListData<
-            UnifiedResistanceSet | UnifiedCardioSet
+            UnifiedResistanceSet | UnifiedCardioSet, // Union item type here, but each section has a distinct array type
+            ExerciseSection // This is the true type of each section
           >[]
         }
         keyExtractor={(item, _index) => {
