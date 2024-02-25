@@ -1,4 +1,10 @@
-import { Pressable, Button, StyleSheet, FlatList } from "react-native";
+import {
+  Pressable,
+  Button,
+  StyleSheet,
+  FlatList,
+  DevSettings,
+} from "react-native";
 import { Text, View } from "../../../components/Themed";
 import { deleteDB } from "../../../db-utils";
 import { useSQLiteContext } from "expo-sqlite/next";
@@ -64,9 +70,13 @@ export default function TabTwoScreen() {
       <Text style={styles.title}>Tab Two</Text>
       <Pressable
         className="m-10 border-2 border-solid border-slate-400 bg-slate-600 p-1"
-        onPress={() => deleteDB()}
+        onPress={() => {
+          deleteDB().then(() => {
+            DevSettings.reload();
+          });
+        }}
       >
-        <Text className="text-lg/10">Delete Database</Text>
+        <Text className="text-lg/10">Reinitialize Database</Text>
       </Pressable>
       <Pressable
         className="m-10 border-2 border-solid border-slate-400  bg-slate-600 p-1"

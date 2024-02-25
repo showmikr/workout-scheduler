@@ -12,9 +12,13 @@ async function doesLocalDbExist(dbFileName: string = defaultDatabase) {
   return dbExists;
 }
 
-/* Use w/ caution alongside database context.
- * When you delete the databse, the context doesn't reload,
- * so you have to reload the whole app to recreate the database
+/* deletes the database.
+ * We're expecting that there's a sql init script that
+ * will be re-run elsewhere on app reload to recreate the db,
+ * but that's not this function's responsibility. Should mainly
+ * be used in conjunction with reinitializing the db when we change
+ * the sql init script. Also, understand that this function should
+ * ONLY be used in development mode, NOT for release builds!
  */
 async function deleteDB(dbFileName: string = defaultDatabase) {
   const dbExists = await doesLocalDbExist(dbFileName);
