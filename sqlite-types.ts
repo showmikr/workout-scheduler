@@ -20,55 +20,45 @@ export interface CardioSet {
   exercise_set_id: number;
   id?: number | null;
   target_distance?: number | null;
-  target_speed?: number | null;
   target_time?: number | null;
 }
 export interface CardioSetSession {
   actual_distance?: number | null;
-  actual_speed?: number | null;
   actual_time?: number | null;
   id?: number | null;
   set_session_id: number;
   target_distance?: number | null;
-  target_speed?: number | null;
   target_time?: number | null;
-}
-export interface CustomCategoryPr {
-  custom_category_pr_id: number;
-  id?: number | null;
-  pr_history_id: number;
-}
-export interface CustomExerciseCategory {
-  app_user_id: number;
-  id?: number | null;
-  title: string;
 }
 export interface DaysOfWeek {
   day: string;
 }
 export interface Exercise {
-  custom_exercise_category_id?: number | null;
+  exercise_class_id?: number | null;
   exercise_equipment_id?: number | null;
-  exercise_type_id: number;
   id?: number | null;
   initial_weight?: number | null;
   list_order: number;
   notes?: string | null;
-  standard_exercise_category_id?: number | null;
-  title: string;
   workout_id: number;
+}
+export interface ExerciseClass {
+  app_user_id: number;
+  exercise_type_id: number;
+  id?: number | null;
+  is_archived?: boolean;
+  title: string;
 }
 export interface ExerciseEquipment {
   id?: number | null;
   title: string;
 }
 export interface ExerciseSession {
-  exercise_type_id: number;
+  exercise_class_id: number;
   id?: number | null;
   initial_weight?: number | null;
   list_order: number;
   pr_history_id?: number | null;
-  title: string;
   was_completed?: boolean;
   workout_session_id: number;
 }
@@ -92,6 +82,7 @@ export interface LinkTagWorkout {
 export interface PrHistory {
   date: string;
   distance?: number | null;
+  exercise_class_id: number;
   id?: number | null;
   reps?: number | null;
   speed?: number | null;
@@ -116,15 +107,6 @@ export interface SetSession {
   reps?: number;
   rest_time?: number;
   title?: string | null;
-}
-export interface StandardCategoryPr {
-  id?: number | null;
-  pr_history_id: number;
-  standard_category_pr_id: number;
-}
-export interface StandardExerciseCategory {
-  id?: number | null;
-  title: string;
 }
 export interface TrainingCycle {
   app_user_id: number;
@@ -161,7 +143,6 @@ export interface WorkoutSession {
   calories?: number | null;
   date: string;
   id?: number | null;
-  tied_to_workout?: boolean;
   title: string;
 }
 export interface WorkoutTag {
