@@ -27,13 +27,6 @@ export default function AddWorkoutComponent() {
     return lastItemPos;
   };
 
-  const addWorkout = (title: string) => {
-    return db.runSync(
-      `INSERT INTO workout (app_user_id, title, list_order) VALUES (1, ?, ?);`,
-      [title, getLastItemPos() + 1]
-    );
-  };
-
   const onSubmitWorkout = () => {
     Keyboard.dismiss();
     const title = workoutTitle.trim();
@@ -42,7 +35,10 @@ export default function AddWorkoutComponent() {
       console.log("Hey! You can't enter an empty string. Get Outta Here!");
       return;
     }
-    addWorkout(title);
+    db.runSync(
+      `INSERT INTO workout (app_user_id, title, list_order) VALUES (1, ?, ?);`,
+      [title, getLastItemPos() + 1]
+    );
     router.replace("/two");
   };
 
