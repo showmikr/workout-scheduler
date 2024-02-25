@@ -74,14 +74,14 @@ async function initDb(db: SQLiteDatabase) {
   }
 
   const sqlFile = await Asset.fromModule(
-    require("../workout-scheduler-v2.sql")
+    require("../wo-scheduler-v3.sql")
   ).downloadAsync();
 
   if (!sqlFile.localUri) {
-    console.log("workout-scheduler-v2.sql asset was not correctly downloaded");
+    console.log("wo-scheduler-v3.sql asset was not correctly downloaded");
     return;
   }
   const sqlScript = await FileSystem.readAsStringAsync(sqlFile.localUri);
   db.execSync(sqlScript);
-  console.log("db script executed to load tables schema");
+  console.log("db script executed to load wo-scheduler-v3 schema");
 }
