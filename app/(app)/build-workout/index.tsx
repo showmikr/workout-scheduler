@@ -8,7 +8,7 @@ import {
   Keyboard,
   ScrollView,
 } from "react-native";
-import { router } from "expo-router";
+import { Link, router } from "expo-router";
 import { ExerciseEnums } from "../workout/[workoutId]";
 
 type ExerciseClassParams = {
@@ -22,14 +22,13 @@ export default function AddWorkoutComponent() {
   const [workoutTitle, setWorkoutTitle] = useState<string>("");
 
   const getExercises = () => {
-    const availableExercises = db.getAllSync<ExerciseClassParams>(
+    return db.getAllSync<ExerciseClassParams>(
       `SELECT id, exercise_type_id, title FROM exercise_class WHERE app_user_id = 1 AND is_archived = ?`,
       false
     );
-    availableExercises.forEach((ex) => console.log(ex));
   };
-  // Quick testing to see if we can grab list of exercise classes
-  getExercises();
+
+  const availableExercises = getExercises();
 
   // Grabs last_item_pos + 1 if there are already list items, otherwise this is the first entry
   const getLastItemPos = () => {
@@ -66,8 +65,19 @@ export default function AddWorkoutComponent() {
         keyboardShouldPersistTaps="handled"
       >
         <Text className="pb-4 text-center text-3xl dark:text-white">
-          New Workout
+          Choose your exercises
         </Text>
+        {availableExercises.map((ex) => {
+          return (
+            <Link
+              href={`/(app)/build-workout/build-exercise/${ex.id}`}
+              className="mr-8 self-end text-2xl/10 text-black dark:text-white"
+              key={ex.id}
+            >
+              {ex.title}
+            </Link>
+          );
+        })}
         <Text className="text-2xl font-bold dark:text-white">Title:</Text>
         <TextInput
           value={workoutTitle}
