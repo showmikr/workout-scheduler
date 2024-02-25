@@ -6,7 +6,7 @@ const defaultDatabase = "next-sqlite.db";
 async function doesLocalDbExist(dbFileName: string = defaultDatabase) {
   const dbExists = (
     await FileSystem.getInfoAsync(
-      FileSystem.documentDirectory + "SQLite/" + defaultDatabase
+      FileSystem.documentDirectory + "SQLite/" + dbFileName
     )
   ).exists;
   return dbExists;
