@@ -68,8 +68,8 @@ export default function TabLayout() {
           title: "Tab Two",
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
           headerRight: () => (
-            <Link href="/add-workout" className="pr-2 text-xl text-blue-500">
-              Add Workout
+            <Link href="/build-workout" className="pr-2 text-xl text-blue-500">
+              Build Workout
             </Link>
           ),
         }}
