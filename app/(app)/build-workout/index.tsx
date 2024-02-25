@@ -9,10 +9,27 @@ import {
   ScrollView,
 } from "react-native";
 import { router } from "expo-router";
+import { ExerciseEnums } from "../workout/[workoutId]";
+
+type ExerciseClassParams = {
+  id: number;
+  exercise_type_id: ExerciseEnums[keyof ExerciseEnums];
+  title: string;
+};
 
 export default function AddWorkoutComponent() {
   const db = useSQLiteContext();
   const [workoutTitle, setWorkoutTitle] = useState<string>("");
+
+  const getExercises = () => {
+    const availableExercises = db.getAllSync<ExerciseClassParams>(
+      `SELECT id, exercise_type_id, title FROM exercise_class WHERE app_user_id = 1 AND is_archived = ?`,
+      false
+    );
+    availableExercises.forEach((ex) => console.log(ex));
+  };
+  // Quick testing to see if we can grab list of exercise classes
+  getExercises();
 
   // Grabs last_item_pos + 1 if there are already list items, otherwise this is the first entry
   const getLastItemPos = () => {
