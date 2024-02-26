@@ -12,7 +12,7 @@ import {
   exerciseEnums,
 } from "../workout/[workoutId]";
 
-type ExerciseSetInput = Pick<ExerciseSetParams, "reps" | "rest_time" | "title">;
+type ExerciseSetInput = Pick<ExerciseSetParams, "reps" | "rest_time">;
 type ResistanceSetInput = Pick<ResistanceSetParams, "total_weight"> &
   ExerciseSetInput;
 type CardioSetInput = Pick<
@@ -53,7 +53,6 @@ const blankResistanceFormState: ExerciseInputForm<
   exerciseType: exerciseEnums.RESISTANCE_ENUM,
   formRows: [
     {
-      title: "",
       reps: 1,
       rest_time: 0,
       total_weight: 0,
@@ -66,7 +65,6 @@ const blankCardioFormState: ExerciseInputForm<ExerciseEnums["CARDIO_ENUM"]> = {
   exerciseType: exerciseEnums.CARDIO_ENUM,
   formRows: [
     {
-      title: "",
       reps: 1,
       rest_time: 0,
       target_distance: 0,
