@@ -1,5 +1,12 @@
 import { useLocalSearchParams } from "expo-router";
-import { Text, SafeAreaView, ScrollView, Pressable } from "react-native";
+import {
+  Text,
+  SafeAreaView,
+  ScrollView,
+  Pressable,
+  View,
+  TextInput,
+} from "react-native";
 import { twColors } from "../../../constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite/next";
@@ -120,6 +127,54 @@ export default function BuildExerciseComponent() {
         <Text className="text-xl text-black dark:text-white">
           Exercise Class Id: {exerciseClassIdParam}
         </Text>
+        {exerciseType === exerciseEnums.RESISTANCE_ENUM ?
+          <View>
+            {formRows.map((inputRow, index) => {
+              const stringReps = inputRow.reps.toString();
+              const stringWeight = inputRow.total_weight.toString();
+              const stringRest = inputRow.rest_time.toString();
+              return (
+                <View className="mb-8 mt-8 flex-row gap-12" key={index}>
+                  <View>
+                    <Text className="text-xl text-black dark:text-white">
+                      Reps
+                    </Text>
+                    <TextInput
+                      inputMode="numeric"
+                      value={stringReps}
+                      className={`border-b pb-1 ${stringReps ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
+                    />
+                  </View>
+                  <View>
+                    <Text className="text-xl text-black dark:text-white">
+                      Total Weight
+                    </Text>
+                    <TextInput
+                      inputMode="numeric"
+                      value={stringWeight}
+                      className={`border-b pb-1 ${formRows[index].total_weight ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
+                    />
+                  </View>
+                  <View>
+                    <Text className="text-xl text-black dark:text-white">
+                      Rest
+                    </Text>
+                    <TextInput
+                      inputMode="numeric"
+                      value={stringRest}
+                      className={`border-b pb-1 ${stringRest ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
+                    />
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        : <View>
+            <Text className="text-xl text-black dark:text-white">
+              Cardio Placeholder
+            </Text>
+          </View>
+        }
         <Pressable
           style={({ pressed }) => ({
             flexDirection: "row",
