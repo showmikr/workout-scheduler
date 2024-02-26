@@ -19,11 +19,13 @@ type CardioSetInput = Pick<CardioSetParams, "target_distance" | "target_time"> &
   ExerciseSetInput;
 type ResistanceInputForm = {
   exerciseType: ExerciseEnums["RESISTANCE_ENUM"];
+  exerciseClassId: number;
   formRows: ResistanceSetInput[];
   exerciseTitle: string;
 };
 type CardioInputForm = {
   exerciseType: ExerciseEnums["CARDIO_ENUM"];
+  exerciseClassId: number;
   formRows: CardioSetInput[];
   exerciseTitle: string;
 };
@@ -43,11 +45,12 @@ type ExerciseInputForm<
 
 type ExerciseInputFormAction = { type: "TODO" } | { type: "TODO AGAIN" }; // should be union of action types
 
-const blankResistanceFormState: ExerciseInputForm<
-  ExerciseEnums["RESISTANCE_ENUM"]
-> = {
+const getBlankResistanceFormState = (
+  exerciseClassId: number
+): ExerciseInputForm<ExerciseEnums["RESISTANCE_ENUM"]> => ({
   exerciseTitle: "",
   exerciseType: exerciseEnums.RESISTANCE_ENUM,
+  exerciseClassId,
   formRows: [
     {
       reps: 1,
@@ -55,11 +58,14 @@ const blankResistanceFormState: ExerciseInputForm<
       total_weight: 0,
     },
   ],
-};
+});
 
-const blankCardioFormState: ExerciseInputForm<ExerciseEnums["CARDIO_ENUM"]> = {
+const getBlankCardioFormState = (
+  exerciseClassId: number
+): ExerciseInputForm<ExerciseEnums["CARDIO_ENUM"]> => ({
   exerciseTitle: "",
   exerciseType: exerciseEnums.CARDIO_ENUM,
+  exerciseClassId,
   formRows: [
     {
       reps: 1,
@@ -68,7 +74,7 @@ const blankCardioFormState: ExerciseInputForm<ExerciseEnums["CARDIO_ENUM"]> = {
       target_time: 0,
     },
   ],
-};
+});
 
 function ExerciseFormReducer(
   state: ExerciseInputForm,
@@ -93,7 +99,6 @@ export default function BuildExerciseComponent() {
     exercise_title: string;
     exercise_type_id: string;
   }>();
-  console.log(localSearchParams);
   const exerciseClassId = parseInt(localSearchParams.exercise_class_id);
   const exerciseTypeId = parseInt(localSearchParams.exercise_type_id);
   const title = localSearchParams.exercise_title;
@@ -103,8 +108,8 @@ export default function BuildExerciseComponent() {
   const [exerciseFormState, exerciseFormDispatch] = useReducer(
     ExerciseFormReducer,
     exerciseTypeId === exerciseEnums.RESISTANCE_ENUM ?
-      blankResistanceFormState
-    : blankCardioFormState
+      getBlankResistanceFormState(exerciseClassId)
+    : getBlankCardioFormState(exerciseClassId)
   );
   const { exerciseType, exerciseTitle, formRows } = exerciseFormState;
   return (
