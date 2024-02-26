@@ -108,7 +108,9 @@ export default function BuildExerciseComponent() {
 
   const [exerciseFormState, exerciseFormDispatch] = useReducer(
     ExerciseFormReducer,
-    blankResistanceFormState
+    exerciseTypeId === exerciseEnums.RESISTANCE_ENUM ?
+      blankResistanceFormState
+    : blankCardioFormState
   );
   const { exerciseType, exerciseTitle, formRows } = exerciseFormState;
   return (
