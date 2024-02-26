@@ -95,17 +95,17 @@ export default function BuildExerciseComponent() {
     exercise_title: string;
     exercise_type_id: string;
   }>();
-  const exerciseClassId = parseInt(localSearchParams.exercise_class_id);
-  const exerciseTypeId = parseInt(localSearchParams.exercise_type_id);
-  const title = localSearchParams.exercise_title;
+  const exerciseClassIdParam = parseInt(localSearchParams.exercise_class_id);
+  const exerciseTypeIdParam = parseInt(localSearchParams.exercise_type_id);
+  const exerciseTitleParam = localSearchParams.exercise_title;
 
   const db = useSQLiteContext();
 
   const [exerciseFormState, exerciseFormDispatch] = useReducer(
     ExerciseFormReducer,
-    exerciseTypeId === exerciseEnums.RESISTANCE_ENUM ?
-      getBlankResistanceFormState(exerciseClassId)
-    : getBlankCardioFormState(exerciseClassId)
+    exerciseTypeIdParam === exerciseEnums.RESISTANCE_ENUM ?
+      getBlankResistanceFormState(exerciseClassIdParam)
+    : getBlankCardioFormState(exerciseClassIdParam)
   );
   const { formRows, exerciseType } = exerciseFormState;
   return (
@@ -115,7 +115,10 @@ export default function BuildExerciseComponent() {
           Build Exercise Page!
         </Text>
         <Text className="text-xl text-black dark:text-white">
-          Exercise Class Id: {exerciseClassId}
+          Exercise: {exerciseTitleParam}
+        </Text>
+        <Text className="text-xl text-black dark:text-white">
+          Exercise Class Id: {exerciseClassIdParam}
         </Text>
         <Pressable
           style={({ pressed }) => ({
