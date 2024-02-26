@@ -54,7 +54,7 @@ const blankResistanceFormState: ExerciseInputForm<
   formRows: [
     {
       title: "",
-      reps: 0,
+      reps: 1,
       rest_time: 0,
       total_weight: 0,
     },
@@ -69,7 +69,7 @@ const blankCardioFormState: ExerciseInputForm<ExerciseEnums["CARDIO_ENUM"]> = {
       title: "",
       reps: 1,
       rest_time: 0,
-      target_distance: 10,
+      target_distance: 0,
       target_time: 0,
       target_speed: 0,
     },
