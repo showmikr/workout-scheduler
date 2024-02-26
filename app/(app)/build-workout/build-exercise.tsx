@@ -10,7 +10,7 @@ import {
 import { twColors } from "../../../constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite/next";
-import { useReducer } from "react";
+import { useReducer, useRef } from "react";
 import {
   CardioSetParams,
   ExerciseEnums,
@@ -19,7 +19,9 @@ import {
   exerciseEnums,
 } from "../workout/[workoutId]";
 
-type ExerciseSetInput = Pick<ExerciseSetParams, "reps" | "rest_time">;
+type ExerciseSetInput = Pick<ExerciseSetParams, "reps" | "rest_time"> & {
+  inputId: number;
+};
 type ResistanceSetInput = Pick<ResistanceSetParams, "total_weight"> &
   ExerciseSetInput;
 type CardioSetInput = Pick<CardioSetParams, "target_distance" | "target_time"> &
@@ -48,7 +50,9 @@ type ExerciseInputForm<
   T extends keyof ExerciseInputEnumsMap = keyof ExerciseInputEnumsMap,
 > = ExerciseInputEnumsMap[T];
 
-type ExerciseInputFormAction = { type: "TODO" } | { type: "TODO AGAIN" }; // should be union of action types
+type ExerciseInputFormAction =
+  | { type: "change_reps"; targetIndex: number; newRepCount: number }
+  | { type: "TODO AGAIN" }; // should be union of action types
 
 const getBlankResistanceFormState = (
   exerciseClassId: number
@@ -57,6 +61,7 @@ const getBlankResistanceFormState = (
   exerciseClassId,
   formRows: [
     {
+      inputId: 0,
       reps: 1,
       rest_time: 0,
       total_weight: 0,
@@ -71,6 +76,7 @@ const getBlankCardioFormState = (
   exerciseClassId,
   formRows: [
     {
+      inputId: 0,
       reps: 1,
       rest_time: 0,
       target_distance: 0,
@@ -79,13 +85,20 @@ const getBlankCardioFormState = (
   ],
 });
 
-function ExerciseFormReducer(
-  state: ExerciseInputForm,
+function ExerciseFormReducer<T extends keyof ExerciseInputEnumsMap>(
+  state: ExerciseInputForm<T>,
   action: ExerciseInputFormAction
-): ExerciseInputForm {
+): ExerciseInputForm<T> {
   switch (action.type) {
-    case "TODO": {
-      return state;
+    case "change_reps": {
+      const { formRows } = state;
+      const { targetIndex, newRepCount } = action;
+      return {
+        ...state,
+        formRows: formRows.map((row) =>
+          row.inputId === targetIndex ? { ...row, reps: newRepCount } : row
+        ),
+      };
     }
     case "TODO AGAIN": {
       return state;
@@ -134,14 +147,24 @@ export default function BuildExerciseComponent() {
               const stringWeight = inputRow.total_weight.toString();
               const stringRest = inputRow.rest_time.toString();
               return (
-                <View className="mb-8 mt-8 flex-row gap-12" key={index}>
+                <View
+                  className="mb-8 mt-8 flex-row gap-12"
+                  key={inputRow.inputId}
+                >
                   <View>
                     <Text className="text-xl text-black dark:text-white">
                       Reps
                     </Text>
                     <TextInput
                       inputMode="numeric"
-                      value={stringReps}
+                      value={Number.isNaN(inputRow.reps) ? "" : stringReps}
+                      onChangeText={(text) =>
+                        exerciseFormDispatch({
+                          type: "change_reps",
+                          targetIndex: inputRow.inputId,
+                          newRepCount: parseInt(text),
+                        })
+                      }
                       className={`border-b pb-1 ${stringReps ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
                     />
                   </View>
