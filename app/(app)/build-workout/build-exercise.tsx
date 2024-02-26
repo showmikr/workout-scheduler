@@ -21,13 +21,11 @@ type ResistanceInputForm = {
   exerciseType: ExerciseEnums["RESISTANCE_ENUM"];
   exerciseClassId: number;
   formRows: ResistanceSetInput[];
-  exerciseTitle: string;
 };
 type CardioInputForm = {
   exerciseType: ExerciseEnums["CARDIO_ENUM"];
   exerciseClassId: number;
   formRows: CardioSetInput[];
-  exerciseTitle: string;
 };
 
 type ExerciseInputEnums = {
@@ -48,7 +46,6 @@ type ExerciseInputFormAction = { type: "TODO" } | { type: "TODO AGAIN" }; // sho
 const getBlankResistanceFormState = (
   exerciseClassId: number
 ): ExerciseInputForm<ExerciseEnums["RESISTANCE_ENUM"]> => ({
-  exerciseTitle: "",
   exerciseType: exerciseEnums.RESISTANCE_ENUM,
   exerciseClassId,
   formRows: [
@@ -63,7 +60,6 @@ const getBlankResistanceFormState = (
 const getBlankCardioFormState = (
   exerciseClassId: number
 ): ExerciseInputForm<ExerciseEnums["CARDIO_ENUM"]> => ({
-  exerciseTitle: "",
   exerciseType: exerciseEnums.CARDIO_ENUM,
   exerciseClassId,
   formRows: [
@@ -111,7 +107,7 @@ export default function BuildExerciseComponent() {
       getBlankResistanceFormState(exerciseClassId)
     : getBlankCardioFormState(exerciseClassId)
   );
-  const { exerciseType, exerciseTitle, formRows } = exerciseFormState;
+  const { formRows, exerciseType } = exerciseFormState;
   return (
     <SafeAreaView className="flex-1">
       <ScrollView className="ml-4 mr-4 mt-4 flex-1">
