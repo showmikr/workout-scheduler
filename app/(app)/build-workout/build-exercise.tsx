@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from "expo-router";
 import { Text, SafeAreaView, ScrollView, Pressable } from "react-native";
-import { twColors } from "../../../../constants/Colors";
+import { twColors } from "../../../constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useReducer } from "react";
@@ -10,7 +10,7 @@ import {
   ExerciseSetParams,
   ResistanceSetParams,
   exerciseEnums,
-} from "../../workout/[workoutId]";
+} from "../workout/[workoutId]";
 
 type ExerciseSetInput = Pick<ExerciseSetParams, "reps" | "rest_time" | "title">;
 type ResistanceSetInput = Pick<ResistanceSetParams, "total_weight"> &
@@ -94,10 +94,15 @@ function ExerciseFormReducer(
 }
 
 export default function BuildExerciseComponent() {
-  const { exercise_class_id } = useLocalSearchParams<{
+  const localSearchParams = useLocalSearchParams<{
     exercise_class_id: string;
+    exercise_title: string;
+    exercise_type_id: string;
   }>();
-  const exerciseClassId = parseInt(exercise_class_id);
+  console.log(localSearchParams);
+  const exerciseClassId = parseInt(localSearchParams.exercise_class_id);
+  const exerciseTypeId = parseInt(localSearchParams.exercise_type_id);
+  const title = localSearchParams.exercise_title;
 
   const db = useSQLiteContext();
 

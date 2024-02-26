@@ -70,7 +70,14 @@ export default function AddWorkoutComponent() {
         {availableExercises.map((ex) => {
           return (
             <Link
-              href={`/(app)/build-workout/build-exercise/${ex.id}`}
+              href={{
+                pathname: "/(app)/build-workout/build-exercise",
+                params: {
+                  exercise_class_id: ex.id,
+                  exercise_title: ex.title,
+                  exercise_type_id: ex.exercise_type_id,
+                },
+              }}
               className="mr-8 self-end text-2xl/10 text-black dark:text-white"
               key={ex.id}
             >
