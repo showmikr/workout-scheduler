@@ -15,10 +15,7 @@ import {
 type ExerciseSetInput = Pick<ExerciseSetParams, "reps" | "rest_time">;
 type ResistanceSetInput = Pick<ResistanceSetParams, "total_weight"> &
   ExerciseSetInput;
-type CardioSetInput = Pick<
-  CardioSetParams,
-  "target_distance" | "target_speed" | "target_time"
-> &
+type CardioSetInput = Pick<CardioSetParams, "target_distance" | "target_time"> &
   ExerciseSetInput;
 type ResistanceInputForm = {
   exerciseType: ExerciseEnums["RESISTANCE_ENUM"];
@@ -69,7 +66,6 @@ const blankCardioFormState: ExerciseInputForm<ExerciseEnums["CARDIO_ENUM"]> = {
       rest_time: 0,
       target_distance: 0,
       target_time: 0,
-      target_speed: 0,
     },
   ],
 };

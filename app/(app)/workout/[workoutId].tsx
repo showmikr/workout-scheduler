@@ -45,7 +45,6 @@ export type ResistanceSetParams = {
 export type CardioSetParams = {
   cardio_set_id: number;
   target_distance: number | null;
-  target_speed: number | null;
   target_time: number | null;
 };
 export type UnifiedResistanceSet = ExerciseSetParams & ResistanceSetParams;
@@ -165,9 +164,6 @@ export default function WorkoutDetails() {
               : <Text className="text-xl dark:text-white">
                   Target Distance:{" "}
                   {item.target_distance ? item.target_distance + "m" : "null"}
-                  {"    "}
-                  Target Speed:{" "}
-                  {item.target_speed ? item.target_speed + "m/s" : "null"}
                   {"    "}
                   Target Time:{" "}
                   {item.target_time ? item.target_time + "s" : "null"}
