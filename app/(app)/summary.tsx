@@ -393,9 +393,9 @@ export default function Graph() {
     myDB
       .getFirstAsync<any>(
         `
-        SELECT ap.avg_daily_calorie_goal as calorie_goal, ap.bodyweight_goal, ap.user_height
-          FROM app_user AS ap
-          WHERE ap.id = 1
+        SELECT au.avg_daily_calorie_goal as calorie_goal, au.bodyweight_goal, au.user_height
+          FROM app_user AS au
+          WHERE au.id = 1
         `
       )
       .then((result) => {
@@ -495,7 +495,7 @@ export default function Graph() {
         backgroundColor: "#0D0D0D", //white
       }}
     >
-      {/* Chart View */}
+      {/* chart view */}
       {graphType ?
         <LineChart
           areaChart
@@ -619,7 +619,7 @@ export default function Graph() {
                       }}
                     >
                       {Math.round(items[0].value) +
-                        (graphDataType === "calorie" ? " cal" : " lbs")}
+                        (graphDataType === "calorie" ? " cal" : " kg")}
                     </Text>
                   </View>
                 </View>
@@ -649,7 +649,7 @@ export default function Graph() {
         />
       }
 
-      {/* Chart Range Buttons */}
+      {/* chart range buttons */}
       <View
         className="flex flex-row"
         style={{
@@ -690,7 +690,7 @@ export default function Graph() {
         })}
       </View>
 
-      {/* Graph Type + Data Buttons*/}
+      {/* graph type + data buttons*/}
       <View
         className="flex flex-row"
         style={{
@@ -780,7 +780,7 @@ export default function Graph() {
         </View>
       </View>
 
-      {/* Summary Views */}
+      {/* summary view */}
       <View
         style={{
           justifyContent: "center",
@@ -907,7 +907,7 @@ export default function Graph() {
                         2
                       )
                   ).toFixed(2)
-                }
+                }{" "}
               </Text>
               <Text style={[summaryGrid.text, { color: "grey" }]}>
                 {(
@@ -925,24 +925,28 @@ export default function Graph() {
               <Text style={summaryGrid.text}>Goal</Text>
               <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
                 {userProfileData?.bodyWeightGoal ?
-                  (rawInputLastIdx + rawInputFirstIdx) / 2 -
-                  userProfileData?.bodyWeightGoal +
-                  " lbs"
+                  (
+                    (rawInputLastIdx + rawInputFirstIdx) / 2 -
+                    userProfileData?.bodyWeightGoal
+                  ).toFixed(2) + " kg"
                 : "-"}
               </Text>
               <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
-                {userProfileData?.bodyWeightGoal + " lbs"}
+                {userProfileData?.bodyWeightGoal ?
+                  userProfileData.bodyWeightGoal.toFixed(2)
+                : 0}{" "}
+                {" kg"}
               </Text>
             </View>
             <View className="flex flex-row " style={summaryGrid.viewRows}>
               <Text style={summaryGrid.text}>Weight</Text>
               <Text style={[summaryGrid.text, { color: "#A53535" }]}>
                 {(rawInputLastIdx - rawInputFirstIdx > 0 ? "+" : "") +
-                  (rawInputLastIdx - rawInputFirstIdx) +
-                  " lbs"}
+                  (rawInputLastIdx - rawInputFirstIdx).toFixed(2) +
+                  " kg"}
               </Text>
               <Text style={[summaryGrid.text, { color: "#A53535" }]}>
-                {rawInputLastIdx + " lbs"}
+                {rawInputLastIdx.toFixed(2) + " kg"}
               </Text>
             </View>
           </>
@@ -1006,11 +1010,8 @@ const summaryGrid = StyleSheet.create({
  2/26/24 - 2/28/24 app lockout resolved: db correctly reloaded
 
 Other
-- add height as a field into app_user table (done)
-- create workout summary view; based on range selection (done)
-    * # of workouts row (done)
-    * time row (done)
-    * calories row (done)
+- change data used to reflex metric system units (done)
+- priority: fix 1w view crash (curr)
 
 - add goals button [top nav right side]
 - display activity cards
@@ -1018,9 +1019,7 @@ Other
 - pretty up "figmatize" page
 
 Graph Section
-- add goal line across graph (done)
-
-- display personal record lines (curr)
+- display personal record lines
 - revisit weight summary metrics to confirm stats
 - change trend formula to indecate a linear regression
 - fixed up BarChart to better reflex linechart style
