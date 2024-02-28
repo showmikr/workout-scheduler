@@ -132,8 +132,8 @@ export default function Graph() {
     // going to change logic to be more "functional" in the future...
     rawInputLength = data?.length;
     rawInputValue = 0;
-    rawInputFirstIdx = data ? data[0].value : 0;
-    rawInputLastIdx = data ? data[data.length - 1].value : 0;
+    rawInputFirstIdx = data && data.length > 0 ? data[0].value : 0;
+    rawInputLastIdx = data && data.length > 0 ? data[data.length - 1].value : 0;
 
     data?.forEach((obj) => {
       rawInputValue += obj.value ? obj.value : 0;
@@ -158,7 +158,10 @@ export default function Graph() {
         { value: 404, date: new Date(new Date().getTime() - DAY_MS) },
         { value: 404, date: new Date(new Date().getTime()) },
       ];
-    } else if (MONTH_MS * 6 < Date.now() - data[0].date.getTime()) {
+    } else if (
+      data.length > 0 &&
+      MONTH_MS * 6 < Date.now() - data[0].date.getTime()
+    ) {
       // Greater than 1 year -> average months
       console.log("1 year view");
       let idx = 0;
@@ -194,7 +197,10 @@ export default function Graph() {
         first = getFirstDayOfMonth(new Date(last.getTime() + 1));
         last = getLastDayOfMonth(new Date(first));
       }
-    } else if (MONTH_MS < Date.now() - data[0].date.getTime()) {
+    } else if (
+      data.length > 0 &&
+      MONTH_MS < Date.now() - data[0].date.getTime()
+    ) {
       console.log("3-6 month view");
 
       let idx = 0;
@@ -237,7 +243,10 @@ export default function Graph() {
         first = getFirstDayOfWeek(new Date(last.getTime() + 1));
         last = getLastDayOfWeek(new Date(first));
       }
-    } else if (WEEK_MS < Date.now() - data[0].date.getTime()) {
+    } else if (
+      data.length > 0 &&
+      WEEK_MS < Date.now() - data[0].date.getTime()
+    ) {
       // Greater than 1 month -> keep data as is (just calculate totals)
       console.log("1 month view");
       let idx = 0;
@@ -289,7 +298,6 @@ export default function Graph() {
           total += data[idx].value!;
           idx += 1;
         }
-
         res.push({
           value: total,
           date: first,
@@ -301,6 +309,7 @@ export default function Graph() {
         first = new Date(first.getTime() + DAY_MS);
       }
     }
+
     return res;
   }
   // returns data based selected data type from buttons selection
@@ -1011,7 +1020,8 @@ const summaryGrid = StyleSheet.create({
 
 Other
 - change data used to reflex metric system units (done)
-- priority: fix 1w view crash (curr)
+- priority: fix 1w view crash (done)
+- when no data is present display 0 values rather than aN for undefined (curr)
 
 - add goals button [top nav right side]
 - display activity cards
