@@ -32,9 +32,10 @@ type UserBodyWeightData = {
   labelTextStyle?: TextStyle;
 };
 
-type UserGoal = {
+type UserData = {
   calorieGoal: number | null;
   bodyWeightGoal: number | null;
+  userHeight: number | null;
 };
 
 export default function Graph() {
@@ -46,9 +47,9 @@ export default function Graph() {
   const [bodyWeightData, setBodyWeightData] = useState<UserBodyWeight[] | null>(
     null
   );
-  const [userGoalData, setUserGoalData] = useState<UserGoal | null>(null);
+  const [userProfileData, setUserProfileData] = useState<UserData | null>(null);
   const [userBodyWeightData, setUserBodyWeightData] = useState<
-    UserGoal[] | null
+    UserData[] | null
   >(null);
 
   const [graphRange, setGraphRange] = useState("1M");
@@ -68,7 +69,6 @@ export default function Graph() {
   let rawInputTimeNum: number = 0;
   let rawInputFirstIdx: number | null = 0;
   let rawInputLastIdx: number | null = 0;
-  let customHeightInches: number = 72;
 
   // returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
@@ -389,22 +389,23 @@ export default function Graph() {
     });
 
   // 3) load user profile data
-  if (!userGoalData) {
+  if (!userProfileData) {
     myDB
       .getFirstAsync<any>(
         `
-        SELECT ap.avg_daily_calorie_goal as calorie_goal, ap.bodyweight_goal
+        SELECT ap.avg_daily_calorie_goal as calorie_goal, ap.bodyweight_goal, ap.user_height
           FROM app_user AS ap
           WHERE ap.id = 1
         `
       )
       .then((result) => {
-        const { calorie_goal, bodyweight_goal } = result;
-        const readData: UserGoal = {
+        const { calorie_goal, bodyweight_goal, user_height } = result;
+        const readData: UserData = {
           calorieGoal: calorie_goal,
           bodyWeightGoal: bodyweight_goal,
+          userHeight: user_height,
         };
-        setUserGoalData(readData);
+        setUserProfileData(readData);
       })
       .catch((err) => {
         console.log("DB READ ERROR | " + err);
@@ -476,11 +477,11 @@ export default function Graph() {
   let goalLine = [];
   if (graphDataType === "calorie")
     for (let i = 0; i < graphInput.length; i++) {
-      goalLine.push({ value: userGoalData?.calorieGoal });
+      goalLine.push({ value: userProfileData?.calorieGoal });
     }
   else {
     for (let i = 0; i < graphInput.length; i++) {
-      goalLine.push({ value: userGoalData?.bodyWeightGoal });
+      goalLine.push({ value: userProfileData?.bodyWeightGoal });
     }
   }
 
@@ -779,7 +780,7 @@ export default function Graph() {
         </View>
       </View>
 
-      {/* Workout Summary View */}
+      {/* Summary Views */}
       <View
         style={{
           justifyContent: "center",
@@ -857,39 +858,80 @@ export default function Graph() {
               <Text style={summaryGrid.text}>B.M.I</Text>
               <Text style={[summaryGrid.text, { color: "grey" }]}>
                 {(
-                  (703 * rawInputLastIdx) / Math.pow(customHeightInches, 2) -
-                    (703 * rawInputFirstIdx) / Math.pow(customHeightInches, 2) >
+                  rawInputLastIdx /
+                    Math.pow(
+                      userProfileData?.userHeight ?
+                        userProfileData?.userHeight
+                      : 0,
+                      2
+                    ) -
+                    rawInputFirstIdx /
+                      Math.pow(
+                        userProfileData?.userHeight ?
+                          userProfileData?.userHeight
+                        : 0,
+                        2
+                      ) >
                   0
                 ) ?
                   "+" +
                   (
-                    (703 * rawInputLastIdx) / Math.pow(customHeightInches, 2) -
-                    (703 * rawInputFirstIdx) / Math.pow(customHeightInches, 2)
+                    rawInputLastIdx /
+                      Math.pow(
+                        userProfileData?.userHeight ?
+                          userProfileData?.userHeight
+                        : 0,
+                        2
+                      ) -
+                    rawInputFirstIdx /
+                      Math.pow(
+                        userProfileData?.userHeight ?
+                          userProfileData?.userHeight
+                        : 0,
+                        2
+                      )
                   ).toFixed(2)
                 : (
-                    (703 * rawInputLastIdx) / Math.pow(customHeightInches, 2) -
-                    (703 * rawInputFirstIdx) / Math.pow(customHeightInches, 2)
+                    rawInputLastIdx /
+                      Math.pow(
+                        userProfileData?.userHeight ?
+                          userProfileData?.userHeight
+                        : 0,
+                        2
+                      ) -
+                    rawInputFirstIdx /
+                      Math.pow(
+                        userProfileData?.userHeight ?
+                          userProfileData?.userHeight
+                        : 0,
+                        2
+                      )
                   ).toFixed(2)
                 }
               </Text>
               <Text style={[summaryGrid.text, { color: "grey" }]}>
                 {(
-                  (703 * rawInputLastIdx) /
-                  Math.pow(customHeightInches, 2)
+                  rawInputLastIdx /
+                  Math.pow(
+                    userProfileData?.userHeight ?
+                      userProfileData?.userHeight
+                    : 0,
+                    2
+                  )
                 ).toFixed(2)}
               </Text>
             </View>
             <View className="flex flex-row " style={summaryGrid.viewRows}>
               <Text style={summaryGrid.text}>Goal</Text>
               <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
-                {userGoalData?.bodyWeightGoal ?
+                {userProfileData?.bodyWeightGoal ?
                   (rawInputLastIdx + rawInputFirstIdx) / 2 -
-                  userGoalData?.bodyWeightGoal +
+                  userProfileData?.bodyWeightGoal +
                   " lbs"
                 : "-"}
               </Text>
               <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
-                {userGoalData?.bodyWeightGoal + " lbs"}
+                {userProfileData?.bodyWeightGoal + " lbs"}
               </Text>
             </View>
             <View className="flex flex-row " style={summaryGrid.viewRows}>
@@ -961,29 +1003,31 @@ const summaryGrid = StyleSheet.create({
 });
 
 /* Summary Page Tasks - Priority is functionality
+ 2/26/24 - 2/28/24 app lockout resolved: db correctly reloaded
 
 Other
-- add height as a field into app_user table
-- create workout summary view; based on range selection
+- add height as a field into app_user table (done)
+- create workout summary view; based on range selection (done)
     * # of workouts row (done)
-    * time row
+    * time row (done)
     * calories row (done)
+
 - add goals button [top nav right side]
 - display activity cards
 - refactor code to reduce repeated code [averaging function for example]
 - pretty up "figmatize" page
 
 Graph Section
-- add goal line across graph (curr)
+- add goal line across graph (done)
 
-- display personal record lines
+- display personal record lines (curr)
 - revisit weight summary metrics to confirm stats
 - change trend formula to indecate a linear regression
 - fixed up BarChart to better reflex linechart style
 
 - tooltip modification (not priority)
+    * Round interpolated values (done)
     * Center tooltip from focused datapoint vertical line 
     * Prevent tooltip from reaching out of bounds
-    * Round interpolated values (done)
 
 */

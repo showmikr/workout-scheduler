@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS "app_user" (
   "creation_date" text NOT NULL, -- (represents ISO Date as string)
   "last_signed_in" text NOT NULL, -- (represents ISO Date as string)
   "avg_daily_calorie_goal" int,
-  "bodyweight_goal" real
+  "bodyweight_goal" real,
+  "user_height" real
 );
 
 CREATE TABLE IF NOT EXISTS "exercise_type" (
@@ -212,9 +213,9 @@ INSERT INTO days_of_week values
   ('Saturday'), 
   ('Sunday');
 
-INSERT INTO app_user (aws_cognito_sub, first_name, last_name, user_name, email, email_verified, image_url, creation_date, last_signed_in, avg_daily_calorie_goal, bodyweight_goal)
+INSERT INTO app_user (aws_cognito_sub, first_name, last_name, user_name, email, email_verified, image_url, creation_date, last_signed_in, avg_daily_calorie_goal, bodyweight_goal, user_height)
   VALUES
-	('c8bf7e34-7dcf-11ee-b962-0242ac120002', 'David', 'Shcherbina', 'kalashnikov', 'davidshcherbina@gmail.com', true, null, '2022-05-07T14:12:34.000Z', '2023-11-07T19:12:34.000Z', 150, 180);
+	('c8bf7e34-7dcf-11ee-b962-0242ac120002', 'David', 'Shcherbina', 'kalashnikov', 'davidshcherbina@gmail.com', true, null, '2022-05-07T14:12:34.000Z', '2023-11-07T19:12:34.000Z', 150, 1.8288);
 
 INSERT INTO training_cycle (app_user_id, title, list_order)
     VALUES
