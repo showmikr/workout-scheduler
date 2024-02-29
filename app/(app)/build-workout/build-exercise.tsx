@@ -52,7 +52,7 @@ type ExerciseInputForm<
 
 type ExerciseInputFormAction =
   | { type: "change_reps"; targetIndex: number; newRepCount: number }
-  | { type: "TODO AGAIN" }; // should be union of action types
+  | { type: "change_weight"; targetIndex: number; newWeight: number };
 
 const getBlankResistanceFormState = (
   exerciseClassId: number
@@ -108,8 +108,17 @@ function ResistanceExerciseFormReducer(
         formRows: updateReps(formRows, targetIndex, newRepCount),
       };
     }
-    case "TODO AGAIN": {
-      return state;
+    case "change_weight": {
+      const { formRows } = state;
+      const { targetIndex, newWeight } = action;
+      return {
+        ...state,
+        formRows: formRows.map((row) =>
+          row.inputId === targetIndex ?
+            { ...row, total_weight: newWeight }
+          : row
+        ),
+      };
     }
     default:
       const _unreachableCase: never = action;
@@ -157,8 +166,15 @@ function ResistanceExerciseForm({
               </Text>
               <TextInput
                 inputMode="numeric"
-                value={stringWeight}
-                className={`border-b pb-1 ${formRows[index].total_weight ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
+                value={Number.isNaN(inputRow.total_weight) ? "" : stringWeight}
+                onChangeText={(text) =>
+                  exerciseFormDispatch({
+                    type: "change_weight",
+                    targetIndex: inputRow.inputId,
+                    newWeight: parseInt(text),
+                  })
+                }
+                className={`border-b pb-1 ${stringWeight ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
               />
             </View>
             <View>
