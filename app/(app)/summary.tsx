@@ -886,6 +886,7 @@ export default function Graph() {
                       rawInputLength ? rawInputTime / rawInputTimeNum / 3600 : 0
                     )
                   ).slice(-2) +
+                  ":" +
                   (
                     "00" +
                     Math.floor(
@@ -894,6 +895,7 @@ export default function Graph() {
                       : 0
                     )
                   ).slice(-2) +
+                  ":" +
                   (
                     "00" +
                     Math.floor(
