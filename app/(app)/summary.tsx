@@ -38,6 +38,20 @@ type UserData = {
   userHeight: number | null;
 };
 
+type PersonalRecord = {
+  weight?: number;
+  reps?: number;
+  distance?: number;
+  time?: number;
+  date: Date;
+};
+
+type PersonalRecordHistory = {
+  exerciseClassName: string;
+  exerciseType: number;
+  PersonalRecordList: PersonalRecord[];
+};
+
 export default function Graph() {
   const myDB = useSQLiteContext();
 
@@ -48,8 +62,8 @@ export default function Graph() {
     null
   );
   const [userProfileData, setUserProfileData] = useState<UserData | null>(null);
-  const [userBodyWeightData, setUserBodyWeightData] = useState<
-    UserData[] | null
+  const [personalRecord, setPersonalRecord] = useState<
+    PersonalRecordHistory[] | null
   >(null);
 
   const [graphRange, setGraphRange] = useState("1M");
@@ -415,6 +429,49 @@ export default function Graph() {
           userHeight: user_height,
         };
         setUserProfileData(readData);
+      })
+      .catch((err) => {
+        console.log("DB READ ERROR | " + err);
+      });
+  }
+
+  // 4) load personal record data
+  if (!personalRecord) {
+    myDB
+      .getAllAsync<any>(
+        `
+      SELECT ec.exercise_type_id, ec.title, ph.exercise_class_id, ph.weight, ph.reps, ph.distance, ph.time, ph.date FROM exercise_class as ec
+        INNER JOIN pr_history as ph ON ec.id = ph.exercise_class_id
+      WHERE ec.app_user_id = 1 AND is_archived = 0
+      ORDER BY ph.exercise_class_id ASC, ph.date DESC;
+      `
+      )
+      .then((result) => {
+        const readData: PersonalRecordHistory[] = result
+          .reduce((prev: any[], curr: any) => {
+            const p = prev;
+            if (
+              p.length < 1 ||
+              p.at(-1)!.at(-1).exercise_class_id !== curr.exercise_class_id
+            ) {
+              p.push([curr]);
+            } else {
+              p.at(-1)!.push(curr);
+            }
+            return p;
+          }, [])
+          .map((group: any[]) => ({
+            exerciseClassName: group[0].title,
+            exerciseType: group[0].exercise_type_id,
+            PersonalRecordList: group.map((pr) => ({
+              weight: pr.weight,
+              reps: pr.reps,
+              time: pr.time,
+              distance: pr.distance,
+              date: new Date(pr.date),
+            })),
+          }));
+        setPersonalRecord(readData);
       })
       .catch((err) => {
         console.log("DB READ ERROR | " + err);
@@ -1027,7 +1084,7 @@ Other
 - pretty up "figmatize" page
 
 Graph Section
-- display personal record lines (curr) - dbd now allows for this
+- display personal record lines (curr) - db v3 now allows for this
 - revisit weight summary metrics to confirm stats
 - change trend formula to indecate a linear regression
 - fixed up BarChart to better reflex linechart style

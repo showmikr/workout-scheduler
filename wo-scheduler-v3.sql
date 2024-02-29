@@ -178,7 +178,6 @@ CREATE TABLE IF NOT EXISTS "pr_history" (
   "weight" real,
   "reps" int,
   "distance" real,
-  "speed" real,
   "time" int,
   "date" text NOT NULL,  -- (represents ISO Date as string)
   FOREIGN KEY ("exercise_class_id") REFERENCES "exercise_class" ("id") ON DELETE CASCADE ON UPDATE CASCADE
@@ -284,18 +283,18 @@ INSERT INTO exercise_equipment (title)
     ('Machine'),
     ('Bodyweight');
 
-INSERT INTO pr_history (weight, reps, distance, speed, time, date, exercise_class_id)
+INSERT INTO pr_history (weight, reps, distance, time, date, exercise_class_id)
     VALUES
-    (220, 1, NULL, NULL, NULL, '2022-11-07T14:12:34.000Z', 1), -- should be Bench Press exercise_class
-    (240, 1, NULL, NULL, NULL, '2023-11-07T19:12:34.000Z', 1), -- should be Bench Press exercise_class
+    (220, 1, NULL, NULL, '2022-11-07T14:12:34.000Z', 1), -- should be Bench Press exercise_class
+    (240, 1, NULL, NULL, '2023-11-07T19:12:34.000Z', 1), -- should be Bench Press exercise_class
 
-    (255, 1, NULL, NULL, NULL, '2022-11-07T14:12:34.000Z', 11), -- should be Squat exercise_class
-    (285, 1, NULL, NULL, NULL, '2023-11-07T19:12:34.000Z', 11), -- should be Squat exercise_class
+    (255, 1, NULL, NULL, '2022-11-07T14:12:34.000Z', 11), -- should be Squat exercise_class
+    (285, 1, NULL, NULL, '2023-11-07T19:12:34.000Z', 11), -- should be Squat exercise_class
 
-    (355, 1, NULL, NULL, NULL, '2022-11-07T14:12:34.000Z', 10), -- should be Leg Press exercise_class
-    (395, 1, NULL, NULL, NULL, '2023-11-07T19:12:34.000Z', 10), -- should be Leg Press exercise_class
+    (355, 1, NULL, NULL, '2022-11-07T14:12:34.000Z', 10), -- should be Leg Press exercise_class
+    (395, 1, NULL, NULL, '2023-11-07T19:12:34.000Z', 10), -- should be Leg Press exercise_class
 
-    (30, 12, NULL, NULL, NULL, '2022-11-07T14:12:34.000Z', 4); -- should be Bicep Curls exercise_class
+    (30, 12, NULL, NULL, '2022-11-07T14:12:34.000Z', 4); -- should be Bicep Curls exercise_class
 
 INSERT INTO exercise (exercise_class_id, workout_id, exercise_equipment_id, list_order, initial_weight, notes)
     VALUES
