@@ -10,7 +10,7 @@ import {
 import { twColors } from "../../../constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite/next";
-import { useReducer, useRef } from "react";
+import { useReducer } from "react";
 import {
   CardioSetParams,
   ExerciseEnums,
@@ -85,20 +85,26 @@ const getBlankCardioFormState = (
   ],
 });
 
-function ExerciseFormReducer<T extends keyof ExerciseInputEnumsMap>(
-  state: ExerciseInputForm<T>,
+function ExerciseFormReducer(
+  state: ExerciseInputForm,
   action: ExerciseInputFormAction
-): ExerciseInputForm<T> {
+): ExerciseInputForm {
   switch (action.type) {
     case "change_reps": {
       const { formRows } = state;
       const { targetIndex, newRepCount } = action;
-      return {
+      const updateReps: <T extends keyof ExerciseInputEnumsMap>(
+        state: ExerciseInputForm<T>
+      ) => ExerciseInputForm<T> = (state) => ({
         ...state,
-        formRows: formRows.map((row) =>
-          row.inputId === targetIndex ? { ...row, reps: newRepCount } : row
+        formRows: formRows.map(
+          (row) =>
+            (row.inputId === targetIndex ?
+              { ...row, reps: newRepCount }
+            : row) satisfies ExerciseInputForm["formRows"][number]
         ),
-      };
+      });
+      return updateReps(state) satisfies ExerciseInputForm;
     }
     case "TODO AGAIN": {
       return state;
