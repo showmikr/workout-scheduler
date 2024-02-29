@@ -85,26 +85,28 @@ const getBlankCardioFormState = (
   ],
 });
 
-function ExerciseFormReducer(
-  state: ExerciseInputForm,
+function updateReps<T extends ExerciseSetInput>(
+  sets: T[],
+  targetPos: number,
+  reps: number
+): T[] {
+  return sets.map((set) =>
+    set.inputId === targetPos ? { ...set, reps } : set
+  );
+}
+
+function ResistanceExerciseFormReducer(
+  state: ExerciseInputForm<ExerciseEnums["RESISTANCE_ENUM"]>,
   action: ExerciseInputFormAction
-): ExerciseInputForm {
+): ExerciseInputForm<ExerciseEnums["RESISTANCE_ENUM"]> {
   switch (action.type) {
     case "change_reps": {
       const { formRows } = state;
       const { targetIndex, newRepCount } = action;
-      const updateReps: <T extends keyof ExerciseInputEnumsMap>(
-        state: ExerciseInputForm<T>
-      ) => ExerciseInputForm<T> = (state) => ({
+      return {
         ...state,
-        formRows: formRows.map(
-          (row) =>
-            (row.inputId === targetIndex ?
-              { ...row, reps: newRepCount }
-            : row) satisfies ExerciseInputForm["formRows"][number]
-        ),
-      });
-      return updateReps(state) satisfies ExerciseInputForm;
+        formRows: updateReps(formRows, targetIndex, newRepCount),
+      };
     }
     case "TODO AGAIN": {
       return state;
@@ -113,6 +115,65 @@ function ExerciseFormReducer(
       const _unreachableCase: never = action;
       return _unreachableCase;
   }
+}
+
+// Will act as high level component for building out a Resistance Exercise
+function ResistanceExerciseForm({
+  exerciseClassId,
+}: {
+  exerciseClassId: number;
+}) {
+  const [exerciseFormState, exerciseFormDispatch] = useReducer(
+    ResistanceExerciseFormReducer,
+    getBlankResistanceFormState(exerciseClassId)
+  );
+  const { formRows } = exerciseFormState;
+  return (
+    <View>
+      {formRows.map((inputRow, index) => {
+        const stringReps = inputRow.reps.toString();
+        const stringWeight = inputRow.total_weight.toString();
+        const stringRest = inputRow.rest_time.toString();
+        return (
+          <View className="mb-8 mt-8 flex-row gap-12" key={inputRow.inputId}>
+            <View>
+              <Text className="text-xl text-black dark:text-white">Reps</Text>
+              <TextInput
+                inputMode="numeric"
+                value={Number.isNaN(inputRow.reps) ? "" : stringReps}
+                onChangeText={(text) =>
+                  exerciseFormDispatch({
+                    type: "change_reps",
+                    targetIndex: inputRow.inputId,
+                    newRepCount: parseInt(text),
+                  })
+                }
+                className={`border-b pb-1 ${stringReps ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
+              />
+            </View>
+            <View>
+              <Text className="text-xl text-black dark:text-white">
+                Total Weight
+              </Text>
+              <TextInput
+                inputMode="numeric"
+                value={stringWeight}
+                className={`border-b pb-1 ${formRows[index].total_weight ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
+              />
+            </View>
+            <View>
+              <Text className="text-xl text-black dark:text-white">Rest</Text>
+              <TextInput
+                inputMode="numeric"
+                value={stringRest}
+                className={`border-b pb-1 ${stringRest ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
+              />
+            </View>
+          </View>
+        );
+      })}
+    </View>
+  );
 }
 
 export default function BuildExerciseComponent() {
@@ -127,13 +188,6 @@ export default function BuildExerciseComponent() {
 
   const db = useSQLiteContext();
 
-  const [exerciseFormState, exerciseFormDispatch] = useReducer(
-    ExerciseFormReducer,
-    exerciseTypeIdParam === exerciseEnums.RESISTANCE_ENUM ?
-      getBlankResistanceFormState(exerciseClassIdParam)
-    : getBlankCardioFormState(exerciseClassIdParam)
-  );
-  const { formRows, exerciseType } = exerciseFormState;
   return (
     <SafeAreaView className="flex-1">
       <ScrollView className="ml-4 mr-4 mt-4 flex-1">
@@ -146,58 +200,8 @@ export default function BuildExerciseComponent() {
         <Text className="text-xl text-black dark:text-white">
           Exercise Class Id: {exerciseClassIdParam}
         </Text>
-        {exerciseType === exerciseEnums.RESISTANCE_ENUM ?
-          <View>
-            {formRows.map((inputRow, index) => {
-              const stringReps = inputRow.reps.toString();
-              const stringWeight = inputRow.total_weight.toString();
-              const stringRest = inputRow.rest_time.toString();
-              return (
-                <View
-                  className="mb-8 mt-8 flex-row gap-12"
-                  key={inputRow.inputId}
-                >
-                  <View>
-                    <Text className="text-xl text-black dark:text-white">
-                      Reps
-                    </Text>
-                    <TextInput
-                      inputMode="numeric"
-                      value={Number.isNaN(inputRow.reps) ? "" : stringReps}
-                      onChangeText={(text) =>
-                        exerciseFormDispatch({
-                          type: "change_reps",
-                          targetIndex: inputRow.inputId,
-                          newRepCount: parseInt(text),
-                        })
-                      }
-                      className={`border-b pb-1 ${stringReps ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
-                    />
-                  </View>
-                  <View>
-                    <Text className="text-xl text-black dark:text-white">
-                      Total Weight
-                    </Text>
-                    <TextInput
-                      inputMode="numeric"
-                      value={stringWeight}
-                      className={`border-b pb-1 ${formRows[index].total_weight ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
-                    />
-                  </View>
-                  <View>
-                    <Text className="text-xl text-black dark:text-white">
-                      Rest
-                    </Text>
-                    <TextInput
-                      inputMode="numeric"
-                      value={stringRest}
-                      className={`border-b pb-1 ${stringRest ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
-                    />
-                  </View>
-                </View>
-              );
-            })}
-          </View>
+        {exerciseTypeIdParam === exerciseEnums.RESISTANCE_ENUM ?
+          <ResistanceExerciseForm exerciseClassId={exerciseClassIdParam} />
         : <View>
             <Text className="text-xl text-black dark:text-white">
               Cardio Placeholder
