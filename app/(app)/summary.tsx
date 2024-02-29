@@ -152,11 +152,11 @@ export default function Graph() {
       console.log("Not enough data or data does not exist.");
       res = [
         {
-          value: 404,
+          value: 1,
           date: new Date(new Date().getTime() - DAY_MS * 2),
         },
-        { value: 404, date: new Date(new Date().getTime() - DAY_MS) },
-        { value: 404, date: new Date(new Date().getTime()) },
+        { value: 1, date: new Date(new Date().getTime() - DAY_MS) },
+        { value: 1, date: new Date(new Date().getTime()) },
       ];
     } else if (
       data.length > 0 &&
@@ -821,30 +821,31 @@ export default function Graph() {
                 {("00" + ((rawInputTime % 3600) % 60)).slice(-2)}
               </Text>
               <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
-                {(
-                  "00" +
-                  Math.floor(
-                    rawInputLength ? rawInputTime / rawInputTimeNum / 3600 : 0
-                  )
-                ).slice(-2)}
-                :
-                {(
-                  "00" +
-                  Math.floor(
-                    rawInputLength ?
-                      ((rawInputTime / rawInputTimeNum) % 3600) / 60
-                    : 0
-                  )
-                ).slice(-2)}
-                :
-                {(
-                  "00" +
-                  Math.floor(
-                    rawInputLength ?
-                      ((rawInputTime / rawInputTimeNum) % 3600) % 60
-                    : 0
-                  )
-                ).slice(-2)}
+                {rawInputTime === 0 ?
+                  "00:00:00"
+                : (
+                    "00" +
+                    Math.floor(
+                      rawInputLength ? rawInputTime / rawInputTimeNum / 3600 : 0
+                    )
+                  ).slice(-2) +
+                  (
+                    "00" +
+                    Math.floor(
+                      rawInputLength ?
+                        ((rawInputTime / rawInputTimeNum) % 3600) / 60
+                      : 0
+                    )
+                  ).slice(-2) +
+                  (
+                    "00" +
+                    Math.floor(
+                      rawInputLength ?
+                        ((rawInputTime / rawInputTimeNum) % 3600) % 60
+                      : 0
+                    )
+                  ).slice(-2)
+                }
               </Text>
             </View>
             <View className="flex flex-row " style={summaryGrid.viewRows}>
@@ -1016,12 +1017,9 @@ const summaryGrid = StyleSheet.create({
 });
 
 /* Summary Page Tasks - Priority is functionality
- 2/26/24 - 2/28/24 app lockout resolved: db correctly reloaded
 
 Other
-- change data used to reflex metric system units (done)
-- priority: fix 1w view crash (done)
-- when no data is present display 0 values rather than aN for undefined (curr)
+- when no data is present display 0 values rather than aN for undefined (done)
 
 - add goals button [top nav right side]
 - display activity cards
@@ -1029,14 +1027,15 @@ Other
 - pretty up "figmatize" page
 
 Graph Section
-- display personal record lines
+- display personal record lines (curr) - dbd now allows for this
 - revisit weight summary metrics to confirm stats
 - change trend formula to indecate a linear regression
 - fixed up BarChart to better reflex linechart style
 
 - tooltip modification (not priority)
-    * Round interpolated values (done)
-    * Center tooltip from focused datapoint vertical line 
-    * Prevent tooltip from reaching out of bounds
+    * round interpolated values (done)
+    * center tooltip from focused datapoint vertical line 
+    * prevent tooltip from reaching out of bounds
+    * prevent data bubble to appear when hovering over goal line
 
 */
