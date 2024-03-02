@@ -52,6 +52,7 @@ type ExerciseInputForm<
 
 type ExerciseInputFormAction =
   | { type: "change_reps"; targetIndex: number; newRepCount: number }
+  | { type: "change_rest"; targetIndex: number; newRest: number }
   | { type: "change_weight"; targetIndex: number; newWeight: number };
 
 const getBlankResistanceFormState = (
@@ -95,6 +96,19 @@ function updateReps<T extends ExerciseSetInput>(
   );
 }
 
+function updateRest<T extends ExerciseInputForm["formRows"][number]>(
+  sets: T[],
+  targetPos: number,
+  rest: number
+): T[] {
+  return sets.map(
+    (set) =>
+      (set.inputId === targetPos ?
+        { ...set, rest_time: rest }
+      : set) satisfies ExerciseSetInput as T
+  );
+}
+
 function ResistanceExerciseFormReducer(
   state: ExerciseInputForm<ExerciseEnums["RESISTANCE_ENUM"]>,
   action: ExerciseInputFormAction
@@ -106,6 +120,14 @@ function ResistanceExerciseFormReducer(
       return {
         ...state,
         formRows: updateReps(formRows, targetIndex, newRepCount),
+      };
+    }
+    case "change_rest": {
+      const { formRows } = state;
+      const { targetIndex, newRest } = action;
+      return {
+        ...state,
+        formRows: updateRest(formRows, targetIndex, newRest),
       };
     }
     case "change_weight": {
@@ -181,7 +203,14 @@ function ResistanceExerciseForm({
               <Text className="text-xl text-black dark:text-white">Rest</Text>
               <TextInput
                 inputMode="numeric"
-                value={stringRest}
+                value={Number.isNaN(inputRow.rest_time) ? "" : stringRest}
+                onChangeText={(text) =>
+                  exerciseFormDispatch({
+                    type: "change_rest",
+                    targetIndex: inputRow.inputId,
+                    newRest: parseInt(text),
+                  })
+                }
                 className={`border-b pb-1 ${stringRest ? "border-neutral-600" : "border-neutral-700"} text-2xl dark:text-white`}
               />
             </View>
