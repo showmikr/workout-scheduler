@@ -220,7 +220,31 @@ function ResistanceExerciseForm({
           </View>
         );
       })}
+      <AddSetButton
+        onPress={() => {
+          console.log("You Pressed Me");
+        }}
+      />
     </View>
+  );
+}
+
+function AddSetButton({ onPress }: { onPress: () => void }) {
+  return (
+    <Pressable
+      style={({ pressed }) => ({
+        flexDirection: "row",
+        columnGap: 14 * 0.25,
+        marginTop: 3.5,
+        marginBottom: 17.5,
+        alignItems: "center",
+        opacity: pressed ? 0.7 : 1,
+      })}
+      onPress={onPress}
+    >
+      <FontAwesome size={14 * 1.25} name="plus" color={twColors.neutral500} />
+      <Text className="text-2xl text-black dark:text-white">Add Set</Text>
+    </Pressable>
   );
 }
 
@@ -256,23 +280,6 @@ export default function BuildExerciseComponent() {
             </Text>
           </View>
         }
-        <Pressable
-          style={({ pressed }) => ({
-            flexDirection: "row",
-            columnGap: 14 * 0.25,
-            marginTop: 3.5,
-            marginBottom: 17.5,
-            alignItems: "center",
-            opacity: pressed ? 0.7 : 1,
-          })}
-        >
-          <FontAwesome
-            size={14 * 1.25}
-            name="plus"
-            color={twColors.neutral500}
-          />
-          <Text className="text-2xl text-black dark:text-white">Add Set</Text>
-        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
