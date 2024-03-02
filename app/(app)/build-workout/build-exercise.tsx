@@ -86,13 +86,16 @@ const getBlankCardioFormState = (
   ],
 });
 
-function updateReps<T extends ExerciseSetInput>(
+function updateReps<T extends ExerciseInputForm["formRows"][number]>(
   sets: T[],
   targetPos: number,
   reps: number
 ): T[] {
-  return sets.map((set) =>
-    set.inputId === targetPos ? { ...set, reps } : set
+  return sets.map(
+    (set) =>
+      (set.inputId === targetPos ?
+        { ...set, reps }
+      : set) satisfies ExerciseSetInput as T
   );
 }
 
