@@ -6,11 +6,12 @@ import {
   Pressable,
   View,
   TextInput,
+  KeyboardAvoidingView,
 } from "react-native";
 import { twColors } from "../../../constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite/next";
-import { useReducer } from "react";
+import { useReducer, useRef } from "react";
 import {
   CardioSetParams,
   ExerciseEnums,
@@ -53,6 +54,7 @@ type ExerciseInputForm<
 type ExerciseInputFormAction =
   | { type: "change_reps"; targetIndex: number; newRepCount: number }
   | { type: "change_rest"; targetIndex: number; newRest: number }
+  | { type: "add_set"; setId: number }
   | { type: "change_weight"; targetIndex: number; newWeight: number };
 
 const getBlankResistanceFormState = (
@@ -133,6 +135,23 @@ function ResistanceExerciseFormReducer(
         formRows: updateRest(formRows, targetIndex, newRest),
       };
     }
+    case "add_set": {
+      // TODO
+      const { formRows } = state;
+      const { setId } = action;
+      return {
+        ...state,
+        formRows: [
+          ...formRows,
+          {
+            inputId: setId,
+            reps: 1,
+            rest_time: 0,
+            total_weight: 0,
+          },
+        ],
+      };
+    }
     case "change_weight": {
       const { formRows } = state;
       const { targetIndex, newWeight } = action;
@@ -157,6 +176,7 @@ function ResistanceExerciseForm({
 }: {
   exerciseClassId: number;
 }) {
+  const inputRowCount = useRef(1);
   const [exerciseFormState, exerciseFormDispatch] = useReducer(
     ResistanceExerciseFormReducer,
     getBlankResistanceFormState(exerciseClassId)
@@ -169,7 +189,16 @@ function ResistanceExerciseForm({
         const stringWeight = inputRow.total_weight.toString();
         const stringRest = inputRow.rest_time.toString();
         return (
-          <View className="mb-8 mt-8 flex-row gap-12" key={inputRow.inputId}>
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 3 * 14,
+              marginTop: 2 * 14,
+              marginBottom: 2 * 14,
+            }}
+            //className="mb-8 mt-8 flex-row gap-12"
+            key={inputRow.inputId}
+          >
             <View>
               <Text className="text-xl text-black dark:text-white">Reps</Text>
               <TextInput
@@ -222,7 +251,8 @@ function ResistanceExerciseForm({
       })}
       <AddSetButton
         onPress={() => {
-          console.log("You Pressed Me");
+          const nextSetId = inputRowCount.current++;
+          exerciseFormDispatch({ type: "add_set", setId: nextSetId });
         }}
       />
     </View>
@@ -262,25 +292,36 @@ export default function BuildExerciseComponent() {
 
   return (
     <SafeAreaView className="flex-1">
-      <ScrollView className="ml-4 mr-4 mt-4 flex-1">
-        <Text className="text-xl text-black dark:text-white">
-          Build Exercise Page!
-        </Text>
-        <Text className="text-xl text-black dark:text-white">
-          Exercise: {exerciseTitleParam}
-        </Text>
-        <Text className="text-xl text-black dark:text-white">
-          Exercise Class Id: {exerciseClassIdParam}
-        </Text>
-        {exerciseTypeIdParam === exerciseEnums.RESISTANCE_ENUM ?
-          <ResistanceExerciseForm exerciseClassId={exerciseClassIdParam} />
-        : <View>
-            <Text className="text-xl text-black dark:text-white">
-              Cardio Placeholder
-            </Text>
-          </View>
-        }
-      </ScrollView>
+      <KeyboardAvoidingView
+        behavior="padding"
+        style={{ flex: 1 }}
+        contentContainerClassName="ml-4 mr-4 mt-4 border border-red-400"
+        keyboardVerticalOffset={0}
+      >
+        <ScrollView
+          //contentContainerClassName="ml-4 mr-4 mt-4 flex-1"
+          //contentContainerStyle={{ backgroundColor: "red" }}
+          style={{ flex: 1 }}
+        >
+          <Text className="text-xl text-black dark:text-white">
+            Build Exercise Page!
+          </Text>
+          <Text className="text-xl text-black dark:text-white">
+            Exercise: {exerciseTitleParam}
+          </Text>
+          <Text className="text-xl text-black dark:text-white">
+            Exercise Class Id: {exerciseClassIdParam}
+          </Text>
+          {exerciseTypeIdParam === exerciseEnums.RESISTANCE_ENUM ?
+            <ResistanceExerciseForm exerciseClassId={exerciseClassIdParam} />
+          : <View>
+              <Text className="text-xl text-black dark:text-white">
+                Cardio Placeholder
+              </Text>
+            </View>
+          }
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
