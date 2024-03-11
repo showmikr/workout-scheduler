@@ -179,7 +179,7 @@ CREATE TABLE IF NOT EXISTS "pr_history" (
   "reps" int,
   "distance" real,
   "time" int,
-  "date" text NOT NULL,  -- (represents ISO Date as string)
+  "date" text NOT NULL, -- (represents ISO Date as string)
   FOREIGN KEY ("exercise_class_id") REFERENCES "exercise_class" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -570,7 +570,8 @@ INSERT INTO user_bodyweight (app_user_id, weight, date)
     (1, 76.65711,'2024-02-14T07:34:12'),
     (1, 75.74993,'2024-02-17T07:34:12'),
     (1, 75.74993,'2024-02-22T07:34:12'),
-    (1, 75.1149,'2024-02-28T07:34:12');
+    (1, 75.1149,'2024-02-28T07:34:12'),
+    (1, 74.93346,'2024-03-11T07:34:12');
 
 INSERT INTO workout_days (workout_id, day)
     VALUES
@@ -790,7 +791,9 @@ INSERT INTO workout_session (app_user_id, title, date, calories)
     (1, 'Upperbody',                '2024-02-19T07:34:12',   230), /* id: 185 */
     (1, 'Upperbody',                '2024-02-20T07:34:12',   403), /* id: 186 */
     (1, 'Upperbody',                '2024-02-24T07:34:12',   255),
-    (1, 'Upperbody',                '2024-02-28T17:25:12',   313);
+    (1, 'Upperbody',                '2024-02-28T17:25:12',   313),
+    (1, 'Upperbody',                '2024-03-02T17:25:12',   357),
+    (1, 'Upperbody',                '2024-03-09T17:25:12',   150);
 
 INSERT INTO exercise_session (workout_session_id, pr_history_id, list_order, initial_weight, was_completed, exercise_class_id)
     VALUES
