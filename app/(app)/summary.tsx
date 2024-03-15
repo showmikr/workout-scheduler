@@ -1129,7 +1129,7 @@ Other
 Graph Section
 - display personal record lines (curr)
 - revisit weight summary metrics to confirm stats
-- change trend formula to indecate a linear regression
+- change trend formula to indicate a linear regression
 - fixed up BarChart to better reflex linechart style
 - allow graph x-axis start to be more dynamic (not always 0)
 
