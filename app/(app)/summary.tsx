@@ -39,7 +39,7 @@ type UserData = {
 };
 
 type PersonalRecord = {
-  weight?: number;
+  weight?: number; // { value: 400, reps: }
   reps?: number;
   distance?: number;
   time?: number;
@@ -48,8 +48,8 @@ type PersonalRecord = {
 
 type PersonalRecordHistory = {
   exerciseClassName: string;
-  exerciseType: number;
-  PersonalRecordList: PersonalRecord[];
+  exerciseType: 1 | 2;
+  personalRecordList: PersonalRecord[];
 };
 
 export default function Graph() {
@@ -92,14 +92,6 @@ export default function Graph() {
   let rawInputTimeNum: number = 0;
   let rawInputFirstIdx: number | null = 0;
   let rawInputLastIdx: number | null = 0;
-
-  function filter(arr, criteria) {
-    return arr.filter(function (obj) {
-      return Object.keys(criteria).every(function (c) {
-        return obj[c] == criteria[c];
-      });
-    });
-  }
 
   // returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
@@ -173,11 +165,13 @@ export default function Graph() {
 
     if (graphDataType === "personal record" && graphRange === "ALL") {
       console.log("Filtered Result");
-      let res = filter(data, {
-        exerciseType: 1,
-        exerciseClassName: "Bench Press",
-      });
-      console.log(res[0].PersonalRecordList);
+      let filterRes = (data as PersonalRecordHistory[]).find(
+        (obj) => obj.exerciseClassName === "Bench Press"
+      )!;
+      return filterRes.personalRecordList.map((record) => ({
+        value: record.weight,
+        date: record.date,
+      }));
     }
 
     if (!(graphDataType === "personal record")) {
@@ -504,7 +498,7 @@ export default function Graph() {
           .map((group: any[]) => ({
             exerciseClassName: group[0].title,
             exerciseType: group[0].exercise_type_id,
-            PersonalRecordList: group.map((pr) => ({
+            personalRecordList: group.map((pr) => ({
               weight: pr.weight,
               reps: pr.reps,
               time: pr.time,
