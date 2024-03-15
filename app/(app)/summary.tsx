@@ -484,7 +484,7 @@ export default function Graph() {
       SELECT ec.exercise_type_id, ec.title, ph.exercise_class_id, ph.weight, ph.reps, ph.distance, ph.time, ph.date FROM exercise_class as ec
         INNER JOIN pr_history as ph ON ec.id = ph.exercise_class_id
       WHERE ec.app_user_id = 1 AND is_archived = 0
-      ORDER BY ph.exercise_class_id ASC, ph.date DESC;
+      ORDER BY ph.exercise_class_id ASC, ph.date ASC;
       `
       )
       .then((result) => {
