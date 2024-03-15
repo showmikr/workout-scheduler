@@ -77,8 +77,13 @@ export default function WorkoutDetails() {
   const db = useSQLiteContext();
 
   const exercises = db.getAllSync<ExerciseParams>(
-    `SELECT ex.id AS exercise_id, ex.title, ex.exercise_type_id FROM exercise as ex
-      WHERE ex.workout_id = ?`,
+    `
+    SELECT ex.id AS exercise_id, ex_class.title, ex_class.exercise_type_id
+    FROM exercise AS ex
+      INNER JOIN
+      exercise_class AS ex_class ON ex.exercise_class_id = ex_class.id
+    WHERE ex.workout_id = ?;
+    `,
     workoutId
   );
 
@@ -114,7 +119,6 @@ export default function WorkoutDetails() {
             exercise_set.title,
             cardio_set.id AS cardio_set_id,
             cardio_set.target_distance,
-            cardio_set.target_speed,
             cardio_set.target_time
             FROM exercise_set 
             INNER JOIN cardio_set ON exercise_set.id = cardio_set.exercise_set_id 
