@@ -8,7 +8,7 @@ import {
   Keyboard,
   ScrollView,
 } from "react-native";
-import { Link, router } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { ExerciseEnums } from "../workout/[workoutId]";
 
 type ExerciseClassParams = {
@@ -21,6 +21,12 @@ export default function AddWorkoutComponent() {
   const db = useSQLiteContext();
   const [workoutTitle, setWorkoutTitle] = useState<string>("");
 
+  const { newWorkoutIdString } = useLocalSearchParams<{
+    newWorkoutIdString: string;
+  }>();
+  const emptyWorkoutId = parseInt(newWorkoutIdString);
+  console.log("Empty Workout Id:", emptyWorkoutId);
+
   const getExercises = () => {
     return db.getAllSync<ExerciseClassParams>(
       `SELECT id, exercise_type_id, title FROM exercise_class WHERE app_user_id = 1 AND is_archived = ?`,
@@ -29,34 +35,6 @@ export default function AddWorkoutComponent() {
   };
 
   const availableExercises = getExercises();
-
-  // Grabs last_item_pos + 1 if there are already list items, otherwise this is the first entry
-  const getLastItemPos = () => {
-    const lastItemPos =
-      db.getFirstSync<{ last_item_pos: number }>(
-        `
-        SELECT max(list_order) AS last_item_pos 
-        FROM workout
-        WHERE app_user_id = 1 AND training_day_id IS NULL;
-        `
-      )?.last_item_pos ?? 0;
-    return lastItemPos;
-  };
-
-  const onSubmitWorkout = () => {
-    Keyboard.dismiss();
-    const title = workoutTitle.trim();
-    if (!title) {
-      setWorkoutTitle("");
-      console.log("Hey! You can't enter an empty string. Get Outta Here!");
-      return;
-    }
-    db.runSync(
-      `INSERT INTO workout (app_user_id, title, list_order) VALUES (1, ?, ?);`,
-      [title, getLastItemPos() + 1]
-    );
-    router.replace("/two");
-  };
 
   return (
     <SafeAreaView className="flex-1">
@@ -101,7 +79,9 @@ export default function AddWorkoutComponent() {
             borderColor: pressed ? "green" : "yellow",
             opacity: pressed ? 0.5 : 1,
           })}
-          onPress={onSubmitWorkout}
+          onPress={() => {
+            /* TODO IDK WHAT TO DO YET*/
+          }}
         >
           <Text className="w-24 border border-green-500 p-1 text-2xl text-blue-500">
             Submit

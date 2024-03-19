@@ -9,6 +9,7 @@ import { Text, View } from "../../../components/Themed";
 import { deleteDB } from "../../../db-utils";
 import { useSQLiteContext } from "expo-sqlite/next";
 import WorkoutCard from "../../../components/WorkoutCard";
+import { Tabs } from "expo-router";
 
 export type TaggedWorkout = { id: number; title: string; tags: string[] };
 
@@ -62,11 +63,42 @@ export default function TabTwoScreen() {
     console.log(results);
   };
 
+  const addNewEmptyWorkout = () => {
+    const lastWorkoutPos =
+      db.getFirstSync<{ last_item_pos: number }>(
+        `
+        SELECT max(list_order) AS last_item_pos 
+        FROM workout
+        WHERE app_user_id = 1 AND training_day_id IS NULL;
+        `
+      )?.last_item_pos ?? 0;
+    const newWorkoutId = db.getFirstSync<{ id: number }>(
+      `INSERT INTO workout (app_user_id, title, list_order) VALUES (1, ?, ?) RETURNING workout.id;`,
+      ["New Workout", lastWorkoutPos + 1]
+    );
+    return newWorkoutId!.id;
+  };
+
   return (
     <View
       className="flex-1 items-center justify-center" // NATIVEWIND WORKS BABY!!!!!
       //style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
     >
+      <Tabs.Screen
+        options={{
+          headerRight: () => {
+            return (
+              <Button
+                onPress={() => {
+                  // Adds a new empty workout, does absolutely nothing else
+                  const workoutId = addNewEmptyWorkout();
+                }}
+                title="New Workout"
+              />
+            );
+          },
+        }}
+      />
       <Text style={styles.title}>Tab Two</Text>
       <Pressable
         className="m-10 border-2 border-solid border-slate-400 bg-slate-600 p-1"

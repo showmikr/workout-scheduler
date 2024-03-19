@@ -1,9 +1,10 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, Redirect, Tabs } from "expo-router";
-import { Pressable, View, Text, useColorScheme } from "react-native";
+import { Link, Redirect, Tabs, router } from "expo-router";
+import { Pressable, View, Text, useColorScheme, Button } from "react-native";
 
 import Colors from "../../../constants/Colors";
 import { useSession } from "../../../ctx";
+import { useSQLiteContext } from "expo-sqlite/next";
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
@@ -17,6 +18,7 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const db = useSQLiteContext();
 
   // Kinda gross, but it works. useSession object is either a full object with all properties defined or is completely null, so this is the workaround...
   const { session, isLoading } = useSession();
@@ -67,11 +69,6 @@ export default function TabLayout() {
         options={{
           title: "Tab Two",
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/build-workout" className="pr-2 text-xl text-blue-500">
-              Build Workout
-            </Link>
-          ),
         }}
       />
     </Tabs>
