@@ -3,6 +3,7 @@ import { View } from "../../components/Themed";
 import { Text, Pressable, StyleSheet, TextStyle } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
+import { transform } from "@babel/core";
 
 type WorkoutSession = {
   title: string;
@@ -153,35 +154,35 @@ export default function Graph() {
       | SessionData[]
       | UserBodyWeightData[]
       | PersonalRecordHistory[]
-      | undefined
-  ) {
+  ) : SessionData[] | null {
     // Looks messy, code clean up if possible
     // going to change logic to be more "functional" in the future...
-
-    // used to calculate values for summary
-
-    // PersonalRecordHistory[] inputs need to have the variable name "value" inorder to be graphed
-    // This condiction and logic will convert the current PR type we are looking at to the name "value"
-
+    
     if (graphDataType === "personal record" && graphRange === "ALL") {
       console.log("Filtered Result");
       let filterRes = (data as PersonalRecordHistory[]).find(
         (obj) => obj.exerciseClassName === "Bench Press"
-      )!;
-      return filterRes.personalRecordList.map((record) => ({
-        value: record.weight,
-        date: record.date,
-      }));
+        )!;
+        return (filterRes.personalRecordList.map((record) => ({
+          value: record.weight,
+          date: record.date,
+        })) as SessionData[] | null);
+      }
+
+    let transformData = data as SessionData[] | UserBodyWeightData[]
+    if (!transformData) {
+      return null
     }
-
+      
+    // used to calculate values for summary
     if (!(graphDataType === "personal record")) {
-      rawInputLength = data?.length;
+      rawInputLength = transformData?.length;
       rawInputValue = 0;
-      rawInputFirstIdx = data && data.length > 0 ? data[0].value : 0;
+      rawInputFirstIdx = transformData && transformData.length > 0 ? transformData[0].value : 0;
       rawInputLastIdx =
-        data && data.length > 0 ? data[data.length - 1].value : 0;
+      transformData && transformData.length > 0 ? transformData[transformData.length - 1].value : 0;
 
-      data?.forEach((obj) => {
+      transformData?.forEach((obj) => {
         rawInputValue += obj.value ? obj.value : 0;
         if (
           obj &&
@@ -195,7 +196,7 @@ export default function Graph() {
     }
 
     let res: SessionData[] = [];
-    if (!data || data.length < 1 || graphDataType === "personal record") {
+    if (!transformData || transformData.length < 1 || graphDataType === "personal record") {
       console.log("Not enough data or data does not exist.");
       res = [
         {
@@ -206,19 +207,19 @@ export default function Graph() {
         { value: 1, date: new Date(new Date().getTime()) },
       ];
     } else if (
-      data.length > 0 &&
-      MONTH_MS * 6 < Date.now() - data[0].date.getTime()
+      transformData.length > 0 &&
+      MONTH_MS * 6 < Date.now() - transformData[0].date.getTime()
     ) {
       // Greater than 1 year -> average months
       console.log("1 year view");
       let idx = 0;
-      let first = getFirstDayOfMonth(data[0].date);
-      let last = getLastDayOfMonth(data[0].date);
-      while (first < data[data.length - 1].date) {
+      let first = getFirstDayOfMonth(transformData[0].date);
+      let last = getLastDayOfMonth(transformData[0].date);
+      while (first < transformData[transformData.length - 1].date) {
         let amt = 0;
         let avg = 0;
-        while (idx < data.length && data[idx].date < last) {
-          avg += data[idx].value!;
+        while (idx < transformData.length && transformData[idx].date < last) {
+          avg += transformData[idx].value!;
           amt += 1;
           idx += 1;
         }
@@ -226,7 +227,7 @@ export default function Graph() {
         res.push({
           value:
             amt === 0 ?
-              idx === data.length ?
+              idx === transformData.length ?
                 0
               : null
             : avg / amt,
@@ -245,26 +246,26 @@ export default function Graph() {
         last = getLastDayOfMonth(new Date(first));
       }
     } else if (
-      data.length > 0 &&
-      MONTH_MS < Date.now() - data[0].date.getTime()
+      transformData.length > 0 &&
+      MONTH_MS < Date.now() - transformData[0].date.getTime()
     ) {
       console.log("3-6 month view");
 
       let idx = 0;
-      let first = getFirstDayOfWeek(data[0].date);
-      let last = getLastDayOfWeek(data[0].date);
+      let first = getFirstDayOfWeek(transformData[0].date);
+      let last = getLastDayOfWeek(transformData[0].date);
       let currMonth = getFirstDayOfMonth(
-        new Date(data[0].date.getTime() + (graphRange === "YTD" ? 0 : MONTH_MS))
+        new Date(transformData[0].date.getTime() + (graphRange === "YTD" ? 0 : MONTH_MS))
       );
-      while (idx < data.length && first < data[data.length - 1].date) {
+      while (idx < transformData.length && first < transformData[transformData.length - 1].date) {
         let amt = 0;
         let avg = 0;
         while (
-          idx < data.length &&
-          getFirstDayOfWeek(data[idx].date).toDateString() ===
+          idx < transformData.length &&
+          getFirstDayOfWeek(transformData[idx].date).toDateString() ===
             getFirstDayOfWeek(first).toDateString()
         ) {
-          avg += data[idx].value!;
+          avg += transformData[idx].value!;
           amt += 1;
           idx += 1;
         }
@@ -272,7 +273,7 @@ export default function Graph() {
         res.push({
           value:
             amt === 0 ?
-              idx === data.length ?
+              idx === transformData.length ?
                 0
               : null
             : avg / amt,
@@ -291,22 +292,22 @@ export default function Graph() {
         last = getLastDayOfWeek(new Date(first));
       }
     } else if (
-      data.length > 0 &&
-      WEEK_MS < Date.now() - data[0].date.getTime()
+      transformData.length > 0 &&
+      WEEK_MS < Date.now() - transformData[0].date.getTime()
     ) {
       // Greater than 1 month -> keep data as is (just calculate totals)
       console.log("1 month view");
       let idx = 0;
-      let first = new Date(data[0].date);
+      let first = new Date(transformData[0].date);
       let last = new Date();
       while (first < last) {
         let total = 0;
         let amt = 0;
         while (
-          idx < data.length &&
-          first.toDateString() === data[idx].date.toDateString()
+          idx < transformData.length &&
+          first.toDateString() === transformData[idx].date.toDateString()
         ) {
-          total += data[idx].value!;
+          total += transformData[idx].value!;
           amt += 1;
           idx += 1;
         }
@@ -314,7 +315,7 @@ export default function Graph() {
         res.push({
           value:
             total === 0 ?
-              idx === data.length ?
+              idx === transformData.length ?
                 0
               : null
             : graphDataType === "calorie" ? total
@@ -339,10 +340,10 @@ export default function Graph() {
       while (first <= last) {
         let total = 0;
         while (
-          idx < data.length &&
-          first.toDateString() === data[idx].date.toDateString()
+          idx < transformData.length &&
+          first.toDateString() === transformData[idx].date.toDateString()
         ) {
-          total += data[idx].value!;
+          total += transformData[idx].value!;
           idx += 1;
         }
         res.push({
@@ -357,10 +358,10 @@ export default function Graph() {
       }
     }
 
-    return res;
+    return res as SessionData[] | null;
   }
   // returns data based selected data type from buttons selection
-  function getSelectedData(selectedData: string) {
+  function getSelectedData(selectedData: string) : SessionData[] | UserBodyWeightData[] | PersonalRecordHistory[] | null | undefined {
     switch (selectedData) {
       case "calorie":
         return graphCalorieData;
@@ -514,21 +515,21 @@ export default function Graph() {
   }
 
   // grabs correct array
-  let graphInput = getSelectedData(graphDataType);
+  let graphInput = getSelectedData(graphDataType) as any;
 
   // button range logic
   if (graphRange === "1W") {
     graphInput = averagePlotData(
       graphInput?.filter(
-        (obj) =>
+        (obj : any) =>
           new Date(obj.date) >
           new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS)
       )
-    );
+    ) as SessionData[] | null;
   } else if (graphRange === "1M") {
     graphInput = averagePlotData(
       graphInput?.filter(
-        (obj) =>
+        (obj : any) =>
           new Date(obj.date) >
           new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0))
       )
@@ -536,7 +537,7 @@ export default function Graph() {
   } else if (graphRange === "3M") {
     graphInput = averagePlotData(
       graphInput?.filter(
-        (obj) =>
+        (obj : any) =>
           new Date(obj.date) >
           new Date(getPriorTime(0, 3, 0).setHours(0, 0, 0, 0))
       )
@@ -544,7 +545,7 @@ export default function Graph() {
   } else if (graphRange === "6M") {
     graphInput = averagePlotData(
       graphInput?.filter(
-        (obj) =>
+        (obj : any) =>
           new Date(obj.date) >
           new Date(getPriorTime(0, 6, 0).setHours(0, 0, 0, 0))
       )
@@ -552,13 +553,13 @@ export default function Graph() {
   } else if (graphRange === "YTD") {
     graphInput = averagePlotData(
       graphInput?.filter(
-        (obj) => new Date(obj.date) > new Date(new Date().getFullYear(), 0, 1)
+        (obj : any) => new Date(obj.date) > new Date(new Date().getFullYear(), 0, 1)
       )!
     );
   } else if (graphRange === "1Y") {
     graphInput = averagePlotData(
       graphInput?.filter(
-        (obj) =>
+        (obj : any) =>
           new Date(obj.date) >
           new Date(
             getLastDayOfMonth(
@@ -570,18 +571,18 @@ export default function Graph() {
   } else {
     graphInput = averagePlotData(graphInput!);
   }
-  let maxGraphValue = graphInput?.reduce((p, c) =>
+  let maxGraphValue = graphInput?.reduce((p : any, c : any) =>
     p.value! > c.value! ? p : c
   );
 
   // creating goal line
   let goalLine = [];
   if (graphDataType === "calorie")
-    for (let i = 0; i < graphInput.length; i++) {
+    for (let i = 0; i < graphInput!.length; i++) {
       goalLine.push({ value: userProfileData?.calorieGoal });
     }
   else if (graphDataType === "body weight") {
-    for (let i = 0; i < graphInput.length; i++) {
+    for (let i = 0; i < graphInput!.length; i++) {
       goalLine.push({ value: userProfileData?.bodyWeightGoal });
     }
   } else {
@@ -1128,6 +1129,7 @@ Other
 
 Graph Section
 - display personal record lines (curr)
+    * remove personalrecordhistory from averageplotdata and plot directly
 - revisit weight summary metrics to confirm stats
 - change trend formula to indicate a linear regression
 - fixed up BarChart to better reflex linechart style
