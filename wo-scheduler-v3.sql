@@ -781,6 +781,7 @@ INSERT INTO workout_session (app_user_id, title, date, calories)
     (1, 'Upperbody',                '2024-01-24T07:34:12',   271),
     (1, 'Upperbody',                '2024-01-27T07:34:12',   261),
     (1, 'Upperbody',                '2024-01-31T07:34:12',   440),
+
     (1, 'Upperbody',                '2024-02-03T07:34:12',   322),
     (1, 'Upperbody',                '2024-02-05T07:34:12',   322),
     (1, 'Upperbody',                '2024-02-05T09:34:12',   402),
@@ -792,8 +793,11 @@ INSERT INTO workout_session (app_user_id, title, date, calories)
     (1, 'Upperbody',                '2024-02-20T07:34:12',   403), /* id: 186 */
     (1, 'Upperbody',                '2024-02-24T07:34:12',   255),
     (1, 'Upperbody',                '2024-02-28T17:25:12',   313),
+
     (1, 'Upperbody',                '2024-03-02T17:25:12',   357),
-    (1, 'Upperbody',                '2024-03-09T17:25:12',   150);
+    (1, 'Upperbody',                '2024-03-09T17:25:12',   150),
+    (1, 'Upperbody',                '2024-03-12T17:25:12',   222),
+    (1, 'Upperbody',                '2024-03-20T17:25:12',   97);
 
 INSERT INTO exercise_session (workout_session_id, pr_history_id, list_order, initial_weight, was_completed, exercise_class_id)
     VALUES

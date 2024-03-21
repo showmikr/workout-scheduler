@@ -150,37 +150,34 @@ export default function Graph() {
   }
   // averages data bases on the length of time given
   function averagePlotData(
-    data:
-      | SessionData[]
-      | UserBodyWeightData[]
-      | PersonalRecordHistory[]
-  ) : SessionData[] | null {
+    data: SessionData[] | UserBodyWeightData[] | PersonalRecordHistory[]
+  ): SessionData[] | null {
     // Looks messy, code clean up if possible
     // going to change logic to be more "functional" in the future...
-    
+
     if (graphDataType === "personal record" && graphRange === "ALL") {
       console.log("Filtered Result");
       let filterRes = (data as PersonalRecordHistory[]).find(
         (obj) => obj.exerciseClassName === "Bench Press"
-        )!;
-        return (filterRes.personalRecordList.map((record) => ({
-          value: record.weight,
-          date: record.date,
-        })) as SessionData[] | null);
-      }
-
-    let transformData = data as SessionData[] | UserBodyWeightData[]
-    if (!transformData) {
-      return null
+      )!;
+      return filterRes.personalRecordList.map((record) => ({
+        value: record.weight,
+        date: record.date,
+      })) as SessionData[] | null;
     }
-      
+
+    let transformData = data as SessionData[] | UserBodyWeightData[];
+
     // used to calculate values for summary
     if (!(graphDataType === "personal record")) {
       rawInputLength = transformData?.length;
       rawInputValue = 0;
-      rawInputFirstIdx = transformData && transformData.length > 0 ? transformData[0].value : 0;
+      rawInputFirstIdx =
+        transformData && transformData.length > 0 ? transformData[0].value : 0;
       rawInputLastIdx =
-      transformData && transformData.length > 0 ? transformData[transformData.length - 1].value : 0;
+        transformData && transformData.length > 0 ?
+          transformData[transformData.length - 1].value
+        : 0;
 
       transformData?.forEach((obj) => {
         rawInputValue += obj.value ? obj.value : 0;
@@ -196,7 +193,11 @@ export default function Graph() {
     }
 
     let res: SessionData[] = [];
-    if (!transformData || transformData.length < 1 || graphDataType === "personal record") {
+    if (
+      !transformData ||
+      transformData.length < 1 ||
+      graphDataType === "personal record"
+    ) {
       console.log("Not enough data or data does not exist.");
       res = [
         {
@@ -255,9 +256,15 @@ export default function Graph() {
       let first = getFirstDayOfWeek(transformData[0].date);
       let last = getLastDayOfWeek(transformData[0].date);
       let currMonth = getFirstDayOfMonth(
-        new Date(transformData[0].date.getTime() + (graphRange === "YTD" ? 0 : MONTH_MS))
+        new Date(
+          transformData[0].date.getTime() +
+            (graphRange === "YTD" ? 0 : MONTH_MS)
+        )
       );
-      while (idx < transformData.length && first < transformData[transformData.length - 1].date) {
+      while (
+        idx < transformData.length &&
+        first < transformData[transformData.length - 1].date
+      ) {
         let amt = 0;
         let avg = 0;
         while (
@@ -361,7 +368,14 @@ export default function Graph() {
     return res as SessionData[] | null;
   }
   // returns data based selected data type from buttons selection
-  function getSelectedData(selectedData: string) : SessionData[] | UserBodyWeightData[] | PersonalRecordHistory[] | null | undefined {
+  function getSelectedData(
+    selectedData: string
+  ):
+    | SessionData[]
+    | UserBodyWeightData[]
+    | PersonalRecordHistory[]
+    | null
+    | undefined {
     switch (selectedData) {
       case "calorie":
         return graphCalorieData;
@@ -373,6 +387,7 @@ export default function Graph() {
         return graphCalorieData;
     }
   }
+  console.log("Functions Passed");
   // 1) load calorie data
   if (!workoutSessionData) {
     myDB
@@ -513,6 +528,7 @@ export default function Graph() {
         console.log("DB READ ERROR | " + err);
       });
   }
+  console.log("Queries Passed");
 
   // grabs correct array
   let graphInput = getSelectedData(graphDataType) as any;
@@ -521,7 +537,7 @@ export default function Graph() {
   if (graphRange === "1W") {
     graphInput = averagePlotData(
       graphInput?.filter(
-        (obj : any) =>
+        (obj: any) =>
           new Date(obj.date) >
           new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS)
       )
@@ -529,7 +545,7 @@ export default function Graph() {
   } else if (graphRange === "1M") {
     graphInput = averagePlotData(
       graphInput?.filter(
-        (obj : any) =>
+        (obj: any) =>
           new Date(obj.date) >
           new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0))
       )
@@ -537,7 +553,7 @@ export default function Graph() {
   } else if (graphRange === "3M") {
     graphInput = averagePlotData(
       graphInput?.filter(
-        (obj : any) =>
+        (obj: any) =>
           new Date(obj.date) >
           new Date(getPriorTime(0, 3, 0).setHours(0, 0, 0, 0))
       )
@@ -545,7 +561,7 @@ export default function Graph() {
   } else if (graphRange === "6M") {
     graphInput = averagePlotData(
       graphInput?.filter(
-        (obj : any) =>
+        (obj: any) =>
           new Date(obj.date) >
           new Date(getPriorTime(0, 6, 0).setHours(0, 0, 0, 0))
       )
@@ -553,13 +569,14 @@ export default function Graph() {
   } else if (graphRange === "YTD") {
     graphInput = averagePlotData(
       graphInput?.filter(
-        (obj : any) => new Date(obj.date) > new Date(new Date().getFullYear(), 0, 1)
+        (obj: any) =>
+          new Date(obj.date) > new Date(new Date().getFullYear(), 0, 1)
       )!
     );
   } else if (graphRange === "1Y") {
     graphInput = averagePlotData(
       graphInput?.filter(
-        (obj : any) =>
+        (obj: any) =>
           new Date(obj.date) >
           new Date(
             getLastDayOfMonth(
@@ -571,9 +588,11 @@ export default function Graph() {
   } else {
     graphInput = averagePlotData(graphInput!);
   }
-  let maxGraphValue = graphInput?.reduce((p : any, c : any) =>
+  let maxGraphValue = graphInput?.reduce((p: any, c: any) =>
     p.value! > c.value! ? p : c
   );
+
+  console.log("Range Buttons Passed");
 
   // creating goal line
   let goalLine = [];
@@ -588,6 +607,8 @@ export default function Graph() {
   } else {
     goalLine = [];
   }
+
+  console.log("GoalLine Passed");
 
   return (
     <>
@@ -1140,5 +1161,4 @@ Graph Section
     * center tooltip from focused datapoint vertical line 
     * prevent tooltip from reaching out of bounds
     * prevent data bubble to appear when hovering over goal line
-
 */
