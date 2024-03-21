@@ -150,47 +150,34 @@ export default function Graph() {
   }
   // averages data bases on the length of time given
   function averagePlotData(
-    data: SessionData[] | UserBodyWeightData[] | PersonalRecordHistory[]
+    data: SessionData[] | UserBodyWeightData[]
   ): SessionData[] | null {
     // Looks messy, code clean up if possible
     // going to change logic to be more "functional" in the future...
 
-    if (graphDataType === "personal record" && graphRange === "ALL") {
-      console.log("Filtered Result");
-      let filterRes = (data as PersonalRecordHistory[]).find(
-        (obj) => obj.exerciseClassName === "Bench Press"
-      )!;
-      return filterRes.personalRecordList.map((record) => ({
-        value: record.weight,
-        date: record.date,
-      })) as SessionData[] | null;
-    }
-
     let transformData = data as SessionData[] | UserBodyWeightData[];
 
     // used to calculate values for summary
-    if (!(graphDataType === "personal record")) {
-      rawInputLength = transformData?.length;
-      rawInputValue = 0;
-      rawInputFirstIdx =
-        transformData && transformData.length > 0 ? transformData[0].value : 0;
-      rawInputLastIdx =
-        transformData && transformData.length > 0 ?
-          transformData[transformData.length - 1].value
-        : 0;
+    rawInputLength = transformData?.length;
+    rawInputValue = 0;
+    rawInputFirstIdx =
+      transformData && transformData.length > 0 ? transformData[0].value : 0;
+    rawInputLastIdx =
+      transformData && transformData.length > 0 ?
+        transformData[transformData.length - 1].value
+      : 0;
 
-      transformData?.forEach((obj) => {
-        rawInputValue += obj.value ? obj.value : 0;
-        if (
-          obj &&
-          "timeEstimate" in obj &&
-          typeof obj.timeEstimate === "number"
-        ) {
-          rawInputTime += obj.timeEstimate;
-          rawInputTimeNum += 1;
-        }
-      });
-    }
+    transformData?.forEach((obj) => {
+      rawInputValue += obj.value ? obj.value : 0;
+      if (
+        obj &&
+        "timeEstimate" in obj &&
+        typeof obj.timeEstimate === "number"
+      ) {
+        rawInputTime += obj.timeEstimate;
+        rawInputTimeNum += 1;
+      }
+    });
 
     let res: SessionData[] = [];
     if (
@@ -387,7 +374,18 @@ export default function Graph() {
         return graphCalorieData;
     }
   }
-  console.log("Functions Passed");
+  function normalizePrData(
+    data: PersonalRecordHistory[]
+  ): SessionData[] | null {
+    console.log("Filtered Result");
+    let filterRes = (data as PersonalRecordHistory[]).find(
+      (obj) => obj.exerciseClassName === "Bench Press"
+    )!;
+    return filterRes.personalRecordList.map((record) => ({
+      value: record.weight,
+      date: record.date,
+    })) as SessionData[] | null;
+  }
   // 1) load calorie data
   if (!workoutSessionData) {
     myDB
@@ -528,71 +526,72 @@ export default function Graph() {
         console.log("DB READ ERROR | " + err);
       });
   }
-  console.log("Queries Passed");
 
   // grabs correct array
   let graphInput = getSelectedData(graphDataType) as any;
 
-  // button range logic
-  if (graphRange === "1W") {
-    graphInput = averagePlotData(
-      graphInput?.filter(
-        (obj: any) =>
-          new Date(obj.date) >
-          new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS)
-      )
-    ) as SessionData[] | null;
-  } else if (graphRange === "1M") {
-    graphInput = averagePlotData(
-      graphInput?.filter(
-        (obj: any) =>
-          new Date(obj.date) >
-          new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0))
-      )
-    );
-  } else if (graphRange === "3M") {
-    graphInput = averagePlotData(
-      graphInput?.filter(
-        (obj: any) =>
-          new Date(obj.date) >
-          new Date(getPriorTime(0, 3, 0).setHours(0, 0, 0, 0))
-      )
-    );
-  } else if (graphRange === "6M") {
-    graphInput = averagePlotData(
-      graphInput?.filter(
-        (obj: any) =>
-          new Date(obj.date) >
-          new Date(getPriorTime(0, 6, 0).setHours(0, 0, 0, 0))
-      )
-    );
-  } else if (graphRange === "YTD") {
-    graphInput = averagePlotData(
-      graphInput?.filter(
-        (obj: any) =>
-          new Date(obj.date) > new Date(new Date().getFullYear(), 0, 1)
-      )!
-    );
-  } else if (graphRange === "1Y") {
-    graphInput = averagePlotData(
-      graphInput?.filter(
-        (obj: any) =>
-          new Date(obj.date) >
-          new Date(
-            getLastDayOfMonth(
-              new Date(getPriorTime(0, 0, 1).getTime() + 1)
-            ).setHours(0, 0, 0, 0)
-          )
-      )!
-    );
+  if (!(graphDataType === "personal record")) {
+    // button range logic
+    if (graphRange === "1W") {
+      graphInput = averagePlotData(
+        graphInput?.filter(
+          (obj: any) =>
+            new Date(obj.date) >
+            new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS)
+        )
+      ) as SessionData[] | null;
+    } else if (graphRange === "1M") {
+      graphInput = averagePlotData(
+        graphInput?.filter(
+          (obj: any) =>
+            new Date(obj.date) >
+            new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0))
+        )
+      );
+    } else if (graphRange === "3M") {
+      graphInput = averagePlotData(
+        graphInput?.filter(
+          (obj: any) =>
+            new Date(obj.date) >
+            new Date(getPriorTime(0, 3, 0).setHours(0, 0, 0, 0))
+        )
+      );
+    } else if (graphRange === "6M") {
+      graphInput = averagePlotData(
+        graphInput?.filter(
+          (obj: any) =>
+            new Date(obj.date) >
+            new Date(getPriorTime(0, 6, 0).setHours(0, 0, 0, 0))
+        )
+      );
+    } else if (graphRange === "YTD") {
+      graphInput = averagePlotData(
+        graphInput?.filter(
+          (obj: any) =>
+            new Date(obj.date) > new Date(new Date().getFullYear(), 0, 1)
+        )!
+      );
+    } else if (graphRange === "1Y") {
+      graphInput = averagePlotData(
+        graphInput?.filter(
+          (obj: any) =>
+            new Date(obj.date) >
+            new Date(
+              getLastDayOfMonth(
+                new Date(getPriorTime(0, 0, 1).getTime() + 1)
+              ).setHours(0, 0, 0, 0)
+            )
+        )!
+      );
+    } else {
+      graphInput = averagePlotData(graphInput!);
+    }
   } else {
-    graphInput = averagePlotData(graphInput!);
+    graphInput = normalizePrData(graphInput);
   }
   let maxGraphValue = graphInput?.reduce((p: any, c: any) =>
     p.value! > c.value! ? p : c
   );
-
-  console.log("Range Buttons Passed");
 
   // creating goal line
   let goalLine = [];
@@ -607,8 +606,6 @@ export default function Graph() {
   } else {
     goalLine = [];
   }
-
-  console.log("GoalLine Passed");
 
   return (
     <>
