@@ -72,6 +72,33 @@ type ExerciseSection<
   [K in keyof ExerciseEnumsMap]: ExerciseEnumsMap[K];
 }[T];
 
+const AddExerciseBtn = ({ workoutId }: { workoutId: string }) => {
+  return (
+    <Pressable
+      style={({ pressed }) => ({
+        flexDirection: "row",
+        marginLeft: 14,
+        marginBottom: 17.5,
+        borderWidth: 1,
+        opacity: pressed ? 0.7 : 1,
+      })}
+      onPress={() => {
+        router.push({
+          pathname: "/(app)/workout/add-exercise/[workoutId]",
+          params: { workoutId: workoutId },
+        });
+      }}
+    >
+      <FontAwesome
+        className="mr-1 self-center"
+        name="plus"
+        color={twColors.neutral500}
+      />
+      <Text className="text-2xl text-black dark:text-white">Add Exercise</Text>
+    </Pressable>
+  );
+};
+
 export default function WorkoutDetails() {
   const { workoutId } = useLocalSearchParams<{ workoutId: string }>();
   const db = useSQLiteContext();
@@ -86,6 +113,24 @@ export default function WorkoutDetails() {
     `,
     workoutId
   );
+
+  if (exercises.length === 0) {
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          rowGap: 24,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Text className="text-3xl text-neutral-500 dark:text-neutral-500">
+          Wow, much empty...
+        </Text>
+        <AddExerciseBtn workoutId={workoutId} />
+      </SafeAreaView>
+    );
+  }
 
   const sectionData = exercises.map((ex) => {
     if (ex.exercise_type_id === exerciseEnums.RESISTANCE_ENUM) {
@@ -177,31 +222,7 @@ export default function WorkoutDetails() {
           );
         }}
       />
-      <Pressable
-        style={({ pressed }) => ({
-          flexDirection: "row",
-          marginLeft: 14,
-          marginBottom: 17.5,
-          borderWidth: 1,
-          alignSelf: "baseline",
-          opacity: pressed ? 0.7 : 1,
-        })}
-        onPress={() => {
-          router.push({
-            pathname: "/(app)/workout/add-exercise/[workoutId]",
-            params: { workoutId: workoutId },
-          });
-        }}
-      >
-        <FontAwesome
-          className="mr-1 self-center"
-          name="plus"
-          color={twColors.neutral500}
-        />
-        <Text className="text-2xl text-black dark:text-white">
-          Add Exercise
-        </Text>
-      </Pressable>
+      <AddExerciseBtn workoutId={workoutId} />
     </SafeAreaView>
   );
 }
