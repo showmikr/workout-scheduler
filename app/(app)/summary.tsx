@@ -72,7 +72,12 @@ export default function Graph() {
   const [personalRecordType, setPersonalRecordType] = useState(
     personalRecordValue[0]
   );
-  const [personalRecordOptions] = useState("Bench Press"); // replace with dynamic type after querying (bench, squat, etc)
+  const personalRecordOptions = ["Bench Press", "Squat", "Deadlift"]; // replace with dynamic type after querying (bench, squat, etc)
+  const [personalRecordExercise, setPersonalRecordExercise] = useState(
+    personalRecordOptions[0]
+  );
+
+  console.log("Result -> " + personalRecordExercise);
 
   const graphRangeButtons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
   const [graphRange, setGraphRange] = useState("1M");
@@ -379,7 +384,7 @@ export default function Graph() {
   ): SessionData[] | null {
     console.log("Filtered Result");
     let filterRes = (data as PersonalRecordHistory[]).find(
-      (obj) => obj.exerciseClassName === "Bench Press"
+      (obj) => obj.exerciseClassName === personalRecordExercise
     )!;
     return filterRes.personalRecordList.map((record) => ({
       value: record.weight,
@@ -812,45 +817,89 @@ export default function Graph() {
         }
 
         {/* chart range buttons */}
-        <View
-          className="flex flex-row"
-          style={{
-            backgroundColor: "#0D0D0D",
-            justifyContent: "space-evenly",
-            marginTop: 10,
-          }}
-        >
-          {graphRangeButtons.map((title) => {
-            return (
-              <Pressable
-                style={{
-                  backgroundColor: graphRange === title ? "#343434" : "#1C1C1C",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  paddingVertical: 4,
-                  paddingHorizontal: 4,
-                  borderRadius: 4,
-                  elevation: 3,
-                  width: 36,
-                  height: 30,
-                }}
-                onPress={() => {
-                  setGraphRange(title);
-                }}
-                key={title}
-              >
-                <Text
+        {graphDataType === "personal record" ?
+          <View
+            className="flex flex-row"
+            style={{
+              backgroundColor: "#0D0D0D",
+              justifyContent: "space-evenly",
+              marginTop: 10,
+            }}
+          >
+            {personalRecordOptions.map((title) => {
+              return (
+                <Pressable
                   style={{
-                    color: "white",
-                    fontWeight: graphRange === title ? "bold" : "300",
+                    backgroundColor:
+                      personalRecordExercise === title ? "#343434" : "#1C1C1C",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingVertical: 4,
+                    paddingHorizontal: 4,
+                    borderRadius: 4,
+                    elevation: 3,
+                    width: 120,
+                    height: 30,
                   }}
+                  onPress={() => {
+                    setPersonalRecordExercise(title);
+                  }}
+                  key={title}
                 >
-                  {title}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+                  <Text
+                    style={{
+                      color: "white",
+                      fontWeight:
+                        personalRecordExercise === title ? "bold" : "300",
+                    }}
+                  >
+                    {title}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        : <View
+            className="flex flex-row"
+            style={{
+              backgroundColor: "#0D0D0D",
+              justifyContent: "space-evenly",
+              marginTop: 10,
+            }}
+          >
+            {graphRangeButtons.map((title) => {
+              return (
+                <Pressable
+                  style={{
+                    backgroundColor:
+                      graphRange === title ? "#343434" : "#1C1C1C",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingVertical: 4,
+                    paddingHorizontal: 4,
+                    borderRadius: 4,
+                    elevation: 3,
+                    width: 36,
+                    height: 30,
+                  }}
+                  onPress={() => {
+                    setGraphRange(title);
+                  }}
+                  key={title}
+                >
+                  <Text
+                    style={{
+                      color: "white",
+                      fontWeight: graphRange === title ? "bold" : "300",
+                    }}
+                  >
+                    {title}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        }
 
         {/* data type buttons*/}
         <View
@@ -1146,15 +1195,16 @@ Other
 - pretty up "figmatize" page
 
 Graph Section
-- display personal record lines (curr)
-    * remove personalrecordhistory from averageplotdata and plot directly
+- display personal record lines ✔️
+    * remove personalrecordhistory from averageplotdata and plot directly ✔️
+    * change between different pr's ✔️
 - revisit weight summary metrics to confirm stats
 - change trend formula to indicate a linear regression
 - fixed up BarChart to better reflex linechart style
 - allow graph x-axis start to be more dynamic (not always 0)
 
 - tooltip modification (not priority)
-    * round interpolated values (done)
+    * round interpolated values ✔️
     * center tooltip from focused datapoint vertical line 
     * prevent tooltip from reaching out of bounds
     * prevent data bubble to appear when hovering over goal line

@@ -270,10 +270,11 @@ INSERT INTO exercise_class (app_user_id, exercise_type_id, title)
     (1, 1, 'Leg Curls'),
     (1, 1, 'Calf Raises'),
     (1, 1, 'Core Push-Ins'),
-    (1, 1, 'Leg Press'),
-    (1, 1, 'Squats'),
+    (1, 1, 'Deadlift'),
+    (1, 1, 'Squat'),
     (1, 2, 'Jog'),
-    (1, 2, 'Stretches');
+    (1, 2, 'Stretches'),
+    (1, 1, 'Leg Press');
 
 INSERT INTO exercise_equipment (title)
     VALUES
@@ -291,8 +292,8 @@ INSERT INTO pr_history (weight, reps, distance, time, date, exercise_class_id)
     (255, 1, NULL, NULL, '2022-11-07T14:12:34.000Z', 11), -- should be Squat exercise_class
     (285, 1, NULL, NULL, '2023-11-07T19:12:34.000Z', 11), -- should be Squat exercise_class
 
-    (355, 1, NULL, NULL, '2022-11-07T14:12:34.000Z', 10), -- should be Leg Press exercise_class
-    (395, 1, NULL, NULL, '2023-11-07T19:12:34.000Z', 10), -- should be Leg Press exercise_class
+    (355, 1, NULL, NULL, '2022-11-07T14:12:34.000Z', 10), -- should be Deadlift exercise_class
+    (395, 1, NULL, NULL, '2023-11-07T19:12:34.000Z', 10), -- should be Deadlift exercise_class
 
     (30, 12, NULL, NULL, '2022-11-07T14:12:34.000Z', 4); -- should be Bicep Curls exercise_class
 
@@ -571,7 +572,8 @@ INSERT INTO user_bodyweight (app_user_id, weight, date)
     (1, 75.74993,'2024-02-17T07:34:12'),
     (1, 75.74993,'2024-02-22T07:34:12'),
     (1, 75.1149,'2024-02-28T07:34:12'),
-    (1, 74.93346,'2024-03-11T07:34:12');
+    (1, 74.93346,'2024-03-11T07:34:12'),
+    (1, 75.93136,'2024-03-21T07:34:12');
 
 INSERT INTO workout_days (workout_id, day)
     VALUES
