@@ -1198,6 +1198,7 @@ Graph Section
 - display personal record lines ✔️
     * remove personalrecordhistory from averageplotdata and plot directly ✔️
     * change between different pr's ✔️
+- create personal record summary view (curr)
 - revisit weight summary metrics to confirm stats
 - change trend formula to indicate a linear regression
 - fixed up BarChart to better reflex linechart style

@@ -286,16 +286,22 @@ INSERT INTO exercise_equipment (title)
 
 INSERT INTO pr_history (weight, reps, distance, time, date, exercise_class_id)
     VALUES
-    (220, 1, NULL, NULL, '2022-11-07T14:12:34.000Z', 1), -- should be Bench Press exercise_class
-    (240, 1, NULL, NULL, '2023-11-07T19:12:34.000Z', 1), -- should be Bench Press exercise_class
+    (92.98644, 1, NULL, NULL, '2022-01-07T14:12:34.000Z', 1), -- should be Bench Press exercise_class
+    (97.52236, 1, NULL, NULL, '2022-06-07T14:12:34.000Z', 1), -- should be Bench Press exercise_class
+    (99.79032, 1, NULL, NULL, '2022-11-07T14:12:34.000Z', 1), -- should be Bench Press exercise_class
+    (108.8622, 1, NULL, NULL, '2023-11-07T19:12:34.000Z', 1), -- should be Bench Press exercise_class
 
-    (255, 1, NULL, NULL, '2022-11-07T14:12:34.000Z', 11), -- should be Squat exercise_class
-    (285, 1, NULL, NULL, '2023-11-07T19:12:34.000Z', 11), -- should be Squat exercise_class
+    (106.5942, 1, NULL, NULL, '2022-01-07T14:12:34.000Z', 11), -- should be Squat exercise_class
+    (109.7694, 1, NULL, NULL, '2022-06-07T14:12:34.000Z', 11), -- should be Squat exercise_class
+    (115.6661, 1, NULL, NULL, '2022-11-07T14:12:34.000Z', 11), -- should be Squat exercise_class
+    (129.2738, 1, NULL, NULL, '2023-11-07T19:12:34.000Z', 11), -- should be Squat exercise_class
 
-    (355, 1, NULL, NULL, '2022-11-07T14:12:34.000Z', 10), -- should be Deadlift exercise_class
-    (395, 1, NULL, NULL, '2023-11-07T19:12:34.000Z', 10), -- should be Deadlift exercise_class
+    (142.8816, 1, NULL, NULL, '2022-01-07T14:12:34.000Z', 10), -- should be Deadlift exercise_class
+    (147.4175, 1, NULL, NULL, '2022-06-07T14:12:34.000Z', 10), -- should be Deadlift exercise_class
+    (161.0253, 1, NULL, NULL, '2022-11-07T14:12:34.000Z', 10), -- should be Deadlift exercise_class
+    (179.169, 1, NULL, NULL, '2023-11-07T19:12:34.000Z', 10), -- should be Deadlift exercise_class
 
-    (30, 12, NULL, NULL, '2022-11-07T14:12:34.000Z', 4); -- should be Bicep Curls exercise_class
+    (13.60777, 12, NULL, NULL, '2022-11-07T14:12:34.000Z', 4); -- should be Bicep Curls exercise_class
 
 INSERT INTO exercise (exercise_class_id, workout_id, exercise_equipment_id, list_order, initial_weight, notes)
     VALUES
@@ -339,20 +345,20 @@ INSERT INTO "exercise_set" (exercise_id, title, list_order, reps, rest_time)
 
 INSERT INTO resistance_set (exercise_set_id, total_weight)
     VALUES
-    (1,     125),
-    (2,     175),
-    (3,     162),
-    (4,     55),
-    (5,     70),
-    (6,     150),
-    (7,     25),
-    (8,     110),
-    (9,     120),
-    (10,    50),
-    (11,    320),
-    (12,    560),
-    (13,    135),
-    (14,    225);
+    (1,     56.69905),
+    (2,     79.37866),
+    (3,     73.48196),
+    (4,     24.94758),
+    (5,     31.75147),
+    (6,     68.03886),
+    (7,     11.33981),
+    (8,     49.89516),
+    (9,     54.43108),
+    (10,    22.67962),
+    (11,    145.1496),
+    (12,    254.0117),
+    (13,    61.23497),
+    (14,    102.0583);
 
 INSERT INTO cardio_set (exercise_set_id, target_distance, target_time)
     VALUES
@@ -573,7 +579,8 @@ INSERT INTO user_bodyweight (app_user_id, weight, date)
     (1, 75.74993,'2024-02-22T07:34:12'),
     (1, 75.1149,'2024-02-28T07:34:12'),
     (1, 74.93346,'2024-03-11T07:34:12'),
-    (1, 75.93136,'2024-03-21T07:34:12');
+    (1, 75.93136,'2024-03-21T07:34:12'),
+    (1, 76.02208,'2024-03-22T07:34:12');
 
 INSERT INTO workout_days (workout_id, day)
     VALUES
@@ -803,26 +810,26 @@ INSERT INTO workout_session (app_user_id, title, date, calories)
 
 INSERT INTO exercise_session (workout_session_id, pr_history_id, list_order, initial_weight, was_completed, exercise_class_id)
     VALUES
-    (156, 2,     1,  45,     True,  1), /*Upperbody*/
+    (156, 2,     1,  20.41166,     True,  1), /*Upperbody*/
     (156, NULL,  2,  NULL,   True,  3),
     (156, NULL,  3,  NULL,   True,  4),
     (156, NULL,  4,  NULL,   True,  5), 
     (156, 7,     5,  NULL,   True,  6),
 
     (159, NULL,  1,  NULL,   True,  7), /*Legs*/
-    (159, NULL,  2,  20,     True,  8),
-    (159, NULL,  3,  20,     True,  9),
-    (159, NULL,  4,  50,     True,  10),
-    (159, 4,     5,  45,     True,  11),
+    (159, NULL,  2,  9.071847,     True,  8),
+    (159, NULL,  3,  9.071847,     True,  9),
+    (159, NULL,  4,  22.67962,     True,  10),
+    (159, 4,     5,  20.41166,     True,  11),
     (159, NULL,  6,  NULL,   False, 12),
 
-    (185, 2,     1,  45,     True,  1), /*Upperbody*/
+    (185, 2,     1,  20.41166,     True,  1), /*Upperbody*/
     (185, NULL,  2,  NULL,   True,  3),
     (185, NULL,  3,  NULL,   True,  4),
     (185, NULL,  4,  NULL,   True,  5), 
     (185, 7,     5,  NULL,   True,  6),
     
-    (186, 2,     1,  45,     True,  1), /*Upperbody*/
+    (186, 2,     1,  20.41166,     True,  1), /*Upperbody*/
     (186, NULL,  2,  NULL,   True,  3),
     (186, NULL,  3,  NULL,   True,  4),
     (186, NULL,  4,  NULL,   True,  5), 
@@ -861,30 +868,30 @@ INSERT INTO set_session (exercise_session_id, title, reps, list_order, elapsed_t
 
 INSERT INTO resistance_set_session (set_session_id, total_weight)
     VALUES
-    (1,     125),
-    (2,     175),
-    (3,     162),
-    (4,     55),
-    (5,     70),
-    (6,     150),
-    (7,     25),
+    (1,     56.69905),
+    (2,     79.37866),
+    (3,     73.48196),
+    (4,     24.94758),
+    (5,     31.75147),
+    (6,     68.03886),
+    (7,     11.33981),
 
-    (8,     110),
-    (9,     120),
-    (10,    50),
-    (11,    320),
-    (12,    560),
-    (13,    135),
-    (14,    225),
+    (8,     49.89516),
+    (9,     54.43108),
+    (10,    22.67962),
+    (11,    145.1496),
+    (12,    254.0117),
+    (13,    61.23497),
+    (14,    102.0583),
 
-    (16,     125),
-    (17,     175),
-    (18,     162),
-    (19,     55),
-    (20,     70),
-    (21,     150),
-    (22,     25),
-    (23,     125);
+    (16,     56.69905),
+    (17,     79.37866),
+    (18,     73.48196),
+    (19,     24.94758),
+    (20,     31.75147),
+    (21,     68.03886),
+    (22,     11.33981),
+    (23,     56.69905);
 
 INSERT INTO cardio_set_session (set_session_id, target_distance, target_time, actual_distance, actual_time)
     VALUES
