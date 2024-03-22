@@ -77,8 +77,6 @@ export default function Graph() {
     personalRecordOptions[0]
   );
 
-  console.log("Result -> " + personalRecordExercise);
-
   const graphRangeButtons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
   const [graphRange, setGraphRange] = useState("1M");
 
@@ -98,6 +96,8 @@ export default function Graph() {
   let rawInputTimeNum: number = 0;
   let rawInputFirstIdx: number | null = 0;
   let rawInputLastIdx: number | null = 0;
+  let PrFirstVal = 0;
+  let PrLastVal = 0;
 
   // returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
@@ -386,11 +386,32 @@ export default function Graph() {
     let filterRes = (data as PersonalRecordHistory[]).find(
       (obj) => obj.exerciseClassName === personalRecordExercise
     )!;
-    return filterRes.personalRecordList.map((record) => ({
+
+    // When filterRes finds no matches relating to the exercise for pr's, we return null
+    if (!filterRes) {
+      return null;
+    }
+
+    let mappedRes = filterRes.personalRecordList.map((record) => ({
       value: record.weight,
       date: record.date,
     })) as SessionData[] | null;
+
+    mappedRes?.forEach((obj) => {
+      console.log(obj);
+    });
+
+    if (mappedRes && mappedRes?.length > 1) {
+      rawInputLength = mappedRes?.length;
+      PrFirstVal = mappedRes[0].value!;
+      PrLastVal = mappedRes[mappedRes.length - 1].value!;
+    }
+    console.log("Test value: " + mappedRes![0].value);
+    console.log("Test value: " + mappedRes![mappedRes!.length - 1].value);
+    console.log("Test value: " + mappedRes?.length);
+    return mappedRes;
   }
+
   // 1) load calorie data
   if (!workoutSessionData) {
     myDB
@@ -954,181 +975,342 @@ export default function Graph() {
           }}
         >
           <Text style={[summaryGrid.mainTitle]}>Summary</Text>
-          {graphDataType === "calorie" ?
-            <>
-              <View
-                className="flex flex-row"
-                style={[summaryGrid.viewRows, { marginTop: 0 }]}
-              >
-                <Text style={[summaryGrid.text, { color: "grey" }]}></Text>
-                <Text style={[summaryGrid.text, { color: "grey" }]}>Total</Text>
-                <Text style={[summaryGrid.text, { color: "grey" }]}>
-                  Average
-                </Text>
-              </View>
-              <View className="flex flex-row " style={summaryGrid.viewRows}>
-                <Text style={summaryGrid.text}>Workouts</Text>
-                <Text style={[summaryGrid.text, { color: "grey" }]}>
-                  {rawInputLength}
-                </Text>
-                <Text style={summaryGrid.text}></Text>
-              </View>
-              <View className="flex flex-row " style={summaryGrid.viewRows}>
-                <Text style={summaryGrid.text}>Time</Text>
-                <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
-                  {("00" + Math.floor(rawInputTime / 3600)).slice(-2)}:
-                  {("00" + Math.floor((rawInputTime % 3600) / 60)).slice(-2)}:
-                  {("00" + ((rawInputTime % 3600) % 60)).slice(-2)}
-                </Text>
-                <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
-                  {rawInputTime === 0 ?
-                    "00:00:00"
-                  : (
-                      "00" +
-                      Math.floor(
-                        rawInputLength ?
-                          rawInputTime / rawInputTimeNum / 3600
-                        : 0
-                      )
-                    ).slice(-2) +
-                    ":" +
-                    (
-                      "00" +
-                      Math.floor(
-                        rawInputLength ?
-                          ((rawInputTime / rawInputTimeNum) % 3600) / 60
-                        : 0
-                      )
-                    ).slice(-2) +
-                    ":" +
-                    (
-                      "00" +
-                      Math.floor(
-                        rawInputLength ?
-                          ((rawInputTime / rawInputTimeNum) % 3600) % 60
-                        : 0
-                      )
-                    ).slice(-2)
-                  }
-                </Text>
-              </View>
-              <View className="flex flex-row " style={summaryGrid.viewRows}>
-                <Text style={summaryGrid.text}>Calories</Text>
-                <Text style={[summaryGrid.text, { color: "#A53535" }]}>
-                  {rawInputValue.toLocaleString()} cal
-                </Text>
-                <Text style={[summaryGrid.text, { color: "#A53535" }]}>
-                  {Math.round(rawInputValue / rawInputLength)} cal
-                </Text>
-              </View>
-            </>
-          : <>
-              <View
-                className="flex flex-row"
-                style={[summaryGrid.viewRows, { marginTop: 0 }]}
-              >
-                <Text style={[summaryGrid.text, { color: "grey" }]}></Text>
-                <Text style={[summaryGrid.text, { color: "grey" }]}>Trend</Text>
-                <Text style={[summaryGrid.text, { color: "grey" }]}>
-                  Current
-                </Text>
-              </View>
-              <View className="flex flex-row " style={summaryGrid.viewRows}>
-                <Text style={summaryGrid.text}>B.M.I</Text>
-                <Text style={[summaryGrid.text, { color: "grey" }]}>
-                  {(
-                    rawInputLastIdx /
-                      Math.pow(
-                        userProfileData?.userHeight ?
-                          userProfileData?.userHeight
-                        : 0,
-                        2
-                      ) -
-                      rawInputFirstIdx /
-                        Math.pow(
-                          userProfileData?.userHeight ?
-                            userProfileData?.userHeight
-                          : 0,
-                          2
-                        ) >
-                    0
-                  ) ?
-                    "+" +
-                    (
-                      rawInputLastIdx /
-                        Math.pow(
-                          userProfileData?.userHeight ?
-                            userProfileData?.userHeight
-                          : 0,
-                          2
-                        ) -
-                      rawInputFirstIdx /
-                        Math.pow(
-                          userProfileData?.userHeight ?
-                            userProfileData?.userHeight
-                          : 0,
-                          2
-                        )
-                    ).toFixed(2)
-                  : (
-                      rawInputLastIdx /
-                        Math.pow(
-                          userProfileData?.userHeight ?
-                            userProfileData?.userHeight
-                          : 0,
-                          2
-                        ) -
-                      rawInputFirstIdx /
-                        Math.pow(
-                          userProfileData?.userHeight ?
-                            userProfileData?.userHeight
-                          : 0,
-                          2
-                        )
-                    ).toFixed(2)
-                  }{" "}
-                </Text>
-                <Text style={[summaryGrid.text, { color: "grey" }]}>
-                  {(
-                    rawInputLastIdx /
-                    Math.pow(
-                      userProfileData?.userHeight ?
-                        userProfileData?.userHeight
-                      : 0,
-                      2
-                    )
-                  ).toFixed(2)}
-                </Text>
-              </View>
-              <View className="flex flex-row " style={summaryGrid.viewRows}>
-                <Text style={summaryGrid.text}>Goal</Text>
-                <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
-                  {userProfileData?.bodyWeightGoal ?
-                    (
-                      (rawInputLastIdx + rawInputFirstIdx) / 2 -
-                      userProfileData?.bodyWeightGoal
-                    ).toFixed(2) + " kg"
-                  : "-"}
-                </Text>
-                <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
-                  {userProfileData?.bodyWeightGoal ?
-                    userProfileData.bodyWeightGoal.toFixed(2)
-                  : 0}{" "}
-                  {" kg"}
-                </Text>
-              </View>
-              <View className="flex flex-row " style={summaryGrid.viewRows}>
-                <Text style={summaryGrid.text}>Weight</Text>
-                <Text style={[summaryGrid.text, { color: "#A53535" }]}>
-                  {(rawInputLastIdx - rawInputFirstIdx > 0 ? "+" : "") +
-                    (rawInputLastIdx - rawInputFirstIdx).toFixed(2) +
-                    " kg"}
-                </Text>
-                <Text style={[summaryGrid.text, { color: "#A53535" }]}>
-                  {rawInputLastIdx.toFixed(2) + " kg"}
-                </Text>
-              </View>
-            </>
+
+          {
+            // please refactor me (uses anonymous function)
+            (() => {
+              switch (graphDataType) {
+                case "calorie":
+                  return (
+                    <>
+                      <View
+                        className="flex flex-row"
+                        style={[summaryGrid.viewRows, { marginTop: 0 }]}
+                      >
+                        <Text
+                          style={[summaryGrid.text, { color: "grey" }]}
+                        ></Text>
+                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                          Total
+                        </Text>
+                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                          Average
+                        </Text>
+                      </View>
+                      <View
+                        className="flex flex-row "
+                        style={summaryGrid.viewRows}
+                      >
+                        <Text style={summaryGrid.text}>Workouts</Text>
+                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                          {rawInputLength}
+                        </Text>
+                        <Text style={summaryGrid.text}></Text>
+                      </View>
+                      <View
+                        className="flex flex-row "
+                        style={summaryGrid.viewRows}
+                      >
+                        <Text style={summaryGrid.text}>Time</Text>
+                        <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                          {("00" + Math.floor(rawInputTime / 3600)).slice(-2)}:
+                          {(
+                            "00" + Math.floor((rawInputTime % 3600) / 60)
+                          ).slice(-2)}
+                          :{("00" + ((rawInputTime % 3600) % 60)).slice(-2)}
+                        </Text>
+                        <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                          {rawInputTime === 0 ?
+                            "00:00:00"
+                          : (
+                              "00" +
+                              Math.floor(
+                                rawInputLength ?
+                                  rawInputTime / rawInputTimeNum / 3600
+                                : 0
+                              )
+                            ).slice(-2) +
+                            ":" +
+                            (
+                              "00" +
+                              Math.floor(
+                                rawInputLength ?
+                                  ((rawInputTime / rawInputTimeNum) % 3600) / 60
+                                : 0
+                              )
+                            ).slice(-2) +
+                            ":" +
+                            (
+                              "00" +
+                              Math.floor(
+                                rawInputLength ?
+                                  ((rawInputTime / rawInputTimeNum) % 3600) % 60
+                                : 0
+                              )
+                            ).slice(-2)
+                          }
+                        </Text>
+                      </View>
+                      <View
+                        className="flex flex-row "
+                        style={summaryGrid.viewRows}
+                      >
+                        <Text style={summaryGrid.text}>Calories</Text>
+                        <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+                          {rawInputValue.toLocaleString()} cal
+                        </Text>
+                        <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+                          {Math.round(rawInputValue / rawInputLength)} cal
+                        </Text>
+                      </View>
+                    </>
+                  );
+                  break;
+                case "body weight":
+                  return (
+                    <>
+                      <View
+                        className="flex flex-row"
+                        style={[summaryGrid.viewRows, { marginTop: 0 }]}
+                      >
+                        <Text
+                          style={[summaryGrid.text, { color: "grey" }]}
+                        ></Text>
+                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                          Trend
+                        </Text>
+                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                          Current
+                        </Text>
+                      </View>
+                      <View
+                        className="flex flex-row "
+                        style={summaryGrid.viewRows}
+                      >
+                        <Text style={summaryGrid.text}>B.M.I</Text>
+                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                          {(
+                            rawInputLastIdx /
+                              Math.pow(
+                                userProfileData?.userHeight ?
+                                  userProfileData?.userHeight
+                                : 0,
+                                2
+                              ) -
+                              rawInputFirstIdx /
+                                Math.pow(
+                                  userProfileData?.userHeight ?
+                                    userProfileData?.userHeight
+                                  : 0,
+                                  2
+                                ) >
+                            0
+                          ) ?
+                            "+" +
+                            (
+                              rawInputLastIdx /
+                                Math.pow(
+                                  userProfileData?.userHeight ?
+                                    userProfileData?.userHeight
+                                  : 0,
+                                  2
+                                ) -
+                              rawInputFirstIdx /
+                                Math.pow(
+                                  userProfileData?.userHeight ?
+                                    userProfileData?.userHeight
+                                  : 0,
+                                  2
+                                )
+                            ).toFixed(2)
+                          : (
+                              rawInputLastIdx /
+                                Math.pow(
+                                  userProfileData?.userHeight ?
+                                    userProfileData?.userHeight
+                                  : 0,
+                                  2
+                                ) -
+                              rawInputFirstIdx /
+                                Math.pow(
+                                  userProfileData?.userHeight ?
+                                    userProfileData?.userHeight
+                                  : 0,
+                                  2
+                                )
+                            ).toFixed(2)
+                          }{" "}
+                        </Text>
+                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                          {(
+                            rawInputLastIdx /
+                            Math.pow(
+                              userProfileData?.userHeight ?
+                                userProfileData?.userHeight
+                              : 0,
+                              2
+                            )
+                          ).toFixed(2)}
+                        </Text>
+                      </View>
+                      <View
+                        className="flex flex-row "
+                        style={summaryGrid.viewRows}
+                      >
+                        <Text style={summaryGrid.text}>Goal</Text>
+                        <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                          {userProfileData?.bodyWeightGoal ?
+                            (
+                              (rawInputLastIdx + rawInputFirstIdx) / 2 -
+                              userProfileData?.bodyWeightGoal
+                            ).toFixed(2) + " kg"
+                          : "-"}
+                        </Text>
+                        <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                          {userProfileData?.bodyWeightGoal ?
+                            userProfileData.bodyWeightGoal.toFixed(2)
+                          : 0}{" "}
+                          {" kg"}
+                        </Text>
+                      </View>
+                      <View
+                        className="flex flex-row "
+                        style={summaryGrid.viewRows}
+                      >
+                        <Text style={summaryGrid.text}>Weight</Text>
+                        <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+                          {(rawInputLastIdx - rawInputFirstIdx > 0 ? "+" : "") +
+                            (rawInputLastIdx - rawInputFirstIdx).toFixed(2) +
+                            " kg"}
+                        </Text>
+                        <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+                          {rawInputLastIdx.toFixed(2) + " kg"}
+                        </Text>
+                      </View>
+                    </>
+                  );
+                  break;
+                case "personal record":
+                  return (
+                    <>
+                      <View
+                        className="flex flex-row"
+                        style={[summaryGrid.viewRows, { marginTop: 0 }]}
+                      >
+                        <Text
+                          style={[summaryGrid.text, { color: "grey" }]}
+                        ></Text>
+                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                          Trend
+                        </Text>
+                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                          Current
+                        </Text>
+                      </View>
+                      <View
+                        className="flex flex-row "
+                        style={summaryGrid.viewRows}
+                      >
+                        <Text style={summaryGrid.text}>Resistance</Text>
+                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                          {
+                            // Ugly but this determines the sign
+                            Math.round(PrLastVal - PrFirstVal) > 0 ?
+                              "+"
+                            : Math.round(PrLastVal - PrFirstVal) < 0 ?
+                              "-"
+                            : ""
+                          }
+                          {Math.round(PrLastVal - PrFirstVal)}
+                          {" kg"}
+                        </Text>
+                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                          {PrLastVal.toFixed(2)}
+                          {" kg"}
+                        </Text>
+                      </View>
+                      <View
+                        className="flex flex-row "
+                        style={summaryGrid.viewRows}
+                      >
+                        <Text style={summaryGrid.text}>Body %</Text>
+                        <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                          {(
+                            PrLastVal /
+                              bodyWeightData![bodyWeightData!?.length - 1]
+                                .weight -
+                              PrFirstVal /
+                                bodyWeightData![bodyWeightData!?.length - 1]
+                                  .weight >
+                            0
+                          ) ?
+                            "+"
+                          : (
+                            PrLastVal /
+                              bodyWeightData![bodyWeightData!?.length - 1]
+                                .weight -
+                              PrFirstVal /
+                                bodyWeightData![bodyWeightData!?.length - 1]
+                                  .weight <
+                            0
+                          ) ?
+                            "-"
+                          : ""}
+                          {(
+                            PrLastVal /
+                              bodyWeightData![bodyWeightData!?.length - 1]
+                                .weight -
+                            PrFirstVal /
+                              bodyWeightData![bodyWeightData!?.length - 1]
+                                .weight
+                          ).toFixed(2)}
+                        </Text>
+                        <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                          {(
+                            ((PrLastVal /
+                              bodyWeightData![bodyWeightData!?.length - 1]
+                                .weight) *
+                              100) %
+                              100 >
+                            0
+                          ) ?
+                            "+"
+                          : (
+                            ((PrLastVal /
+                              bodyWeightData![bodyWeightData!?.length - 1]
+                                .weight) *
+                              100) %
+                              100 <
+                            0
+                          ) ?
+                            "-"
+                          : ""}
+                          {(
+                            ((PrLastVal /
+                              bodyWeightData![bodyWeightData!?.length - 1]
+                                .weight) *
+                              100) %
+                            100
+                          ).toFixed(2)}
+                          {"%"}
+                        </Text>
+                      </View>
+                      <View
+                        className="flex flex-row "
+                        style={summaryGrid.viewRows}
+                      >
+                        <Text style={summaryGrid.text}>VS Average</Text>
+                        <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+                          -
+                        </Text>
+                        <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+                          -
+                        </Text>
+                      </View>
+                    </>
+                  );
+              }
+            })()
           }
         </View>
       </View>
