@@ -3,7 +3,6 @@ import { View } from "../../components/Themed";
 import { Text, Pressable, StyleSheet, TextStyle } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
-import { transform } from "@babel/core";
 
 type WorkoutSession = {
   title: string;
@@ -22,7 +21,7 @@ type SessionData = {
   value: number | null;
   timeEstimate?: number;
   date: Date;
-  label?: string | null;
+  label?: string;
   labelTextStyle?: TextStyle;
 };
 
@@ -53,25 +52,136 @@ type PersonalRecordHistory = {
   personalRecordList: PersonalRecord[];
 };
 
-export default function Graph() {
+type GraphData = {
+  workoutSessionData: WorkoutSession[];
+  bodyWeightData: UserBodyWeight[];
+  userProfileData: UserData;
+  personalRecordData: PersonalRecordHistory[];
+};
+/* 
+Extracts out all sql data queries for the graph page into a single hook.
+Basically, we can now gaurantee that all data necessary for the graph page
+will be NON-NULL - this means no more defensive 'data?.property' accesses from now on! 
+*/
+function useGraphData() {
   const myDB = useSQLiteContext();
+  const [graphData, setGraphData] = useState<GraphData | null>(null);
 
-  const [workoutSessionData, setWorkoutSessionData] = useState<
-    WorkoutSession[] | null
-  >(null);
+  // If our graph data is already loaded, let 'em have it.
+  if (graphData) {
+    return graphData;
+  }
 
-  const [bodyWeightData, setBodyWeightData] = useState<UserBodyWeight[] | null>(
-    null
-  );
-  const [userProfileData, setUserProfileData] = useState<UserData | null>(null);
+  // Otherwise, asynchronously load it all up
+  Promise.all([
+    myDB.getAllAsync<any>(
+      `
+        SELECT ws.title, ws.calories, SUM(elapsed_time + rest_time) AS elapsed_time, ws.date
+          FROM workout_session AS ws
+          LEFT JOIN exercise_session AS es ON ws.id = es.workout_session_id 
+          LEFT JOIN set_session AS ess ON es.id = ess.exercise_session_id
+          WHERE ws.app_user_id = 1
+          GROUP BY ws.id
+      `
+    ),
+    myDB.getAllAsync<any>(
+      "SELECT * FROM user_bodyweight AS ubw ORDER BY ubw.date"
+    ),
+    myDB.getFirstAsync<any>(
+      `
+        SELECT au.avg_daily_calorie_goal as calorie_goal, au.bodyweight_goal, au.user_height
+          FROM app_user AS au
+          WHERE au.id = 1
+      `
+    ),
+    myDB.getAllAsync<any>(
+      `
+      SELECT ec.exercise_type_id, ec.title, ph.exercise_class_id, ph.weight, ph.reps, ph.distance, ph.time, ph.date FROM exercise_class as ec
+        INNER JOIN pr_history as ph ON ec.id = ph.exercise_class_id
+      WHERE ec.app_user_id = 1 AND is_archived = 0
+      ORDER BY ph.exercise_class_id ASC, ph.date ASC;
+      `
+    ),
+  ])
+    .then(([calorieRows, bodyWeightRows, userProfile, prRows]) => {
+      // Grab workout session calorie data
+      const caloriesResults = calorieRows.map((row) => {
+        const { title, calories, elapsed_time, date } = row;
+        const readData: WorkoutSession = {
+          title: title,
+          calories: calories,
+          elapsedTime: elapsed_time,
+          date: new Date(date),
+        };
+        return readData;
+      });
 
-  const [personalRecordData, setPersonalRecordData] = useState<
-    PersonalRecordHistory[] | null
-  >(null);
-  const [personalRecordValue] = ["weight", "distance", "time"];
-  const [personalRecordType, setPersonalRecordType] = useState(
-    personalRecordValue[0]
-  );
+      // Grab body weight resulst
+      const bodyWeightResults = bodyWeightRows.map((row) => {
+        const { app_user_id, weight, date } = row;
+        const readData: UserBodyWeight = {
+          appUserId: app_user_id,
+          weight: weight,
+          date: new Date(date),
+        };
+        return readData;
+      });
+
+      // Grab user profile results
+      const { calorie_goal, bodyweight_goal, user_height } = userProfile;
+      const userProfileResult: UserData = {
+        calorieGoal: calorie_goal,
+        bodyWeightGoal: bodyweight_goal,
+        userHeight: user_height,
+      };
+
+      // grab pr history reults
+      const prHistoryResults: PersonalRecordHistory[] = prRows
+        .reduce((prev: any[], curr: any) => {
+          const p = prev;
+          if (
+            p.length < 1 ||
+            p.at(-1)!.at(-1).exercise_class_id !== curr.exercise_class_id
+          ) {
+            p.push([curr]);
+          } else {
+            p.at(-1)!.push(curr);
+          }
+          return p;
+        }, [])
+        .map((group: any[]) => ({
+          exerciseClassName: group[0].title,
+          exerciseType: group[0].exercise_type_id,
+          personalRecordList: group.map((pr) => ({
+            weight: pr.weight,
+            reps: pr.reps,
+            time: pr.time,
+            distance: pr.distance,
+            date: new Date(pr.date),
+          })),
+        }));
+
+      // Set all state in one go
+      setGraphData({
+        workoutSessionData: caloriesResults,
+        bodyWeightData: bodyWeightResults,
+        userProfileData: userProfileResult,
+        personalRecordData: prHistoryResults,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      console.log(
+        "Couldn't properly load in graph related data from sqlite db"
+      );
+    });
+
+  return graphData;
+}
+
+export default function Graph() {
+  const graphData = useGraphData();
+
   const personalRecordOptions = ["Bench Press", "Squat", "Deadlift"]; // replace with dynamic type after querying (bench, squat, etc)
   const [personalRecordExercise, setPersonalRecordExercise] = useState(
     personalRecordOptions[0]
@@ -85,12 +195,29 @@ export default function Graph() {
 
   const [graphType, setGraphType] = useState(true); // true -> LineChart; false -> BarChart
 
+  // If all the graph data isn't fully loaded, display a loading screen
+  if (!graphData) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={summaryGrid.mainTitle}>Loading...</Text>
+      </View>
+    );
+  }
+
+  // Beyond this point, we have a gaurantee that all graph related data is NON-NULL
+  const {
+    workoutSessionData,
+    bodyWeightData,
+    userProfileData,
+    personalRecordData,
+  } = graphData;
+
   const DAY_MS = 93921426;
   const WEEK_MS = 657449982;
   const MONTH_MS = 2629799928;
   const YEAR_MS = 31557599136;
 
-  let rawInputLength: number | undefined = 0;
+  let rawInputLength: number = 0;
   let rawInputValue: number = 0;
   let rawInputTime: number = 0;
   let rawInputTimeNum: number = 0;
@@ -156,29 +283,24 @@ export default function Graph() {
   // averages data bases on the length of time given
   function averagePlotData(
     data: SessionData[] | UserBodyWeightData[]
-  ): SessionData[] | null {
+  ): SessionData[] {
     // Looks messy, code clean up if possible
     // going to change logic to be more "functional" in the future...
 
     let transformData = data as SessionData[] | UserBodyWeightData[];
 
     // used to calculate values for summary
-    rawInputLength = transformData?.length;
+    rawInputLength = transformData.length;
     rawInputValue = 0;
-    rawInputFirstIdx =
-      transformData && transformData.length > 0 ? transformData[0].value : 0;
+    rawInputFirstIdx = transformData.length > 0 ? transformData[0].value : 0;
     rawInputLastIdx =
-      transformData && transformData.length > 0 ?
+      transformData.length > 0 ?
         transformData[transformData.length - 1].value
       : 0;
 
-    transformData?.forEach((obj) => {
+    transformData.forEach((obj) => {
       rawInputValue += obj.value ? obj.value : 0;
-      if (
-        obj &&
-        "timeEstimate" in obj &&
-        typeof obj.timeEstimate === "number"
-      ) {
+      if ("timeEstimate" in obj && typeof obj.timeEstimate === "number") {
         rawInputTime += obj.timeEstimate;
         rawInputTimeNum += 1;
       }
@@ -229,7 +351,7 @@ export default function Graph() {
             graphRange === "ALL" ?
               first.getMonth() === 1 ?
                 first.toDateString().substring(11)
-              : null
+              : undefined
             : first.toDateString().substring(4, 7),
           labelTextStyle:
             graphRange === "ALL" ? graphStyle.allLabel : graphStyle.yearLabel,
@@ -357,17 +479,23 @@ export default function Graph() {
       }
     }
 
-    return res as SessionData[] | null;
+    return res as SessionData[];
   }
+
+  // Extract body-weight data
+  const graphBodyWeightData: UserBodyWeightData[] = bodyWeightData.map(
+    (ubw) => {
+      return {
+        value: ubw.weight,
+        date: ubw.date,
+      };
+    }
+  );
+
   // returns data based selected data type from buttons selection
   function getSelectedData(
     selectedData: string
-  ):
-    | SessionData[]
-    | UserBodyWeightData[]
-    | PersonalRecordHistory[]
-    | null
-    | undefined {
+  ): SessionData[] | UserBodyWeightData[] | PersonalRecordHistory[] {
     switch (selectedData) {
       case "calorie":
         return graphCalorieData;
@@ -379,9 +507,7 @@ export default function Graph() {
         return graphCalorieData;
     }
   }
-  function normalizePrData(
-    data: PersonalRecordHistory[]
-  ): SessionData[] | null {
+  function normalizePrData(data: PersonalRecordHistory[]): SessionData[] {
     console.log("Filtered Result");
     let filterRes = (data as PersonalRecordHistory[]).find(
       (obj) => obj.exerciseClassName === personalRecordExercise
@@ -389,15 +515,15 @@ export default function Graph() {
 
     // When filterRes finds no matches relating to the exercise for pr's, we return null
     if (!filterRes) {
-      return null;
+      return [];
     }
 
     let mappedRes = filterRes.personalRecordList.map((record) => ({
       value: record.weight,
       date: record.date,
-    })) as SessionData[] | null;
+    })) as SessionData[];
 
-    mappedRes?.forEach((obj) => {
+    mappedRes.forEach((obj) => {
       console.log(obj);
     });
 
@@ -412,146 +538,14 @@ export default function Graph() {
     return mappedRes;
   }
 
-  // 1) load calorie data
-  if (!workoutSessionData) {
-    myDB
-      .getAllAsync<any>(
-        `
-        SELECT ws.title, ws.calories, SUM(elapsed_time + rest_time) AS elapsed_time, ws.date
-          FROM workout_session AS ws
-          LEFT JOIN exercise_session AS es ON ws.id = es.workout_session_id 
-          LEFT JOIN set_session AS ess ON es.id = ess.exercise_session_id
-          WHERE ws.app_user_id = 1
-          GROUP BY ws.id
-        `
-      )
-      .then((result) => {
-        const queryRows = result.map((row) => {
-          const { title, calories, elapsed_time, date } = row;
-          const readData: WorkoutSession = {
-            title: title,
-            calories: calories,
-            elapsedTime: elapsed_time,
-            date: new Date(date),
-          };
-          return readData;
-        });
-
-        setWorkoutSessionData(queryRows);
-      })
-      .catch((err) => {
-        console.log("DB READ ERROR | " + err);
-      });
-  }
   // extract calorie data
-  const graphCalorieData: SessionData[] | undefined = workoutSessionData?.map(
-    (ws) => {
-      return {
-        value: ws.calories,
-        timeEstimate: ws.elapsedTime,
-        date: ws.date,
-      };
-    }
-  );
-
-  // 2) load body-weight data
-  if (!bodyWeightData) {
-    myDB
-      .getAllAsync<any>(
-        "SELECT * FROM user_bodyweight AS ubw ORDER BY ubw.date"
-      )
-      .then((result) => {
-        const queryRows = result.map((row) => {
-          const { app_user_id, weight, date } = row;
-          const readData: UserBodyWeight = {
-            appUserId: app_user_id,
-            weight: weight,
-            date: new Date(date),
-          };
-          return readData;
-        });
-
-        setBodyWeightData(queryRows);
-      })
-      .catch((err) => {
-        console.log("DB READ ERROR | " + err);
-      });
-  }
-  // Extract body-weight data
-  const graphBodyWeightData: UserBodyWeightData[] | undefined =
-    bodyWeightData?.map((ubw) => {
-      return {
-        value: ubw.weight,
-        date: ubw.date,
-      };
-    });
-
-  // 3) load user profile data
-  if (!userProfileData) {
-    myDB
-      .getFirstAsync<any>(
-        `
-        SELECT au.avg_daily_calorie_goal as calorie_goal, au.bodyweight_goal, au.user_height
-          FROM app_user AS au
-          WHERE au.id = 1
-        `
-      )
-      .then((result) => {
-        const { calorie_goal, bodyweight_goal, user_height } = result;
-        const readData: UserData = {
-          calorieGoal: calorie_goal,
-          bodyWeightGoal: bodyweight_goal,
-          userHeight: user_height,
-        };
-        setUserProfileData(readData);
-      })
-      .catch((err) => {
-        console.log("DB READ ERROR | " + err);
-      });
-  }
-
-  // 4) load personal record data
-  if (!personalRecordData) {
-    myDB
-      .getAllAsync<any>(
-        `
-      SELECT ec.exercise_type_id, ec.title, ph.exercise_class_id, ph.weight, ph.reps, ph.distance, ph.time, ph.date FROM exercise_class as ec
-        INNER JOIN pr_history as ph ON ec.id = ph.exercise_class_id
-      WHERE ec.app_user_id = 1 AND is_archived = 0
-      ORDER BY ph.exercise_class_id ASC, ph.date ASC;
-      `
-      )
-      .then((result) => {
-        const readData: PersonalRecordHistory[] = result
-          .reduce((prev: any[], curr: any) => {
-            const p = prev;
-            if (
-              p.length < 1 ||
-              p.at(-1)!.at(-1).exercise_class_id !== curr.exercise_class_id
-            ) {
-              p.push([curr]);
-            } else {
-              p.at(-1)!.push(curr);
-            }
-            return p;
-          }, [])
-          .map((group: any[]) => ({
-            exerciseClassName: group[0].title,
-            exerciseType: group[0].exercise_type_id,
-            personalRecordList: group.map((pr) => ({
-              weight: pr.weight,
-              reps: pr.reps,
-              time: pr.time,
-              distance: pr.distance,
-              date: new Date(pr.date),
-            })),
-          }));
-        setPersonalRecordData(readData);
-      })
-      .catch((err) => {
-        console.log("DB READ ERROR | " + err);
-      });
-  }
+  const graphCalorieData: SessionData[] = workoutSessionData.map((ws) => {
+    return {
+      value: ws.calories,
+      timeEstimate: ws.elapsedTime,
+      date: ws.date,
+    };
+  });
 
   // grabs correct array
   let graphInput = getSelectedData(graphDataType) as any;
@@ -560,7 +554,7 @@ export default function Graph() {
     // button range logic
     if (graphRange === "1W") {
       graphInput = averagePlotData(
-        graphInput?.filter(
+        graphInput.filter(
           (obj: any) =>
             new Date(obj.date) >
             new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS)
@@ -568,7 +562,7 @@ export default function Graph() {
       ) as SessionData[] | null;
     } else if (graphRange === "1M") {
       graphInput = averagePlotData(
-        graphInput?.filter(
+        graphInput.filter(
           (obj: any) =>
             new Date(obj.date) >
             new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0))
@@ -576,7 +570,7 @@ export default function Graph() {
       );
     } else if (graphRange === "3M") {
       graphInput = averagePlotData(
-        graphInput?.filter(
+        graphInput.filter(
           (obj: any) =>
             new Date(obj.date) >
             new Date(getPriorTime(0, 3, 0).setHours(0, 0, 0, 0))
@@ -584,7 +578,7 @@ export default function Graph() {
       );
     } else if (graphRange === "6M") {
       graphInput = averagePlotData(
-        graphInput?.filter(
+        graphInput.filter(
           (obj: any) =>
             new Date(obj.date) >
             new Date(getPriorTime(0, 6, 0).setHours(0, 0, 0, 0))
@@ -592,14 +586,14 @@ export default function Graph() {
       );
     } else if (graphRange === "YTD") {
       graphInput = averagePlotData(
-        graphInput?.filter(
+        graphInput.filter(
           (obj: any) =>
             new Date(obj.date) > new Date(new Date().getFullYear(), 0, 1)
         )!
       );
     } else if (graphRange === "1Y") {
       graphInput = averagePlotData(
-        graphInput?.filter(
+        graphInput.filter(
           (obj: any) =>
             new Date(obj.date) >
             new Date(
@@ -610,24 +604,24 @@ export default function Graph() {
         )!
       );
     } else {
-      graphInput = averagePlotData(graphInput!);
+      graphInput = averagePlotData(graphInput);
     }
   } else {
     graphInput = normalizePrData(graphInput);
   }
-  let maxGraphValue = graphInput?.reduce((p: any, c: any) =>
-    p.value! > c.value! ? p : c
+  let maxGraphValue = graphInput.reduce((p: any, c: any) =>
+    p.value > c.value ? p : c
   );
 
   // creating goal line
   let goalLine = [];
   if (graphDataType === "calorie")
-    for (let i = 0; i < graphInput!.length; i++) {
-      goalLine.push({ value: userProfileData?.calorieGoal });
+    for (let i = 0; i < graphInput.length; i++) {
+      goalLine.push({ value: userProfileData.calorieGoal });
     }
   else if (graphDataType === "body weight") {
-    for (let i = 0; i < graphInput!.length; i++) {
-      goalLine.push({ value: userProfileData?.bodyWeightGoal });
+    for (let i = 0; i < graphInput.length; i++) {
+      goalLine.push({ value: userProfileData.bodyWeightGoal });
     }
   } else {
     goalLine = [];
@@ -1091,65 +1085,30 @@ export default function Graph() {
                         <Text style={[summaryGrid.text, { color: "grey" }]}>
                           {(
                             rawInputLastIdx /
-                              Math.pow(
-                                userProfileData?.userHeight ?
-                                  userProfileData?.userHeight
-                                : 0,
-                                2
-                              ) -
+                              Math.pow(userProfileData.userHeight ?? 0, 2) -
                               rawInputFirstIdx /
-                                Math.pow(
-                                  userProfileData?.userHeight ?
-                                    userProfileData?.userHeight
-                                  : 0,
-                                  2
-                                ) >
+                                Math.pow(userProfileData.userHeight ?? 0, 2) >
                             0
                           ) ?
                             "+" +
                             (
                               rawInputLastIdx /
-                                Math.pow(
-                                  userProfileData?.userHeight ?
-                                    userProfileData?.userHeight
-                                  : 0,
-                                  2
-                                ) -
+                                Math.pow(userProfileData.userHeight ?? 0, 2) -
                               rawInputFirstIdx /
-                                Math.pow(
-                                  userProfileData?.userHeight ?
-                                    userProfileData?.userHeight
-                                  : 0,
-                                  2
-                                )
+                                Math.pow(userProfileData.userHeight ?? 0, 2)
                             ).toFixed(2)
                           : (
                               rawInputLastIdx /
-                                Math.pow(
-                                  userProfileData?.userHeight ?
-                                    userProfileData?.userHeight
-                                  : 0,
-                                  2
-                                ) -
+                                Math.pow(userProfileData.userHeight ?? 0, 2) -
                               rawInputFirstIdx /
-                                Math.pow(
-                                  userProfileData?.userHeight ?
-                                    userProfileData?.userHeight
-                                  : 0,
-                                  2
-                                )
+                                Math.pow(userProfileData.userHeight ?? 0, 2)
                             ).toFixed(2)
                           }{" "}
                         </Text>
                         <Text style={[summaryGrid.text, { color: "grey" }]}>
                           {(
                             rawInputLastIdx /
-                            Math.pow(
-                              userProfileData?.userHeight ?
-                                userProfileData?.userHeight
-                              : 0,
-                              2
-                            )
+                            Math.pow(userProfileData.userHeight ?? 0, 2)
                           ).toFixed(2)}
                         </Text>
                       </View>
@@ -1159,15 +1118,15 @@ export default function Graph() {
                       >
                         <Text style={summaryGrid.text}>Goal</Text>
                         <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
-                          {userProfileData?.bodyWeightGoal ?
+                          {userProfileData.bodyWeightGoal ?
                             (
                               (rawInputLastIdx + rawInputFirstIdx) / 2 -
-                              userProfileData?.bodyWeightGoal
+                              userProfileData.bodyWeightGoal
                             ).toFixed(2) + " kg"
                           : "-"}
                         </Text>
                         <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
-                          {userProfileData?.bodyWeightGoal ?
+                          {userProfileData.bodyWeightGoal ?
                             userProfileData.bodyWeightGoal.toFixed(2)
                           : 0}{" "}
                           {" kg"}
@@ -1237,20 +1196,18 @@ export default function Graph() {
                         <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
                           {(
                             PrLastVal /
-                              bodyWeightData![bodyWeightData!?.length - 1]
-                                .weight -
+                              bodyWeightData[bodyWeightData.length - 1].weight -
                               PrFirstVal /
-                                bodyWeightData![bodyWeightData!?.length - 1]
+                                bodyWeightData[bodyWeightData.length - 1]
                                   .weight >
                             0
                           ) ?
                             "+"
                           : (
                             PrLastVal /
-                              bodyWeightData![bodyWeightData!?.length - 1]
-                                .weight -
+                              bodyWeightData[bodyWeightData.length - 1].weight -
                               PrFirstVal /
-                                bodyWeightData![bodyWeightData!?.length - 1]
+                                bodyWeightData[bodyWeightData.length - 1]
                                   .weight <
                             0
                           ) ?
@@ -1258,17 +1215,15 @@ export default function Graph() {
                           : ""}
                           {(
                             PrLastVal /
-                              bodyWeightData![bodyWeightData!?.length - 1]
-                                .weight -
+                              bodyWeightData[bodyWeightData.length - 1].weight -
                             PrFirstVal /
-                              bodyWeightData![bodyWeightData!?.length - 1]
-                                .weight
+                              bodyWeightData[bodyWeightData.length - 1].weight
                           ).toFixed(2)}
                         </Text>
                         <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
                           {(
                             ((PrLastVal /
-                              bodyWeightData![bodyWeightData!?.length - 1]
+                              bodyWeightData[bodyWeightData.length - 1]
                                 .weight) *
                               100) %
                               100 >
@@ -1277,7 +1232,7 @@ export default function Graph() {
                             "+"
                           : (
                             ((PrLastVal /
-                              bodyWeightData![bodyWeightData!?.length - 1]
+                              bodyWeightData[bodyWeightData.length - 1]
                                 .weight) *
                               100) %
                               100 <
@@ -1287,7 +1242,7 @@ export default function Graph() {
                           : ""}
                           {(
                             ((PrLastVal /
-                              bodyWeightData![bodyWeightData!?.length - 1]
+                              bodyWeightData[bodyWeightData.length - 1]
                                 .weight) *
                               100) %
                             100
