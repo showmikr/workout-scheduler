@@ -3,7 +3,6 @@ import { View } from "../../components/Themed";
 import { Text, Pressable, StyleSheet, TextStyle } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
-import { transform } from "@babel/core";
 
 type WorkoutSession = {
   title: string;
