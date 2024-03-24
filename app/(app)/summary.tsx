@@ -52,25 +52,136 @@ type PersonalRecordHistory = {
   personalRecordList: PersonalRecord[];
 };
 
-export default function Graph() {
+type GraphData = {
+  workoutSessionData: WorkoutSession[];
+  bodyWeightData: UserBodyWeight[];
+  userProfileData: UserData;
+  personalRecordData: PersonalRecordHistory[];
+};
+/* 
+Extracts out all sql data queries for the graph page into a single hook.
+Basically, we can now gaurantee that all data necessary for the graph page
+will be NON-NULL - this means no more defensive 'data?.property' accesses from now on! 
+*/
+function useGraphData() {
   const myDB = useSQLiteContext();
+  const [graphData, setGraphData] = useState<GraphData | null>(null);
 
-  const [workoutSessionData, setWorkoutSessionData] = useState<
-    WorkoutSession[] | null
-  >(null);
+  // If our graph data is already loaded, let 'em have it.
+  if (graphData) {
+    return graphData;
+  }
 
-  const [bodyWeightData, setBodyWeightData] = useState<UserBodyWeight[] | null>(
-    null
-  );
-  const [userProfileData, setUserProfileData] = useState<UserData | null>(null);
+  // Otherwise, asynchronously load it all up
+  Promise.all([
+    myDB.getAllAsync<any>(
+      `
+        SELECT ws.title, ws.calories, SUM(elapsed_time + rest_time) AS elapsed_time, ws.date
+          FROM workout_session AS ws
+          LEFT JOIN exercise_session AS es ON ws.id = es.workout_session_id 
+          LEFT JOIN set_session AS ess ON es.id = ess.exercise_session_id
+          WHERE ws.app_user_id = 1
+          GROUP BY ws.id
+      `
+    ),
+    myDB.getAllAsync<any>(
+      "SELECT * FROM user_bodyweight AS ubw ORDER BY ubw.date"
+    ),
+    myDB.getFirstAsync<any>(
+      `
+        SELECT au.avg_daily_calorie_goal as calorie_goal, au.bodyweight_goal, au.user_height
+          FROM app_user AS au
+          WHERE au.id = 1
+      `
+    ),
+    myDB.getAllAsync<any>(
+      `
+      SELECT ec.exercise_type_id, ec.title, ph.exercise_class_id, ph.weight, ph.reps, ph.distance, ph.time, ph.date FROM exercise_class as ec
+        INNER JOIN pr_history as ph ON ec.id = ph.exercise_class_id
+      WHERE ec.app_user_id = 1 AND is_archived = 0
+      ORDER BY ph.exercise_class_id ASC, ph.date ASC;
+      `
+    ),
+  ])
+    .then(([calorieRows, bodyWeightRows, userProfile, prRows]) => {
+      // Grab workout session calorie data
+      const caloriesResults = calorieRows.map((row) => {
+        const { title, calories, elapsed_time, date } = row;
+        const readData: WorkoutSession = {
+          title: title,
+          calories: calories,
+          elapsedTime: elapsed_time,
+          date: new Date(date),
+        };
+        return readData;
+      });
 
-  const [personalRecordData, setPersonalRecordData] = useState<
-    PersonalRecordHistory[] | null
-  >(null);
-  const [personalRecordValue] = ["weight", "distance", "time"];
-  const [personalRecordType, setPersonalRecordType] = useState(
-    personalRecordValue[0]
-  );
+      // Grab body weight resulst
+      const bodyWeightResults = bodyWeightRows.map((row) => {
+        const { app_user_id, weight, date } = row;
+        const readData: UserBodyWeight = {
+          appUserId: app_user_id,
+          weight: weight,
+          date: new Date(date),
+        };
+        return readData;
+      });
+
+      // Grab user profile results
+      const { calorie_goal, bodyweight_goal, user_height } = userProfile;
+      const userProfileResult: UserData = {
+        calorieGoal: calorie_goal,
+        bodyWeightGoal: bodyweight_goal,
+        userHeight: user_height,
+      };
+
+      // grab pr history reults
+      const prHistoryResults: PersonalRecordHistory[] = prRows
+        .reduce((prev: any[], curr: any) => {
+          const p = prev;
+          if (
+            p.length < 1 ||
+            p.at(-1)!.at(-1).exercise_class_id !== curr.exercise_class_id
+          ) {
+            p.push([curr]);
+          } else {
+            p.at(-1)!.push(curr);
+          }
+          return p;
+        }, [])
+        .map((group: any[]) => ({
+          exerciseClassName: group[0].title,
+          exerciseType: group[0].exercise_type_id,
+          personalRecordList: group.map((pr) => ({
+            weight: pr.weight,
+            reps: pr.reps,
+            time: pr.time,
+            distance: pr.distance,
+            date: new Date(pr.date),
+          })),
+        }));
+
+      // Set all state in one go
+      setGraphData({
+        workoutSessionData: caloriesResults,
+        bodyWeightData: bodyWeightResults,
+        userProfileData: userProfileResult,
+        personalRecordData: prHistoryResults,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      console.log(
+        "Couldn't properly load in graph related data from sqlite db"
+      );
+    });
+
+  return graphData;
+}
+
+export default function Graph() {
+  const graphData = useGraphData();
+
   const personalRecordOptions = ["Bench Press", "Squat", "Deadlift"]; // replace with dynamic type after querying (bench, squat, etc)
   const [personalRecordExercise, setPersonalRecordExercise] = useState(
     personalRecordOptions[0]
@@ -83,6 +194,23 @@ export default function Graph() {
   const graphDataTypeButtons = ["calorie", "body weight", "personal record"];
 
   const [graphType, setGraphType] = useState(true); // true -> LineChart; false -> BarChart
+
+  // If all the graph data isn't fully loaded, display a loading screen
+  if (!graphData) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={summaryGrid.mainTitle}>Loading...</Text>
+      </View>
+    );
+  }
+
+  // Beyond this point, we have a gaurantee that all graph related data is NON-NULL
+  const {
+    workoutSessionData,
+    bodyWeightData,
+    userProfileData,
+    personalRecordData,
+  } = graphData;
 
   const DAY_MS = 93921426;
   const WEEK_MS = 657449982;
@@ -358,6 +486,16 @@ export default function Graph() {
 
     return res as SessionData[] | null;
   }
+
+  // Extract body-weight data
+  const graphBodyWeightData: UserBodyWeightData[] | undefined =
+    bodyWeightData?.map((ubw) => {
+      return {
+        value: ubw.weight,
+        date: ubw.date,
+      };
+    });
+
   // returns data based selected data type from buttons selection
   function getSelectedData(
     selectedData: string
@@ -411,37 +549,6 @@ export default function Graph() {
     return mappedRes;
   }
 
-  // 1) load calorie data
-  if (!workoutSessionData) {
-    myDB
-      .getAllAsync<any>(
-        `
-        SELECT ws.title, ws.calories, SUM(elapsed_time + rest_time) AS elapsed_time, ws.date
-          FROM workout_session AS ws
-          LEFT JOIN exercise_session AS es ON ws.id = es.workout_session_id 
-          LEFT JOIN set_session AS ess ON es.id = ess.exercise_session_id
-          WHERE ws.app_user_id = 1
-          GROUP BY ws.id
-        `
-      )
-      .then((result) => {
-        const queryRows = result.map((row) => {
-          const { title, calories, elapsed_time, date } = row;
-          const readData: WorkoutSession = {
-            title: title,
-            calories: calories,
-            elapsedTime: elapsed_time,
-            date: new Date(date),
-          };
-          return readData;
-        });
-
-        setWorkoutSessionData(queryRows);
-      })
-      .catch((err) => {
-        console.log("DB READ ERROR | " + err);
-      });
-  }
   // extract calorie data
   const graphCalorieData: SessionData[] | undefined = workoutSessionData?.map(
     (ws) => {
@@ -452,105 +559,6 @@ export default function Graph() {
       };
     }
   );
-
-  // 2) load body-weight data
-  if (!bodyWeightData) {
-    myDB
-      .getAllAsync<any>(
-        "SELECT * FROM user_bodyweight AS ubw ORDER BY ubw.date"
-      )
-      .then((result) => {
-        const queryRows = result.map((row) => {
-          const { app_user_id, weight, date } = row;
-          const readData: UserBodyWeight = {
-            appUserId: app_user_id,
-            weight: weight,
-            date: new Date(date),
-          };
-          return readData;
-        });
-
-        setBodyWeightData(queryRows);
-      })
-      .catch((err) => {
-        console.log("DB READ ERROR | " + err);
-      });
-  }
-  // Extract body-weight data
-  const graphBodyWeightData: UserBodyWeightData[] | undefined =
-    bodyWeightData?.map((ubw) => {
-      return {
-        value: ubw.weight,
-        date: ubw.date,
-      };
-    });
-
-  // 3) load user profile data
-  if (!userProfileData) {
-    myDB
-      .getFirstAsync<any>(
-        `
-        SELECT au.avg_daily_calorie_goal as calorie_goal, au.bodyweight_goal, au.user_height
-          FROM app_user AS au
-          WHERE au.id = 1
-        `
-      )
-      .then((result) => {
-        const { calorie_goal, bodyweight_goal, user_height } = result;
-        const readData: UserData = {
-          calorieGoal: calorie_goal,
-          bodyWeightGoal: bodyweight_goal,
-          userHeight: user_height,
-        };
-        setUserProfileData(readData);
-      })
-      .catch((err) => {
-        console.log("DB READ ERROR | " + err);
-      });
-  }
-
-  // 4) load personal record data
-  if (!personalRecordData) {
-    myDB
-      .getAllAsync<any>(
-        `
-      SELECT ec.exercise_type_id, ec.title, ph.exercise_class_id, ph.weight, ph.reps, ph.distance, ph.time, ph.date FROM exercise_class as ec
-        INNER JOIN pr_history as ph ON ec.id = ph.exercise_class_id
-      WHERE ec.app_user_id = 1 AND is_archived = 0
-      ORDER BY ph.exercise_class_id ASC, ph.date ASC;
-      `
-      )
-      .then((result) => {
-        const readData: PersonalRecordHistory[] = result
-          .reduce((prev: any[], curr: any) => {
-            const p = prev;
-            if (
-              p.length < 1 ||
-              p.at(-1)!.at(-1).exercise_class_id !== curr.exercise_class_id
-            ) {
-              p.push([curr]);
-            } else {
-              p.at(-1)!.push(curr);
-            }
-            return p;
-          }, [])
-          .map((group: any[]) => ({
-            exerciseClassName: group[0].title,
-            exerciseType: group[0].exercise_type_id,
-            personalRecordList: group.map((pr) => ({
-              weight: pr.weight,
-              reps: pr.reps,
-              time: pr.time,
-              distance: pr.distance,
-              date: new Date(pr.date),
-            })),
-          }));
-        setPersonalRecordData(readData);
-      })
-      .catch((err) => {
-        console.log("DB READ ERROR | " + err);
-      });
-  }
 
   // grabs correct array
   let graphInput = getSelectedData(graphDataType) as any;
