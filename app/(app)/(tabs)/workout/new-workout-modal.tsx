@@ -10,7 +10,7 @@ import {
   Pressable,
 } from "react-native";
 import Animated from "react-native-reanimated";
-import { twColors } from "../../constants/Colors";
+import { twColors } from "../../../../constants/Colors";
 import { router } from "expo-router";
 
 export default function NewWorkoutModal() {
