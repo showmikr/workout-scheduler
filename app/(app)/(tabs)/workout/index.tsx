@@ -1,15 +1,8 @@
-import {
-  Pressable,
-  Button,
-  StyleSheet,
-  FlatList,
-  DevSettings,
-} from "react-native";
+import { Pressable, StyleSheet, FlatList, DevSettings } from "react-native";
 import { Text, View } from "../../../../components/Themed";
 import { deleteDB } from "../../../../db-utils";
 import { useSQLiteContext } from "expo-sqlite/next";
 import WorkoutCard from "../../../../components/WorkoutCard";
-import { Link, Tabs } from "expo-router";
 
 export type TaggedWorkout = { id: number; title: string; tags: string[] };
 
