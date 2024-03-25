@@ -13,7 +13,7 @@ import Animated from "react-native-reanimated";
 import { twColors } from "../../../../constants/Colors";
 import { router } from "expo-router";
 import { TaggedWorkout } from ".";
-import { useWorkoutsContext } from "../../../../context/workoutsContext";
+import { useWorkoutsContext } from "../../../../context/workouts-context";
 
 export default function NewWorkoutModal() {
   const colorScheme = useColorScheme();

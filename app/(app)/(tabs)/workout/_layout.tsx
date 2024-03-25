@@ -3,7 +3,7 @@ import { useSQLiteContext } from "expo-sqlite/next";
 import {
   WorkoutsContext,
   workoutsReducer,
-} from "../../../../context/workoutsContext";
+} from "../../../../context/workouts-context";
 import { useReducer } from "react";
 import { getWorkouts } from "../../../../context/queryWorkouts";
 
