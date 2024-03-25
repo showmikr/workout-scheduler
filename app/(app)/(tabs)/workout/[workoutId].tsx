@@ -84,7 +84,7 @@ const AddExerciseBtn = ({ workoutId }: { workoutId: string }) => {
       })}
       onPress={() => {
         router.push({
-          pathname: "/(app)/(tabs)/workout/add-exercise/[workoutId]",
+          pathname: "/(app)/(tabs)/workout/add-exercise/",
           params: { workoutId: workoutId },
         });
       }}
