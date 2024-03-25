@@ -1,32 +1,11 @@
 import { Link, Stack } from "expo-router";
-import { createContext, useContext, useReducer } from "react";
 import { TaggedWorkout } from "./index";
 import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite/next";
-
-type WorkoutsAction = { type: "add_new_workout"; newWorkout: TaggedWorkout };
-
-function workoutsReducer(state: TaggedWorkout[], action: WorkoutsAction) {
-  switch (action.type) {
-    case "add_new_workout":
-      return [...state, action.newWorkout];
-  }
-}
-
-type WorkoutsContextType = [
-  workouts: TaggedWorkout[],
-  workoutsDispatch: React.Dispatch<WorkoutsAction>,
-];
-const WorkoutsContext = createContext<WorkoutsContextType | undefined>(
-  undefined
-);
-
-export function useWorkoutsContext() {
-  const workoutsContext = useContext(WorkoutsContext);
-  if (!workoutsContext) {
-    throw new Error("useWorkoutsContext must be used within a ");
-  }
-  return workoutsContext;
-}
+import {
+  WorkoutsContext,
+  workoutsReducer,
+} from "../../../../context/workoutsContext";
+import { useReducer } from "react";
 
 const getWorkouts = (db: SQLiteDatabase) => {
   const workout_tags = db.getAllSync<any>(

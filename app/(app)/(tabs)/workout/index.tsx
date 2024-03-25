@@ -3,7 +3,7 @@ import { Text, View } from "../../../../components/Themed";
 import { deleteDB } from "../../../../db-utils";
 import { useSQLiteContext } from "expo-sqlite/next";
 import WorkoutCard from "../../../../components/WorkoutCard";
-import { useWorkoutsContext } from "./_layout";
+import { useWorkoutsContext } from "../../../../context/workoutsContext";
 
 export type TaggedWorkout = { id: number; title: string; tags: string[] };
 

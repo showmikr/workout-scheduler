@@ -1,6 +1,6 @@
 import { useSQLiteContext } from "expo-sqlite/next";
 import { StatusBar } from "expo-status-bar";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import {
   Platform,
   Text,
@@ -12,8 +12,8 @@ import {
 import Animated from "react-native-reanimated";
 import { twColors } from "../../../../constants/Colors";
 import { router } from "expo-router";
-import { useWorkoutsContext } from "./_layout";
 import { TaggedWorkout } from ".";
+import { useWorkoutsContext } from "../../../../context/workoutsContext";
 
 export default function NewWorkoutModal() {
   const colorScheme = useColorScheme();
