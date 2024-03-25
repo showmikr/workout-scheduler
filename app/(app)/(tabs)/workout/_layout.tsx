@@ -9,9 +9,12 @@ import { getWorkouts } from "../../../../context/queryWorkouts";
 
 export default function TabTwoLayout() {
   const db = useSQLiteContext();
-  const workouts = getWorkouts(db);
+  const [workouts, workoutsDispatch] = useReducer(
+    workoutsReducer,
+    getWorkouts(db)
+  );
   return (
-    <WorkoutsContext.Provider value={useReducer(workoutsReducer, workouts)}>
+    <WorkoutsContext.Provider value={{ workouts, workoutsDispatch }}>
       <Stack>
         <Stack.Screen
           name="index"

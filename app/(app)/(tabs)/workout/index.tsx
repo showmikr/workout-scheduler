@@ -9,7 +9,7 @@ export type TaggedWorkout = { id: number; title: string; tags: string[] };
 
 export default function TabTwoScreen() {
   const db = useSQLiteContext();
-  const [workouts, _] = useWorkoutsContext();
+  const { workouts } = useWorkoutsContext();
 
   const readDb = () => {
     const results = db.getAllSync<any>(

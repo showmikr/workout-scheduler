@@ -10,10 +10,10 @@ function workoutsReducer(state: TaggedWorkout[], action: WorkoutsAction) {
   }
 }
 
-type WorkoutsContextType = [
-  workouts: TaggedWorkout[],
-  workoutsDispatch: React.Dispatch<WorkoutsAction>,
-];
+type WorkoutsContextType = {
+  workouts: TaggedWorkout[];
+  workoutsDispatch: React.Dispatch<WorkoutsAction>;
+};
 const WorkoutsContext = createContext<WorkoutsContextType | undefined>(
   undefined
 );

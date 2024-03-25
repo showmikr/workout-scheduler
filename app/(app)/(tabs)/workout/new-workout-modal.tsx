@@ -18,7 +18,7 @@ import { useWorkoutsContext } from "../../../../context/workoutsContext";
 export default function NewWorkoutModal() {
   const colorScheme = useColorScheme();
   const db = useSQLiteContext();
-  const [_, workoutsDispatch] = useWorkoutsContext();
+  const { workoutsDispatch } = useWorkoutsContext();
 
   const workoutCount =
     db.getFirstSync<{ workout_count: number }>(
