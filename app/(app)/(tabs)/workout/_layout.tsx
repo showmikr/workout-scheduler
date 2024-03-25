@@ -5,7 +5,7 @@ import {
   workoutsReducer,
 } from "../../../../context/workouts-context";
 import { useReducer } from "react";
-import { getWorkouts } from "../../../../context/queryWorkouts";
+import { getWorkouts } from "../../../../context/query-workouts";
 
 export default function TabTwoLayout() {
   const db = useSQLiteContext();
