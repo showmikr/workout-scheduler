@@ -68,20 +68,6 @@ export default function TabTwoScreen() {
       className="flex-1 items-center justify-center" // NATIVEWIND WORKS BABY!!!!!
       //style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
     >
-      <Tabs.Screen
-        options={{
-          headerRight: () => {
-            return (
-              <Link
-                style={{ color: "rgb(10, 132, 255)", fontSize: 18, padding: 8 }}
-                href="/new-workout-modal"
-              >
-                New Workout
-              </Link>
-            );
-          },
-        }}
-      />
       <Text style={styles.title}>Tab Two</Text>
       <Pressable
         className="m-10 border-2 border-solid border-slate-400 bg-slate-600 p-1"

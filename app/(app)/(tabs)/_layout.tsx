@@ -65,10 +65,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="workout"
         options={{
           title: "Tab Two",
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          headerRight: () => {
+            return (
+              <Link
+                style={{ color: "rgb(10, 132, 255)", fontSize: 18, padding: 8 }}
+                href="/new-workout-modal"
+              >
+                New Workout
+              </Link>
+            );
+          },
         }}
       />
     </Tabs>

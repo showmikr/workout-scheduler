@@ -9,7 +9,7 @@ import {
   Pressable,
   SectionListData,
 } from "react-native";
-import { twColors } from "../../../constants/Colors";
+import { twColors } from "../../../../constants/Colors";
 
 // hard coded constants based on the sqlite db table "exercise_type"
 export const exerciseEnums = {
@@ -84,7 +84,7 @@ const AddExerciseBtn = ({ workoutId }: { workoutId: string }) => {
       })}
       onPress={() => {
         router.push({
-          pathname: "/(app)/workout/add-exercise/[workoutId]",
+          pathname: "/(app)/(tabs)/workout/add-exercise/[workoutId]",
           params: { workoutId: workoutId },
         });
       }}

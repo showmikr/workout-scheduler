@@ -17,7 +17,7 @@ import {
   StyleSheet,
 } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { twColors } from "../../../../constants/Colors";
+import { twColors } from "../../../../../constants/Colors";
 
 type ExerciseSetInput = Pick<ExerciseSetParams, "reps" | "rest_time" | "title">;
 type ResistanceSetInput = Pick<ResistanceSetParams, "total_weight"> &
