@@ -1,6 +1,6 @@
 import { useSQLiteContext } from "expo-sqlite/next";
 import { StatusBar } from "expo-status-bar";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
   Platform,
   Text,
@@ -12,10 +12,13 @@ import {
 import Animated from "react-native-reanimated";
 import { twColors } from "../../../../constants/Colors";
 import { router } from "expo-router";
+import { useWorkoutsContext } from "./_layout";
+import { TaggedWorkout } from ".";
 
 export default function NewWorkoutModal() {
   const colorScheme = useColorScheme();
   const db = useSQLiteContext();
+  const [_, workoutsDispatch] = useWorkoutsContext();
 
   const workoutCount =
     db.getFirstSync<{ workout_count: number }>(
@@ -86,6 +89,12 @@ export default function NewWorkoutModal() {
         })}
         onPress={() => {
           const newWorkoutId = addNewEmptyWorkout();
+          const newWorkout: TaggedWorkout = {
+            id: newWorkoutId,
+            tags: [],
+            title,
+          };
+          workoutsDispatch({ type: "add_new_workout", newWorkout });
           router.replace(`/workout/${newWorkoutId}`);
         }}
       >
