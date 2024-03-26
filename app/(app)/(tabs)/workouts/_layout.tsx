@@ -28,7 +28,7 @@ export default function TabTwoLayout() {
                     fontSize: 18,
                     padding: 8,
                   }}
-                  href="/workout/new-workout-modal"
+                  href="/workouts/new-workout-modal"
                 >
                   New Workout
                 </Link>

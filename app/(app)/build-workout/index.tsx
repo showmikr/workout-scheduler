@@ -9,7 +9,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Link, router, useLocalSearchParams } from "expo-router";
-import { ExerciseEnums } from "../(tabs)/workout/[workoutId]";
+import { ExerciseEnums } from "../(tabs)/workouts/[workoutId]";
 
 type ExerciseClassParams = {
   id: number;

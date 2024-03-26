@@ -18,7 +18,7 @@ import {
   ExerciseSetParams,
   ResistanceSetParams,
   exerciseEnums,
-} from "../(tabs)/workout/[workoutId]";
+} from "../(tabs)/workouts/[workoutId]";
 
 type ExerciseSetInput = Pick<ExerciseSetParams, "reps" | "rest_time"> & {
   inputId: number;
