@@ -1,3 +1,23 @@
+# Expo SQLite Footgun
+
+Turns out expo-sqlite's `getFirstSync()` and `getFirstAsync()` functions for querying data can actually run TWICE for `INSERT` statements when you don't provide a `RETURNING` statement in the query. You might be wondering "Why would you use a `get` function for an `INSERT` query?" Well, the use case is to get back the id of the newly inserted row, which I make use of when I add a new workout. I encountered this footgun when I was trying to insert a new empty exercise into a specific workout where I ran `getFirstSync()` to insert a new exercise row into the database. The problem was, my query was written as
+
+```sql
+INSERT INTO exercise (exercise_class_id, workout_id, list_order)
+VALUES (?, ?, ?)
+```
+
+When I ran the function, it actually wrote TWO new exercise entries into the exercise table and it was all b/c I forgot to include `RETURNING` like in this statement:
+
+```sql
+INSERT INTO exercise (exercise_class_id, workout_id, list_order)
+VALUES (?, ?, ?)
+RETURNING exercise.id;
+```
+
+This statement correctly inserts just ONE entry into the database. So, the lesson is:
+**Don't use `getFirstSync()` or `getFirstAsync()` for `INSERT` queries without forgetting to append a `RETURNING` clause**
+
 # Nativewind Footgun
 
 Using the "active:" pseudo-class is a footgun. It seems to freeze or reset state within any component that uses it. I had a real nasty problem using it with a submit button that was meant to add a workout using a workout title that I set as state. I set the submit button to use "active:opacity-50" to make the button transparent on press and also log the workout title to the console. On press, the button instead didn't log anything and it was b/c it looks like the "active:" pseudo class either reset the state of the title input or froze the state. Point in case, **the "active:" pseudo class is a dangerous.** Do not use it with Nativewind.

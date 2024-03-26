@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS "workout_days" (
 
 CREATE TABLE IF NOT EXISTS "exercise" (
   "id" INTEGER PRIMARY KEY,
-  "exercise_class_id" bigint,
+  "exercise_class_id" bigint NOT NULL,
   "workout_id" bigint NOT NULL,
   "exercise_equipment_id" bigint,
   "list_order" int NOT NULL,

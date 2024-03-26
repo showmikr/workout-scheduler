@@ -1,8 +1,8 @@
 import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite/next";
-import { ExerciseEnums } from "../[workoutId]";
+import { ExerciseEnums } from "..";
 import { useState } from "react";
 import { SafeAreaView, Text } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 
 type ExerciseClassParams = {
   id: number;
@@ -35,16 +35,38 @@ export default function AddExerciseIndex() {
   const db = useSQLiteContext();
   const availableExercises = useExerciseClasses(db);
 
+  const handleAddExercise = (exClass: ExerciseClassParams) => {
+    const { exercise_count } = db.getFirstSync<{ exercise_count: number }>(
+      `
+      SELECT COUNT(id) as exercise_count 
+      FROM exercise 
+      WHERE workout_id = ?;
+      `,
+      workoutId
+    ) ?? { exercise_count: 0 };
+    db.runSync(
+      `
+      INSERT INTO exercise (exercise_class_id, workout_id, list_order)
+      VALUES (?, ?, ?);
+      `,
+      [exClass.id, workoutId, exercise_count + 1]
+    );
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       {availableExercises.length > 0 ?
         availableExercises.map((exerciseClass) => (
-          <Text
+          <Link
+            href={`/workouts/${workoutId}`}
             key={exerciseClass.id}
-            className="text-3xl text-black dark:text-white"
+            className="pb-2 pl-4 pt-2 text-3xl text-black dark:text-white"
+            onPress={() => {
+              handleAddExercise(exerciseClass);
+            }}
           >
             {exerciseClass.title}
-          </Text>
+          </Link>
         ))
       : <Text className="text-3xl text-black dark:text-white">Loading...</Text>}
     </SafeAreaView>
