@@ -43,6 +43,7 @@ export default function TabTwoLayout() {
             presentation: "modal",
           }}
         />
+        <Stack.Screen name="[workoutId]" />
       </Stack>
     </WorkoutsContext.Provider>
   );

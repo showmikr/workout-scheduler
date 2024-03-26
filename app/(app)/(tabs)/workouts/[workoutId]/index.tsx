@@ -9,7 +9,7 @@ import {
   Pressable,
   SectionListData,
 } from "react-native";
-import { twColors } from "../../../../constants/Colors";
+import { twColors } from "../../../../../constants/Colors";
 
 // hard coded constants based on the sqlite db table "exercise_type"
 export const exerciseEnums = {
