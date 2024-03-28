@@ -513,7 +513,7 @@ export default function Graph() {
       (obj) => obj.exerciseClassName === personalRecordExercise
     )!;
 
-    // When filterRes finds no matches relating to the exercise for pr's, we return null
+    // When filterRes finds no matches relating to the exercise for pr's, we return []
     if (!filterRes) {
       return [];
     }
@@ -1325,9 +1325,12 @@ const summaryGrid = StyleSheet.create({
 
 /* Summary Page Tasks - Priority is functionality
 
+Completed = ✔️
+Current Task = 🔨
+Next Tasks = ⚠️
 Other
+- display activity cards ⚠️
 - add goals button [top nav right side]
-- display activity cards
 - refactor code to reduce repeated code [averaging function for example]
 - pretty up "figmatize" page
 
@@ -1335,7 +1338,15 @@ Graph Section
 - display personal record lines ✔️
     * remove personalrecordhistory from averageplotdata and plot directly ✔️
     * change between different pr's ✔️
-- create personal record summary view (curr)
+- create personal record summary view 🔨
+Preview
+
+    Summary
+                    Trend		    Current
+    Weight			    +34lbs/y	  179.67kg
+    Body %			    +5%			    250%
+    Against Average	-			      +70%  --This section represents a comparing your pr with other people the same age or weight
+
 - revisit weight summary metrics to confirm stats
 - change trend formula to indicate a linear regression
 - fixed up BarChart to better reflex linechart style
