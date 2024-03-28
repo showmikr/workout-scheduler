@@ -60,7 +60,7 @@ type GraphData = {
 };
 /* 
 Extracts out all sql data queries for the graph page into a single hook.
-Basically, we can now gaurantee that all data necessary for the graph page
+Basically, we can now guarantee that all data necessary for the graph page
 will be NON-NULL - this means no more defensive 'data?.property' accesses from now on! 
 */
 function useGraphData() {
@@ -225,6 +225,86 @@ export default function Graph() {
   let rawInputLastIdx: number | null = 0;
   let PrFirstVal = 0;
   let PrLastVal = 0;
+
+  // Function components
+  function Card() {
+    return (
+      <View
+        className="flex flex-row"
+        style={{
+          backgroundColor: "#0D0D0D",
+          width: 350,
+          borderColor: "grey",
+          borderRadius: 5,
+          borderWidth: 2,
+          marginTop: 10,
+          padding: 5,
+        }}
+      >
+        <Text
+          style={{
+            backgroundColor: "#A53535",
+            width: 50,
+            height: 50,
+            fontWeight: "normal",
+          }}
+        ></Text>
+        <View
+          style={{
+            backgroundColor: "#0D0D0D",
+            justifyContent: "space-evenly",
+            left: 5,
+          }}
+        >
+          <Text
+            style={{
+              color: "gray",
+              fontSize: 20,
+            }}
+          >
+            Upperbody Workout
+          </Text>
+          <View
+            className="flex flex-row"
+            style={{
+              backgroundColor: "#0D0D0D",
+            }}
+          >
+            <Text
+              style={{
+                // borderColor: "grey",
+                // borderRadius: 5,
+                // borderWidth: 1,
+                color: "#A53535",
+                fontSize: 16,
+                width: 175,
+              }}
+            >
+              300 cal
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                backgroundColor: "#0D0D0D",
+                width: 100,
+              }}
+            >
+              <Text
+                style={{
+                  color: "gray",
+                  fontSize: 16,
+                  fontWeight: "300",
+                }}
+              >
+                08/24/24
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   // returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
@@ -992,7 +1072,7 @@ export default function Graph() {
                         </Text>
                       </View>
                       <View
-                        className="flex flex-row "
+                        className="flex flex-row"
                         style={summaryGrid.viewRows}
                       >
                         <Text style={summaryGrid.text}>Workouts</Text>
@@ -1002,7 +1082,7 @@ export default function Graph() {
                         <Text style={summaryGrid.text}></Text>
                       </View>
                       <View
-                        className="flex flex-row "
+                        className="flex flex-row"
                         style={summaryGrid.viewRows}
                       >
                         <Text style={summaryGrid.text}>Time</Text>
@@ -1046,7 +1126,7 @@ export default function Graph() {
                         </Text>
                       </View>
                       <View
-                        className="flex flex-row "
+                        className="flex flex-row"
                         style={summaryGrid.viewRows}
                       >
                         <Text style={summaryGrid.text}>Calories</Text>
@@ -1219,6 +1299,7 @@ export default function Graph() {
                             PrFirstVal /
                               bodyWeightData[bodyWeightData.length - 1].weight
                           ).toFixed(2)}
+                          {"%"}
                         </Text>
                         <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
                           {(
@@ -1246,7 +1327,7 @@ export default function Graph() {
                                 .weight) *
                               100) %
                             100
-                          ).toFixed(2)}
+                          ).toFixed(1)}
                           {"%"}
                         </Text>
                       </View>
@@ -1254,19 +1335,36 @@ export default function Graph() {
                         className="flex flex-row "
                         style={summaryGrid.viewRows}
                       >
-                        <Text style={summaryGrid.text}>VS Average</Text>
-                        <Text style={[summaryGrid.text, { color: "#A53535" }]}>
-                          -
+                        <Text style={summaryGrid.text}>
+                          {
+                            "" /* vs Average [hidden until futher implementation and discussion]*/
+                          }
                         </Text>
-                        <Text style={[summaryGrid.text, { color: "#A53535" }]}>
-                          -
-                        </Text>
+                        <Text
+                          style={[summaryGrid.text, { color: "#A53535" }]}
+                        ></Text>
+                        <Text
+                          style={[summaryGrid.text, { color: "#A53535" }]}
+                        ></Text>
                       </View>
                     </>
                   );
               }
             })()
           }
+        </View>
+
+        {/* activity view */}
+        <View
+          style={{
+            justifyContent: "center",
+            backgroundColor: "#0D0D0D",
+            marginLeft: 10,
+            marginTop: 15,
+          }}
+        >
+          <Text style={[summaryGrid.mainTitle]}>Activity</Text>
+          <Card></Card>
         </View>
       </View>
     </>
@@ -1328,32 +1426,25 @@ const summaryGrid = StyleSheet.create({
 Completed = ✔️
 Current Task = 🔨
 Next Tasks = ⚠️
+Needs Consideration = ❗
+
 Other
-- display activity cards ⚠️
-- add goals button [top nav right side]
+- display activity cards 🔨
+- add goals button [top nav right side] ⚠️
 - refactor code to reduce repeated code [averaging function for example]
 - pretty up "figmatize" page
+- GitHub project board
+- Readme update
 
 Graph Section
-- display personal record lines ✔️
-    * remove personalrecordhistory from averageplotdata and plot directly ✔️
-    * change between different pr's ✔️
-- create personal record summary view 🔨
-Preview
-
-    Summary
-                    Trend		    Current
-    Weight			    +34lbs/y	  179.67kg
-    Body %			    +5%			    250%
-    Against Average	-			      +70%  --This section represents a comparing your pr with other people the same age or weight
+- create personal record summary view [vs Average row] ❗ (many different exercises have different standards, only support the popular exercise? https://strengthlevel.com/strength-standards/bench-press/lb)
 
 - revisit weight summary metrics to confirm stats
 - change trend formula to indicate a linear regression
-- fixed up BarChart to better reflex linechart style
+- fixed up BarChart to better reflex linechart style 
 - allow graph x-axis start to be more dynamic (not always 0)
 
 - tooltip modification (not priority)
-    * round interpolated values ✔️
     * center tooltip from focused datapoint vertical line 
     * prevent tooltip from reaching out of bounds
     * prevent data bubble to appear when hovering over goal line
