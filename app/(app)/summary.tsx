@@ -272,9 +272,6 @@ export default function Graph() {
           >
             <Text
               style={{
-                // borderColor: "grey",
-                // borderRadius: 5,
-                // borderWidth: 1,
                 color: "#A53535",
                 fontSize: 16,
                 width: 175,
@@ -1002,7 +999,7 @@ export default function Graph() {
           style={{
             backgroundColor: "#0D0D0D",
             justifyContent: "space-evenly",
-            paddingTop: 10,
+            marginTop: 10,
           }}
         >
           {graphDataTypeButtons.map((title) => {
@@ -1015,7 +1012,6 @@ export default function Graph() {
                   justifyContent: "center",
                   paddingVertical: 4,
                   paddingHorizontal: 4,
-                  marginLeft: 7,
                   borderRadius: 4,
                   elevation: 3,
                   width: 120,
