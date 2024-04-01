@@ -1,14 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
-import {
-  Text,
-  SafeAreaView,
-  View,
-  SectionList,
-  Pressable,
-  SectionListData,
-} from "react-native";
+import { Text, SafeAreaView, View, Pressable, FlatList } from "react-native";
 import { twColors } from "../../../../../constants/Colors";
 
 // hard coded constants based on the sqlite db table "exercise_type"
@@ -237,44 +230,20 @@ export default function WorkoutDetails() {
         </Text>
         <Text className="text-3xl dark:text-white">Exercise List</Text>
       </View>
-      <SectionList
-        sections={
-          sectionData as SectionListData<
-            UnifiedResistanceSet | UnifiedCardioSet, // Union item type here, but each section has a distinct array type
-            ExerciseSection // This is the true type of each section
-          >[]
+      <FlatList
+        data={sectionData}
+        keyExtractor={(item) => item.exercise.exercise_id.toString()}
+        renderItem={({ item }) =>
+          item.exercise.exercise_type_id === exerciseEnums["RESISTANCE_ENUM"] ?
+            <ResistanceExerciseCard
+              title={item.exercise.title}
+              sets={item.data as UnifiedResistanceSet[]}
+            />
+          : <CardioExerciseCard
+              title={item.exercise.title}
+              sets={item.data as UnifiedCardioSet[]}
+            />
         }
-        keyExtractor={(item, _index) => {
-          return item.exercise_set_id.toString();
-        }}
-        renderSectionHeader={({ section: { exercise } }) => (
-          <View className="bg-black pl-4">
-            <Text className="text-3xl font-bold dark:text-white">
-              {exercise.title}
-            </Text>
-          </View>
-        )}
-        renderItem={({ item, index, section }) => {
-          return (
-            <Text className="pl-4 text-xl dark:text-white">
-              {item.title}
-              {"    "}
-              Reps: {item.reps}
-              {"    "}
-              Rest: {item.rest_time}s{"    "}
-              {"resistance_set_id" in item ?
-                <Text>{item.total_weight}kg</Text>
-              : <Text className="text-xl dark:text-white">
-                  Target Distance:{" "}
-                  {item.target_distance ? item.target_distance + "m" : "null"}
-                  {"    "}
-                  Target Time:{" "}
-                  {item.target_time ? item.target_time + "s" : "null"}
-                </Text>
-              }
-            </Text>
-          );
-        }}
       />
       <AddExerciseBtn workoutId={workoutId} />
     </SafeAreaView>
