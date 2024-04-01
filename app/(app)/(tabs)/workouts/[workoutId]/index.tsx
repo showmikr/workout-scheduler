@@ -106,8 +106,6 @@ const ResistanceExerciseCard = ({
       </Text>
       {sets.map((set) => (
         <Text key={set.exercise_set_id} className="text-xl dark:text-white">
-          {title}
-          {"    "}
           Reps: {set.reps}
           {"    "}
           Rest: {set.rest_time}s{"    "}
@@ -132,8 +130,6 @@ const CardioExerciseCard = ({
       </Text>
       {sets.map((set) => (
         <Text className="text-xl dark:text-white">
-          {title}
-          {"    "}
           Reps: {set.reps}
           {"    "}
           Rest: {set.rest_time}s{"    "}
