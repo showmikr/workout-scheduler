@@ -100,13 +100,12 @@ const ResistanceExerciseCard = ({
   sets: UnifiedResistanceSet[];
 }) => {
   return (
-    <View>
-      <Text className="text-3xl text-black dark:text-white">{title}</Text>
+    <View className="pb-4 pl-4">
+      <Text className="text-3xl font-bold text-black dark:text-white">
+        {title}
+      </Text>
       {sets.map((set) => (
-        <Text
-          key={set.exercise_set_id}
-          className="pl-4 text-xl dark:text-white"
-        >
+        <Text key={set.exercise_set_id} className="text-xl dark:text-white">
           {title}
           {"    "}
           Reps: {set.reps}
@@ -127,10 +126,12 @@ const CardioExerciseCard = ({
   sets: UnifiedCardioSet[];
 }) => {
   return (
-    <View>
-      <Text className="text-3xl text-black dark:text-white">{title}</Text>
+    <View className="pb-4 pl-4">
+      <Text className=" text-3xl font-bold text-black dark:text-white">
+        {title}
+      </Text>
       {sets.map((set) => (
-        <Text className="pl-4 text-xl dark:text-white">
+        <Text className="text-xl dark:text-white">
           {title}
           {"    "}
           Reps: {set.reps}
