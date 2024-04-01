@@ -99,6 +99,33 @@ const AddExerciseBtn = ({ workoutId }: { workoutId: string }) => {
   );
 };
 
+const ResistanceExerciseCard = ({
+  title,
+  sets,
+}: {
+  title: string;
+  sets: UnifiedResistanceSet[];
+}) => {
+  return (
+    <View>
+      <Text className="text-3xl text-black dark:text-white">{title}</Text>
+      {sets.map((set) => (
+        <Text
+          key={set.exercise_set_id}
+          className="pl-4 text-xl dark:text-white"
+        >
+          {title}
+          {"    "}
+          Reps: {set.reps}
+          {"    "}
+          Rest: {set.rest_time}s{"    "}
+          {set.total_weight}kg
+        </Text>
+      ))}
+    </View>
+  );
+};
+
 export default function WorkoutDetails() {
   const { workoutId } = useLocalSearchParams<{ workoutId: string }>();
   const db = useSQLiteContext();
