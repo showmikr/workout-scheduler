@@ -126,6 +126,33 @@ const ResistanceExerciseCard = ({
   );
 };
 
+const CardioExerciseCard = ({
+  title,
+  sets,
+}: {
+  title: string;
+  sets: UnifiedCardioSet[];
+}) => {
+  return (
+    <View>
+      <Text className="text-3xl text-black dark:text-white">{title}</Text>
+      {sets.map((set) => (
+        <Text className="pl-4 text-xl dark:text-white">
+          {title}
+          {"    "}
+          Reps: {set.reps}
+          {"    "}
+          Rest: {set.rest_time}s{"    "}
+          Target Distance:{" "}
+          {set.target_distance ? set.target_distance + "m" : "null"}
+          {"    "}
+          Target Time: {set.target_time ? set.target_time + "s" : "null"}
+        </Text>
+      ))}
+    </View>
+  );
+};
+
 export default function WorkoutDetails() {
   const { workoutId } = useLocalSearchParams<{ workoutId: string }>();
   const db = useSQLiteContext();
