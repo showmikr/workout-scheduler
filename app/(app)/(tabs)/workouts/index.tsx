@@ -18,10 +18,8 @@ export default function TabTwoScreen() {
       <FlatList
         className="w-full flex-1"
         data={workouts}
-        renderItem={({ item }: { item: TaggedWorkout }) => (
-          <WorkoutCard workout={item} />
-        )}
-        keyExtractor={(item: TaggedWorkout) => item.id.toString()}
+        renderItem={({ item }) => <WorkoutCard workout={item} />}
+        keyExtractor={(item) => item.id.toString()}
       />
     </View>
   );
