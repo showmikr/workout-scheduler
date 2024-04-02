@@ -3,6 +3,7 @@ import { View } from "../../components/Themed";
 import { Text, Pressable, StyleSheet, TextStyle } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
+//import { ResistanceIcon } from '../../assets/Icons/resistance_icon.svg'
 
 type WorkoutSession = {
   title: string;
@@ -204,7 +205,7 @@ export default function Graph() {
     );
   }
 
-  // Beyond this point, we have a gaurantee that all graph related data is NON-NULL
+  // Beyond this point, we have a guarantee that all graph related data is NON-NULL
   const {
     workoutSessionData,
     bodyWeightData,
@@ -233,7 +234,7 @@ export default function Graph() {
         className="flex flex-row"
         style={{
           backgroundColor: "#0D0D0D",
-          width: 350,
+          width: 370,
           borderColor: "grey",
           borderRadius: 5,
           borderWidth: 2,
@@ -258,8 +259,11 @@ export default function Graph() {
         >
           <Text
             style={{
-              color: "gray",
-              fontSize: 20,
+              color: "#BDBDBD",
+              fontSize: 16,
+              // borderColor: "grey",
+              // borderRadius: 1,
+              // borderWidth: 1,
             }}
           >
             Upperbody Workout
@@ -273,8 +277,11 @@ export default function Graph() {
             <Text
               style={{
                 color: "#A53535",
-                fontSize: 16,
+                fontSize: 22,
                 width: 175,
+                // borderColor: "grey",
+                // borderRadius: 1,
+                // borderWidth: 1,
               }}
             >
               300 cal
@@ -284,14 +291,18 @@ export default function Graph() {
                 flexDirection: "row",
                 justifyContent: "flex-end",
                 backgroundColor: "#0D0D0D",
-                width: 100,
+                width: 120,
+                paddingTop: 10,
+                // borderColor: "grey",
+                // borderRadius: 1,
+                // borderWidth: 1,
               }}
             >
               <Text
                 style={{
                   color: "gray",
-                  fontSize: 16,
-                  fontWeight: "300",
+                  fontSize: 14,
+                  //fontWeight: "300",
                 }}
               >
                 08/24/24
@@ -928,6 +939,7 @@ export default function Graph() {
                     justifyContent: "center",
                     paddingVertical: 4,
                     paddingHorizontal: 4,
+                    marginLeft: 7,
                     borderRadius: 4,
                     elevation: 3,
                     width: 120,
