@@ -1,9 +1,9 @@
 import { BarChart, LineChart, yAxisSides } from "react-native-gifted-charts";
 import { View } from "../../components/Themed";
-import { Text, Pressable, StyleSheet, TextStyle } from "react-native";
+import { Text, Pressable, StyleSheet, TextStyle, Image } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
-//import { ResistanceIcon } from '../../assets/Icons/resistance_icon.svg'
+import ResistanceIcon from "../../assets/icons/resistance_icon_grey.svg";
 
 type WorkoutSession = {
   title: string;
@@ -228,7 +228,7 @@ export default function Graph() {
   let PrLastVal = 0;
 
   // Function components
-  function Card() {
+  function ActivityCard() {
     return (
       <View
         className="flex flex-row"
@@ -242,14 +242,16 @@ export default function Graph() {
           padding: 5,
         }}
       >
-        <Text
+        <ResistanceIcon width={45} height={45} />
+        {/* <Image
+          source={require("../../assets/icons/resistance_icon_grey.svg")}
           style={{
-            backgroundColor: "#A53535",
             width: 50,
             height: 50,
-            fontWeight: "normal",
+            //   borderRadius: 10,
+            //   backgroundColor: "#A53535",
           }}
-        ></Text>
+        ></Image> */}
         <View
           style={{
             backgroundColor: "#0D0D0D",
@@ -1372,7 +1374,7 @@ export default function Graph() {
           }}
         >
           <Text style={[summaryGrid.mainTitle]}>Activity</Text>
-          <Card></Card>
+          <ActivityCard></ActivityCard>
         </View>
       </View>
     </>
