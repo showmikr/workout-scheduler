@@ -1,6 +1,12 @@
 import { BarChart, LineChart, yAxisSides } from "react-native-gifted-charts";
 import { View } from "../../components/Themed";
-import { Text, Pressable, StyleSheet, TextStyle, Image } from "react-native";
+import {
+  Text,
+  Pressable,
+  StyleSheet,
+  TextStyle,
+  ScrollView,
+} from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
 import ResistanceIcon from "../../assets/icons/resistance_icon_grey.svg";
@@ -227,8 +233,16 @@ export default function Graph() {
   let PrFirstVal = 0;
   let PrLastVal = 0;
 
+  workoutSessionData.forEach((obj) => {
+    console.log(obj);
+  });
+
   // Function components
-  function ActivityCard() {
+  function ActivityCard(props: {
+    title: string;
+    calories: number;
+    date: Date;
+  }) {
     return (
       <View
         className="flex flex-row"
@@ -243,15 +257,6 @@ export default function Graph() {
         }}
       >
         <ResistanceIcon width={45} height={45} />
-        {/* <Image
-          source={require("../../assets/icons/resistance_icon_grey.svg")}
-          style={{
-            width: 50,
-            height: 50,
-            //   borderRadius: 10,
-            //   backgroundColor: "#A53535",
-          }}
-        ></Image> */}
         <View
           style={{
             backgroundColor: "#0D0D0D",
@@ -268,7 +273,7 @@ export default function Graph() {
               // borderWidth: 1,
             }}
           >
-            Upperbody Workout
+            {props.title}
           </Text>
           <View
             className="flex flex-row"
@@ -286,7 +291,7 @@ export default function Graph() {
                 // borderWidth: 1,
               }}
             >
-              300 cal
+              {props.calories}
             </Text>
             <View
               style={{
@@ -307,7 +312,7 @@ export default function Graph() {
                   //fontWeight: "300",
                 }}
               >
-                08/24/24
+                {props.date.toDateString()}
               </Text>
             </View>
           </View>
@@ -718,7 +723,7 @@ export default function Graph() {
   }
 
   return (
-    <>
+    <ScrollView>
       {/* graph type button */}
       <View
         style={{
@@ -1374,10 +1379,34 @@ export default function Graph() {
           }}
         >
           <Text style={[summaryGrid.mainTitle]}>Activity</Text>
-          <ActivityCard></ActivityCard>
+          <ActivityCard
+            calories={300}
+            title={"Upperbody Workout"}
+            date={new Date()}
+          />
+          <ActivityCard
+            calories={320}
+            title={"Upperbody Workout"}
+            date={new Date()}
+          />
+          <ActivityCard
+            calories={340}
+            title={"Upperbody Workout"}
+            date={new Date()}
+          />
+          <ActivityCard
+            calories={240}
+            title={"Upperbody Workout"}
+            date={new Date()}
+          />
+          <ActivityCard
+            calories={450}
+            title={"Upperbody Workout"}
+            date={new Date()}
+          />
         </View>
       </View>
-    </>
+    </ScrollView>
   );
 }
 
