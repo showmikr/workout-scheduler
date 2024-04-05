@@ -279,13 +279,18 @@ export default function Graph() {
             className="flex flex-row"
             style={{
               backgroundColor: "#0D0D0D",
+              width: 300,
+              alignItems: "baseline",
+              // borderColor: "pink",
+              // borderRadius: 1,
+              // borderWidth: 1,
             }}
           >
             <Text
               style={{
                 color: "#A53535",
                 fontSize: 22,
-                width: 175,
+                textAlign: "left",
                 // borderColor: "grey",
                 // borderRadius: 1,
                 // borderWidth: 1,
@@ -293,28 +298,33 @@ export default function Graph() {
             >
               {props.calories}
             </Text>
-            <View
+            <Text
               style={{
-                flexDirection: "row",
-                justifyContent: "flex-end",
-                backgroundColor: "#0D0D0D",
-                width: 120,
-                paddingTop: 10,
-                // borderColor: "grey",
+                color: "#A53535",
+                fontSize: 17,
+                textAlign: "left",
+                // borderColor: "blue",
                 // borderRadius: 1,
                 // borderWidth: 1,
               }}
             >
-              <Text
-                style={{
-                  color: "gray",
-                  fontSize: 14,
-                  //fontWeight: "300",
-                }}
-              >
-                {props.date.toDateString()}
-              </Text>
-            </View>
+              {"CAL"}
+            </Text>
+
+            <Text
+              style={{
+                color: "gray",
+                fontSize: 14,
+                //fontWeight: "300",
+                flex: 1,
+                textAlign: "right",
+                // borderColor: "red",
+                // borderRadius: 1,
+                // borderWidth: 1,
+              }}
+            >
+              {props.date.toDateString()}
+            </Text>
           </View>
         </View>
       </View>
@@ -1384,26 +1394,17 @@ export default function Graph() {
             title={"Upperbody Workout"}
             date={new Date()}
           />
-          <ActivityCard
-            calories={320}
-            title={"Upperbody Workout"}
-            date={new Date()}
-          />
-          <ActivityCard
-            calories={340}
-            title={"Upperbody Workout"}
-            date={new Date()}
-          />
-          <ActivityCard
-            calories={240}
-            title={"Upperbody Workout"}
-            date={new Date()}
-          />
-          <ActivityCard
-            calories={450}
-            title={"Upperbody Workout"}
-            date={new Date()}
-          />
+          {workoutSessionData.map((obj) => {
+            return (
+              <>
+                <ActivityCard
+                  calories={obj.calories}
+                  title={obj.title}
+                  date={obj.date}
+                />
+              </>
+            );
+          })}
         </View>
       </View>
     </ScrollView>
@@ -1476,8 +1477,10 @@ Other
 - Readme update
 
 Graph Section
-- create personal record summary view [vs Average row] ❗ (many different exercises have different standards, only support the popular exercise? https://strengthlevel.com/strength-standards/bench-press/lb)
-
+- create personal record summary view [vs Average row] ❗ (many different exercises have different standards, only support the popular exercise?https://strengthlevel.com/strength-standards/bench-press/lb)
+- discuss whether to keep tooltip or replace in favor of static info bubble area
+    * consider wasted space with tooltip and ui element placement (refer to figma)
+    * consider user experience and expectation (look into the goods as reference) 
 - revisit weight summary metrics to confirm stats
 - change trend formula to indicate a linear regression
 - fixed up BarChart to better reflex linechart style 
