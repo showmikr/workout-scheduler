@@ -232,10 +232,7 @@ export default function Graph() {
   let rawInputLastIdx: number | null = 0;
   let PrFirstVal = 0;
   let PrLastVal = 0;
-
-  workoutSessionData.forEach((obj) => {
-    console.log(obj);
-  });
+  let selectedTimeRange: Date = new Date();
 
   // Function components
   function ActivityCard(props: {
@@ -268,9 +265,6 @@ export default function Graph() {
             style={{
               color: "#BDBDBD",
               fontSize: 16,
-              // borderColor: "grey",
-              // borderRadius: 1,
-              // borderWidth: 1,
             }}
           >
             {props.title}
@@ -281,9 +275,6 @@ export default function Graph() {
               backgroundColor: "#0D0D0D",
               width: 300,
               alignItems: "baseline",
-              // borderColor: "pink",
-              // borderRadius: 1,
-              // borderWidth: 1,
             }}
           >
             <Text
@@ -291,9 +282,6 @@ export default function Graph() {
                 color: "#A53535",
                 fontSize: 22,
                 textAlign: "left",
-                // borderColor: "grey",
-                // borderRadius: 1,
-                // borderWidth: 1,
               }}
             >
               {props.calories}
@@ -303,9 +291,6 @@ export default function Graph() {
                 color: "#A53535",
                 fontSize: 17,
                 textAlign: "left",
-                // borderColor: "blue",
-                // borderRadius: 1,
-                // borderWidth: 1,
               }}
             >
               {"CAL"}
@@ -315,12 +300,8 @@ export default function Graph() {
               style={{
                 color: "gray",
                 fontSize: 14,
-                //fontWeight: "300",
                 flex: 1,
                 textAlign: "right",
-                // borderColor: "red",
-                // borderRadius: 1,
-                // borderWidth: 1,
               }}
             >
               {props.date.toDateString()}
@@ -431,7 +412,6 @@ export default function Graph() {
       MONTH_MS * 6 < Date.now() - transformData[0].date.getTime()
     ) {
       // Greater than 1 year -> average months
-      console.log("1 year view");
       let idx = 0;
       let first = getFirstDayOfMonth(transformData[0].date);
       let last = getLastDayOfMonth(transformData[0].date);
@@ -469,8 +449,6 @@ export default function Graph() {
       transformData.length > 0 &&
       MONTH_MS < Date.now() - transformData[0].date.getTime()
     ) {
-      console.log("3-6 month view");
-
       let idx = 0;
       let first = getFirstDayOfWeek(transformData[0].date);
       let last = getLastDayOfWeek(transformData[0].date);
@@ -522,7 +500,6 @@ export default function Graph() {
       WEEK_MS < Date.now() - transformData[0].date.getTime()
     ) {
       // Greater than 1 month -> keep data as is (just calculate totals)
-      console.log("1 month view");
       let idx = 0;
       let first = new Date(transformData[0].date);
       let last = new Date();
@@ -559,7 +536,6 @@ export default function Graph() {
       }
     } else {
       // Data is equal (=) or less than (<) week -> Interpolate to correctly show day to day spacing for a week
-      console.log("1 week view");
       let idx = 0;
       let first = new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS);
       const last = new Date();
@@ -613,7 +589,6 @@ export default function Graph() {
     }
   }
   function normalizePrData(data: PersonalRecordHistory[]): SessionData[] {
-    console.log("Filtered Result");
     let filterRes = (data as PersonalRecordHistory[]).find(
       (obj) => obj.exerciseClassName === personalRecordExercise
     )!;
@@ -628,18 +603,12 @@ export default function Graph() {
       date: record.date,
     })) as SessionData[];
 
-    mappedRes.forEach((obj) => {
-      console.log(obj);
-    });
-
     if (mappedRes && mappedRes?.length > 1) {
       rawInputLength = mappedRes?.length;
       PrFirstVal = mappedRes[0].value!;
       PrLastVal = mappedRes[mappedRes.length - 1].value!;
     }
-    console.log("Test value: " + mappedRes![0].value);
-    console.log("Test value: " + mappedRes![mappedRes!.length - 1].value);
-    console.log("Test value: " + mappedRes?.length);
+
     return mappedRes;
   }
 
@@ -658,57 +627,43 @@ export default function Graph() {
   if (!(graphDataType === "personal record")) {
     // button range logic
     if (graphRange === "1W") {
+      selectedTimeRange = new Date(
+        getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS
+      );
       graphInput = averagePlotData(
-        graphInput.filter(
-          (obj: any) =>
-            new Date(obj.date) >
-            new Date(getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS)
-        )
+        graphInput.filter((obj: any) => new Date(obj.date) > selectedTimeRange)
       ) as SessionData[] | null;
     } else if (graphRange === "1M") {
+      selectedTimeRange = new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0));
       graphInput = averagePlotData(
-        graphInput.filter(
-          (obj: any) =>
-            new Date(obj.date) >
-            new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0))
-        )
+        graphInput.filter((obj: any) => new Date(obj.date) > selectedTimeRange)
       );
     } else if (graphRange === "3M") {
+      selectedTimeRange = new Date(getPriorTime(0, 3, 0).setHours(0, 0, 0, 0));
       graphInput = averagePlotData(
-        graphInput.filter(
-          (obj: any) =>
-            new Date(obj.date) >
-            new Date(getPriorTime(0, 3, 0).setHours(0, 0, 0, 0))
-        )
+        graphInput.filter((obj: any) => new Date(obj.date) > selectedTimeRange)
       );
     } else if (graphRange === "6M") {
+      selectedTimeRange = new Date(getPriorTime(0, 6, 0).setHours(0, 0, 0, 0));
       graphInput = averagePlotData(
-        graphInput.filter(
-          (obj: any) =>
-            new Date(obj.date) >
-            new Date(getPriorTime(0, 6, 0).setHours(0, 0, 0, 0))
-        )
+        graphInput.filter((obj: any) => new Date(obj.date) > selectedTimeRange)
       );
     } else if (graphRange === "YTD") {
+      selectedTimeRange = new Date(new Date().getFullYear(), 0, 1);
       graphInput = averagePlotData(
-        graphInput.filter(
-          (obj: any) =>
-            new Date(obj.date) > new Date(new Date().getFullYear(), 0, 1)
-        )!
+        graphInput.filter((obj: any) => new Date(obj.date) > selectedTimeRange)!
       );
     } else if (graphRange === "1Y") {
+      selectedTimeRange = new Date(
+        getLastDayOfMonth(
+          new Date(getPriorTime(0, 0, 1).getTime() + 1)
+        ).setHours(0, 0, 0, 0)
+      );
       graphInput = averagePlotData(
-        graphInput.filter(
-          (obj: any) =>
-            new Date(obj.date) >
-            new Date(
-              getLastDayOfMonth(
-                new Date(getPriorTime(0, 0, 1).getTime() + 1)
-              ).setHours(0, 0, 0, 0)
-            )
-        )!
+        graphInput.filter((obj: any) => new Date(obj.date) > selectedTimeRange)!
       );
     } else {
+      selectedTimeRange = workoutSessionData[0].date;
       graphInput = averagePlotData(graphInput);
     }
   } else {
@@ -1389,22 +1344,21 @@ export default function Graph() {
           }}
         >
           <Text style={[summaryGrid.mainTitle]}>Activity</Text>
-          <ActivityCard
-            calories={300}
-            title={"Upperbody Workout"}
-            date={new Date()}
-          />
-          {workoutSessionData.map((obj) => {
-            return (
-              <>
-                <ActivityCard
-                  calories={obj.calories}
-                  title={obj.title}
-                  date={obj.date}
-                />
-              </>
-            );
-          })}
+
+          {workoutSessionData
+            .reverse()
+            .filter((obj) => obj.date >= selectedTimeRange)
+            .map((obj) => {
+              return (
+                <>
+                  <ActivityCard
+                    calories={obj.calories}
+                    title={obj.title}
+                    date={obj.date}
+                  />
+                </>
+              );
+            })}
         </View>
       </View>
     </ScrollView>
