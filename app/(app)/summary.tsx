@@ -12,6 +12,7 @@ import { useState } from "react";
 import ResistanceIcon from "../../assets/icons/resistance_icon_grey.svg";
 
 type WorkoutSession = {
+  sessionId: number;
   title: string;
   calories: number;
   elapsedTime: number;
@@ -83,7 +84,7 @@ function useGraphData() {
   Promise.all([
     myDB.getAllAsync<any>(
       `
-        SELECT ws.title, ws.calories, SUM(elapsed_time + rest_time) AS elapsed_time, ws.date
+        SELECT ws.title, ws.calories, SUM(elapsed_time + rest_time) AS elapsed_time, ws.date, ws.id
           FROM workout_session AS ws
           LEFT JOIN exercise_session AS es ON ws.id = es.workout_session_id 
           LEFT JOIN set_session AS ess ON es.id = ess.exercise_session_id
@@ -113,8 +114,9 @@ function useGraphData() {
     .then(([calorieRows, bodyWeightRows, userProfile, prRows]) => {
       // Grab workout session calorie data
       const caloriesResults = calorieRows.map((row) => {
-        const { title, calories, elapsed_time, date } = row;
+        const { title, calories, elapsed_time, date, id } = row;
         const readData: WorkoutSession = {
+          sessionId: id,
           title: title,
           calories: calories,
           elapsedTime: elapsed_time,
