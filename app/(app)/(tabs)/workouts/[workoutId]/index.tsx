@@ -1,7 +1,14 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
-import { Text, SafeAreaView, View, Pressable, FlatList } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  SafeAreaView,
+  View,
+  Pressable,
+  FlatList,
+} from "react-native";
 import { twColors } from "../../../../../constants/Colors";
 
 // hard coded constants based on the sqlite db table "exercise_type"
@@ -100,7 +107,7 @@ const ResistanceExerciseCard = ({
   sets: UnifiedResistanceSet[];
 }) => {
   return (
-    <View className="pb-4 pl-4">
+    <View style={exerciseStyles.exerciseCard}>
       <Text className="text-3xl font-bold text-black dark:text-white">
         {title}
       </Text>
@@ -124,7 +131,7 @@ const CardioExerciseCard = ({
   sets: UnifiedCardioSet[];
 }) => {
   return (
-    <View className="pb-4 pl-4">
+    <View style={exerciseStyles.exerciseCard}>
       <Text className=" text-3xl font-bold text-black dark:text-white">
         {title}
       </Text>
@@ -246,3 +253,11 @@ export default function WorkoutDetails() {
     </SafeAreaView>
   );
 }
+
+const exerciseStyles = StyleSheet.create({
+  exerciseCard: {
+    borderBottomWidth: 1,
+    borderBottomColor: twColors.neutral700,
+    padding: 16,
+  },
+});
