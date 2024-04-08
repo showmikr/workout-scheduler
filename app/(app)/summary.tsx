@@ -1347,18 +1347,24 @@ export default function Graph() {
         >
           <Text style={[summaryGrid.mainTitle]}>Activity</Text>
 
+          {
+            // PLEASEEE FIX TO REVERSED!!
+            workoutSessionData.forEach((obj) => {
+              console.log(obj);
+            })!
+          }
           {workoutSessionData
-            .reverse()
             .filter((obj) => obj.date >= selectedTimeRange)
+            .slice()
+            .reverse()
             .map((obj) => {
               return (
-                <>
-                  <ActivityCard
-                    calories={obj.calories}
-                    title={obj.title}
-                    date={obj.date}
-                  />
-                </>
+                <ActivityCard
+                  calories={obj.calories}
+                  title={obj.title}
+                  date={obj.date}
+                  key={obj.sessionId}
+                />
               );
             })}
         </View>
