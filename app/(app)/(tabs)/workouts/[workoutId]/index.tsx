@@ -1,5 +1,5 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { Link, LinkProps, router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import {
   StyleSheet,
@@ -10,6 +10,7 @@ import {
   FlatList,
 } from "react-native";
 import { twColors } from "../../../../../constants/Colors";
+import { useLinkProps } from "@react-navigation/native";
 
 // hard coded constants based on the sqlite db table "exercise_type"
 export const exerciseEnums = {
@@ -100,53 +101,78 @@ const AddExerciseBtn = ({ workoutId }: { workoutId: string }) => {
 };
 
 const ResistanceExerciseCard = ({
+  workoutId,
+  exerciseId,
   title,
   sets,
 }: {
+  workoutId: number;
+  exerciseId: number;
   title: string;
   sets: UnifiedResistanceSet[];
 }) => {
   return (
-    <View style={exerciseStyles.exerciseCard}>
-      <Text className="text-3xl font-bold text-black dark:text-white">
-        {title}
-      </Text>
-      {sets.map((set) => (
-        <Text key={set.exercise_set_id} className="text-xl dark:text-white">
-          Reps: {set.reps}
-          {"    "}
-          Rest: {set.rest_time}s{"    "}
-          {set.total_weight}kg
+    <Link
+      asChild
+      style={exerciseStyles.exerciseCard}
+      href={`/(app)/(tabs)/workouts/${workoutId}/${exerciseId}`}
+    >
+      <Pressable>
+        <Text className="text-3xl font-bold text-black dark:text-white">
+          {title}
         </Text>
-      ))}
-    </View>
+        {sets.map((set) => (
+          <Text key={set.exercise_set_id} className="text-xl dark:text-white">
+            Reps: {set.reps}
+            {"    "}
+            Rest: {set.rest_time}s{"    "}
+            {set.total_weight}kg
+          </Text>
+        ))}
+      </Pressable>
+    </Link>
   );
 };
 
 const CardioExerciseCard = ({
+  workoutId,
+  exerciseId,
   title,
   sets,
 }: {
+  workoutId: number;
+  exerciseId: number;
   title: string;
   sets: UnifiedCardioSet[];
 }) => {
   return (
-    <View style={exerciseStyles.exerciseCard}>
-      <Text className=" text-3xl font-bold text-black dark:text-white">
-        {title}
-      </Text>
-      {sets.map((set) => (
-        <Text className="text-xl dark:text-white">
-          Reps: {set.reps}
-          {"    "}
-          Rest: {set.rest_time}s{"    "}
-          Target Distance:{" "}
-          {set.target_distance ? set.target_distance + "m" : "null"}
-          {"    "}
-          Target Time: {set.target_time ? set.target_time + "s" : "null"}
+    <Link
+      asChild
+      style={exerciseStyles.exerciseCard}
+      href={`/(app)/(tabs)/workouts/${workoutId}/${exerciseId}`}
+    >
+      <Pressable
+        style={[
+          exerciseStyles.exerciseCard,
+          { borderWidth: 1, borderColor: "green" },
+        ]}
+      >
+        <Text className=" text-3xl font-bold text-black dark:text-white">
+          {title}
         </Text>
-      ))}
-    </View>
+        {sets.map((set) => (
+          <Text className="text-xl dark:text-white">
+            Reps: {set.reps}
+            {"    "}
+            Rest: {set.rest_time}s{"    "}
+            Target Distance:{" "}
+            {set.target_distance ? set.target_distance + "m" : "null"}
+            {"    "}
+            Target Time: {set.target_time ? set.target_time + "s" : "null"}
+          </Text>
+        ))}
+      </Pressable>
+    </Link>
   );
 };
 
@@ -240,10 +266,14 @@ export default function WorkoutDetails() {
         renderItem={({ item }) =>
           item.exercise.exercise_type_id === exerciseEnums["RESISTANCE_ENUM"] ?
             <ResistanceExerciseCard
+              workoutId={parseInt(workoutId)}
+              exerciseId={item.exercise.exercise_id}
               title={item.exercise.title}
               sets={item.data as UnifiedResistanceSet[]}
             />
           : <CardioExerciseCard
+              workoutId={parseInt(workoutId)}
+              exerciseId={item.exercise.exercise_id}
               title={item.exercise.title}
               sets={item.data as UnifiedCardioSet[]}
             />
@@ -261,3 +291,5 @@ const exerciseStyles = StyleSheet.create({
     padding: 16,
   },
 });
+
+export { ResistanceExerciseCard, CardioExerciseCard };
