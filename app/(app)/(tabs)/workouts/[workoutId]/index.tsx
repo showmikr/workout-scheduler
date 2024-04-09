@@ -30,7 +30,7 @@ type ResistanceExerciseParams = {
   exercise_type_id: ExerciseEnums["RESISTANCE_ENUM"];
   title: string;
 };
-type ExerciseParams = CardioExerciseParams | ResistanceExerciseParams;
+export type ExerciseParams = CardioExerciseParams | ResistanceExerciseParams;
 
 export type ExerciseSetParams = {
   exercise_set_id: number;
@@ -51,7 +51,7 @@ export type CardioSetParams = {
 export type UnifiedResistanceSet = ExerciseSetParams & ResistanceSetParams;
 export type UnifiedCardioSet = ExerciseSetParams & CardioSetParams;
 
-type ResistanceSection = {
+export type ResistanceSection = {
   exercise: ResistanceExerciseParams;
   data: UnifiedResistanceSet[];
 };
@@ -67,7 +67,7 @@ type ExerciseEnumsMap = {
   [K in keyof ExerciseSectionMap as ExerciseEnums[K]]: ExerciseSectionMap[K];
 };
 
-type ExerciseSection<
+export type ExerciseSection<
   T extends keyof ExerciseEnumsMap = keyof ExerciseEnumsMap,
 > = {
   [K in keyof ExerciseEnumsMap]: ExerciseEnumsMap[K];
