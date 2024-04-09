@@ -28,7 +28,6 @@ export default function NewWorkoutModal() {
         WHERE app_user_id = 1 AND training_day_id IS NULL;
         `
     )?.workout_count ?? 0;
-  console.log("workoutCount:", workoutCount);
   const defaultTitle = `New Workout #${workoutCount + 1}`;
   const [title, setTitle] = useState(defaultTitle);
 
