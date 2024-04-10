@@ -1,12 +1,9 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { Text, SafeAreaView, View, Pressable, FlatList } from "react-native";
 import { twColors } from "../../../../../constants/Colors";
-import {
-  CardioExerciseCard,
-  ResistanceExerciseCard,
-} from "../../../../../components/ExerciseCard";
+import { ExerciseCard } from "../../../../../components/ExerciseCard";
 
 // hard coded constants based on the sqlite db table "exercise_type"
 export const exerciseEnums = {
@@ -35,39 +32,24 @@ export type CardioSetParams = {
 export type UnifiedResistanceSet = ExerciseSetParams & ResistanceSetParams;
 export type UnifiedCardioSet = ExerciseSetParams & CardioSetParams;
 
-type CardioExerciseParams = {
+// Represent generic exercise with unknown type (i.e unknown if Resistance of Cardio)
+export type ExerciseParams = {
+  exercise_type_id: ExerciseEnums[keyof ExerciseEnums];
   exercise_id: number;
-  exercise_type_id: ExerciseEnums["CARDIO_ENUM"];
   title: string;
 };
-type ResistanceExerciseParams = {
-  exercise_id: number;
-  exercise_type_id: ExerciseEnums["RESISTANCE_ENUM"];
-  title: string;
-};
-export type ExerciseParams = CardioExerciseParams | ResistanceExerciseParams;
 
-export type ResistanceSection = {
-  exercise: ResistanceExerciseParams;
+type ResistanceSection = {
+  exerciseType: ExerciseEnums["RESISTANCE_ENUM"];
+  exercise: ExerciseParams;
   data: UnifiedResistanceSet[];
 };
 type CardioSection = {
-  exercise: CardioExerciseParams;
+  exerciseType: ExerciseEnums["CARDIO_ENUM"];
+  exercise: ExerciseParams;
   data: UnifiedCardioSet[];
 };
-type ExerciseSectionMap = {
-  RESISTANCE_ENUM: ResistanceSection;
-  CARDIO_ENUM: CardioSection;
-};
-type ExerciseEnumsMap = {
-  [K in keyof ExerciseSectionMap as ExerciseEnums[K]]: ExerciseSectionMap[K];
-};
-
-export type ExerciseSection<
-  T extends keyof ExerciseEnumsMap = keyof ExerciseEnumsMap,
-> = {
-  [K in keyof ExerciseEnumsMap]: ExerciseEnumsMap[K];
-}[T];
+export type ExerciseSection = ResistanceSection | CardioSection;
 
 const AddExerciseBtn = ({ workoutId }: { workoutId: string }) => {
   return (
@@ -132,7 +114,8 @@ export default function WorkoutDetails() {
   const sectionData = exercises.map((ex) => {
     if (ex.exercise_type_id === exerciseEnums.RESISTANCE_ENUM) {
       return {
-        exercise: ex as ResistanceExerciseParams,
+        exerciseType: ex.exercise_type_id,
+        exercise: ex,
         data: db.getAllSync<UnifiedResistanceSet>(
           `SELECT 
             exercise_set.id AS exercise_set_id,
@@ -151,7 +134,8 @@ export default function WorkoutDetails() {
       };
     } else {
       return {
-        exercise: ex as CardioExerciseParams,
+        exerciseType: ex.exercise_type_id,
+        exercise: ex,
         data: db.getAllSync<UnifiedCardioSet>(
           `SELECT
             exercise_set.id AS exercise_set_id,
@@ -183,21 +167,17 @@ export default function WorkoutDetails() {
       <FlatList
         data={sectionData}
         keyExtractor={(item) => item.exercise.exercise_id.toString()}
-        renderItem={({ item }) =>
-          item.exercise.exercise_type_id === exerciseEnums["RESISTANCE_ENUM"] ?
-            <ResistanceExerciseCard
-              workoutId={parseInt(workoutId)}
-              exerciseId={item.exercise.exercise_id}
-              title={item.exercise.title}
-              sets={item.data as UnifiedResistanceSet[]}
-            />
-          : <CardioExerciseCard
-              workoutId={parseInt(workoutId)}
-              exerciseId={item.exercise.exercise_id}
-              title={item.exercise.title}
-              sets={item.data as UnifiedCardioSet[]}
-            />
-        }
+        renderItem={({ item }) => (
+          <ExerciseCard
+            workoutId={parseInt(workoutId)}
+            exercise={{
+              exerciseType: item.exerciseType,
+              exerciseId: item.exercise.exercise_id,
+              title: item.exercise.title,
+              sets: item.data,
+            }}
+          />
+        )}
       />
       <AddExerciseBtn workoutId={workoutId} />
     </SafeAreaView>
