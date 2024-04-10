@@ -1,11 +1,4 @@
 import { useSQLiteContext } from "expo-sqlite/next";
-import {
-  CardioSetParams,
-  exerciseEnums,
-  ExerciseSetParams,
-  ExerciseEnums,
-  ResistanceSetParams,
-} from "..";
 import { useReducer } from "react";
 import {
   SafeAreaView,
@@ -18,6 +11,13 @@ import {
 } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { twColors } from "../../../../../../constants/Colors";
+import {
+  CardioSetParams,
+  ExerciseEnums,
+  ExerciseSetParams,
+  ResistanceSetParams,
+  exerciseEnums,
+} from "../../../../../../utils/exercise-types";
 
 type ExerciseSetInput = Pick<ExerciseSetParams, "reps" | "rest_time" | "title">;
 type ResistanceSetInput = Pick<ResistanceSetParams, "total_weight"> &
