@@ -1425,8 +1425,9 @@ Next Tasks = ⚠️
 Needs Consideration = ❗
 
 Other
-- display activity cards 🔨
-- add goals button [top nav right side] ⚠️
+- display activity cards ✔️
+- add goals button [top nav right side] ✔️
+- fix activity cards not showing for pr section ⚠️
 - refactor code to reduce repeated code [averaging function for example]
 - pretty up "figmatize" page
 - GitHub project board
