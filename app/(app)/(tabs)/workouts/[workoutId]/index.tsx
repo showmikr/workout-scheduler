@@ -16,18 +16,6 @@ export const exerciseEnums = {
 
 export type ExerciseEnums = typeof exerciseEnums;
 
-type CardioExerciseParams = {
-  exercise_id: number;
-  exercise_type_id: ExerciseEnums["CARDIO_ENUM"];
-  title: string;
-};
-type ResistanceExerciseParams = {
-  exercise_id: number;
-  exercise_type_id: ExerciseEnums["RESISTANCE_ENUM"];
-  title: string;
-};
-export type ExerciseParams = CardioExerciseParams | ResistanceExerciseParams;
-
 export type ExerciseSetParams = {
   exercise_set_id: number;
   list_order: number;
@@ -46,6 +34,18 @@ export type CardioSetParams = {
 };
 export type UnifiedResistanceSet = ExerciseSetParams & ResistanceSetParams;
 export type UnifiedCardioSet = ExerciseSetParams & CardioSetParams;
+
+type CardioExerciseParams = {
+  exercise_id: number;
+  exercise_type_id: ExerciseEnums["CARDIO_ENUM"];
+  title: string;
+};
+type ResistanceExerciseParams = {
+  exercise_id: number;
+  exercise_type_id: ExerciseEnums["RESISTANCE_ENUM"];
+  title: string;
+};
+export type ExerciseParams = CardioExerciseParams | ResistanceExerciseParams;
 
 export type ResistanceSection = {
   exercise: ResistanceExerciseParams;
