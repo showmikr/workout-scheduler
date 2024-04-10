@@ -1,5 +1,5 @@
 import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite/next";
-import { ExerciseEnums } from "..";
+import { ExerciseEnums } from "../../../../../../utils/exercise-types";
 import { useState } from "react";
 import { SafeAreaView, Text } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";

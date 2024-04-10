@@ -1,14 +1,14 @@
 import { SafeAreaView, Text, View } from "react-native";
-import {
-  ExerciseParams,
-  UnifiedResistanceSet,
-  UnifiedCardioSet,
-  exerciseEnums,
-  ExerciseSection,
-} from "../index";
 import { useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
+import {
+  ExerciseParams,
+  ExerciseSection,
+  UnifiedCardioSet,
+  UnifiedResistanceSet,
+  exerciseEnums,
+} from "../../../../../../utils/exercise-types";
 
 function useExerciseData() {
   const { exerciseId } = useLocalSearchParams<{ exerciseId: string }>();
