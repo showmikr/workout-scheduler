@@ -46,7 +46,40 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Tab One",
+          title: "Summary",
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          headerRight: () => (
+            <Link href="/goals" asChild>
+              <Pressable>
+                {({ pressed }) => (
+                  <Text
+                    style={{
+                      color: "rgb(10, 132, 255)",
+                      paddingRight: 20,
+                      fontSize: 16,
+                    }}
+                  >
+                    Goals
+                  </Text>
+                )}
+              </Pressable>
+            </Link>
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="workouts"
+        options={{
+          title: "Workouts",
+          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: "Settings",
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
           headerRight: () => (
             <Link href="/modal" asChild>
@@ -62,14 +95,6 @@ export default function TabLayout() {
               </Pressable>
             </Link>
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="workouts"
-        options={{
-          title: "Tab Two",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerShown: false,
         }}
       />
     </Tabs>

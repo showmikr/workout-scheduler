@@ -19,7 +19,7 @@ export default function TabTwoLayout() {
         <Stack.Screen
           name="index"
           options={{
-            title: "Tab Two",
+            title: "Workouts",
             headerRight: () => {
               return (
                 <Link
