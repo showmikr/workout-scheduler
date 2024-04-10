@@ -1,5 +1,5 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { Link, LinkProps, router, useLocalSearchParams } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import {
   StyleSheet,
@@ -10,7 +10,6 @@ import {
   FlatList,
 } from "react-native";
 import { twColors } from "../../../../../constants/Colors";
-import { useLinkProps } from "@react-navigation/native";
 
 // hard coded constants based on the sqlite db table "exercise_type"
 export const exerciseEnums = {
