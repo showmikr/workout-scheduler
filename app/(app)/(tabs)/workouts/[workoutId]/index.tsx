@@ -1,9 +1,15 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
-import { Text, SafeAreaView, View, Pressable, FlatList } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  SafeAreaView,
+  View,
+  Pressable,
+  FlatList,
+} from "react-native";
 import { twColors } from "../../../../../constants/Colors";
-import { ExerciseCard } from "../../../../../components/ExerciseCard";
 
 // hard coded constants based on the sqlite db table "exercise_type"
 export const exerciseEnums = {
@@ -75,6 +81,36 @@ const AddExerciseBtn = ({ workoutId }: { workoutId: string }) => {
       />
       <Text className="text-2xl text-black dark:text-white">Add Exercise</Text>
     </Pressable>
+  );
+};
+
+const ExerciseCard = ({
+  workoutId,
+  exercise,
+}: {
+  workoutId: number;
+  exercise: {
+    exerciseType: ExerciseEnums[keyof ExerciseEnums];
+    exerciseId: number;
+    sets: UnifiedResistanceSet[] | UnifiedCardioSet[];
+    title: string;
+  };
+}) => {
+  return (
+    <Link
+      asChild
+      style={exerciseStyles.exerciseCard}
+      href={`/(app)/(tabs)/workouts/${workoutId}/${exercise.exerciseId}`}
+    >
+      <Pressable>
+        <Text className="text-3xl font-bold text-black dark:text-white">
+          {exercise.title}
+        </Text>
+        {exercise.exerciseType === exerciseEnums.RESISTANCE_ENUM ?
+          <ResistanceSetList sets={exercise.sets as UnifiedResistanceSet[]} />
+        : <CardioSetList sets={exercise.sets as UnifiedCardioSet[]} />}
+      </Pressable>
+    </Link>
   );
 };
 
@@ -183,3 +219,44 @@ export default function WorkoutDetails() {
     </SafeAreaView>
   );
 }
+
+const CardioSetList = ({ sets }: { sets: UnifiedCardioSet[] }) => {
+  return (
+    <>
+      {sets.map((set) => (
+        <Text className="text-xl dark:text-white">
+          Reps: {set.reps}
+          {"    "}
+          Rest: {set.rest_time}s{"    "}
+          Target Distance:{" "}
+          {set.target_distance ? set.target_distance + "m" : "null"}
+          {"    "}
+          Target Time: {set.target_time ? set.target_time + "s" : "null"}
+        </Text>
+      ))}
+    </>
+  );
+};
+
+const ResistanceSetList = ({ sets }: { sets: UnifiedResistanceSet[] }) => {
+  return (
+    <>
+      {sets.map((set) => (
+        <Text key={set.exercise_set_id} className="text-xl dark:text-white">
+          Reps: {set.reps}
+          {"    "}
+          Rest: {set.rest_time}s{"    "}
+          {set.total_weight}kg
+        </Text>
+      ))}
+    </>
+  );
+};
+
+const exerciseStyles = StyleSheet.create({
+  exerciseCard: {
+    borderBottomWidth: 1,
+    borderBottomColor: twColors.neutral700,
+    padding: 16,
+  },
+});
