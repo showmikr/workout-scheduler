@@ -1,5 +1,5 @@
-import { Pressable, StyleSheet, FlatList, DevSettings } from "react-native";
-import { Text, View } from "../../../../components/Themed";
+import { StyleSheet, FlatList } from "react-native";
+import { View } from "../../../../components/Themed";
 import { useSQLiteContext } from "expo-sqlite/next";
 import WorkoutCard from "../../../../components/WorkoutCard";
 import { useWorkoutsContext } from "../../../../context/workouts-context";
