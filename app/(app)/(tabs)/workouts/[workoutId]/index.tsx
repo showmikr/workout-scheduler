@@ -3,7 +3,10 @@ import { Link, router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { Text, SafeAreaView, View, Pressable, FlatList } from "react-native";
 import { twColors } from "../../../../../constants/Colors";
-import { ExerciseCard } from "../../../../../components/ExerciseCard";
+import {
+  ExerciseCard,
+  exerciseStyles,
+} from "../../../../../components/ExerciseCard";
 import {
   ExerciseParams,
   UnifiedCardioSet,
@@ -128,15 +131,24 @@ export default function WorkoutDetails() {
         data={sectionData}
         keyExtractor={(item) => item.exercise.exercise_id.toString()}
         renderItem={({ item }) => (
-          <ExerciseCard
-            workoutId={parseInt(workoutId)}
-            exercise={{
-              exerciseType: item.exerciseType,
-              exerciseId: item.exercise.exercise_id,
-              title: item.exercise.title,
-              sets: item.data,
-            }}
-          />
+          <Link
+            asChild
+            style={exerciseStyles.exerciseCard}
+            href={`/(app)/(tabs)/workouts/${workoutId}/${item.exercise.exercise_id}`}
+          >
+            <ExerciseCard
+              workoutId={parseInt(workoutId)}
+              exercise={{
+                exerciseType: item.exerciseType,
+                exerciseId: item.exercise.exercise_id,
+                title: item.exercise.title,
+                sets: item.data,
+              }}
+              onPress={(_event) => {
+                console.log("Pressed");
+              }}
+            />
+          </Link>
         )}
       />
       <AddExerciseBtn workoutId={workoutId} />
