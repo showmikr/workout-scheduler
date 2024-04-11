@@ -64,7 +64,7 @@ const ExerciseCard = forwardRef(
   ) => {
     return (
       <Pressable ref={ref} {...pressableProps}>
-        <Text className="text-3xl font-bold text-black dark:text-white">
+        <Text className="text-2xl font-bold text-black dark:text-white">
           {exercise.title}
         </Text>
         {exercise.exerciseType === exerciseEnums.RESISTANCE_ENUM ?
