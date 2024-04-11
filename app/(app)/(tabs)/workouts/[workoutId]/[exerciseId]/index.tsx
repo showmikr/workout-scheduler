@@ -93,7 +93,6 @@ export default function () {
   const { exerciseId } = useLocalSearchParams<{ exerciseId: string }>();
 
   const exerciseSection = useExerciseData();
-
   // If all the exercise set data isn't fully loaded, display a loading screen
   if (!exerciseSection) {
     return (
