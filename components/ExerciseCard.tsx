@@ -1,5 +1,10 @@
-import { Link } from "expo-router";
-import { Pressable, StyleSheet, Text } from "react-native";
+import {
+  Pressable,
+  PressableProps,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { twColors } from "../constants/Colors";
 import {
   ExerciseEnums,
@@ -7,6 +12,7 @@ import {
   UnifiedResistanceSet,
   exerciseEnums,
 } from "../utils/exercise-types";
+import { Ref, forwardRef } from "react";
 
 const CardioSetList = ({ sets }: { sets: UnifiedCardioSet[] }) => {
   return (
@@ -41,10 +47,7 @@ const ResistanceSetList = ({ sets }: { sets: UnifiedResistanceSet[] }) => {
   );
 };
 
-const ExerciseCard = ({
-  workoutId,
-  exercise,
-}: {
+type ExerciseCardProps = {
   workoutId: number;
   exercise: {
     exerciseType: ExerciseEnums[keyof ExerciseEnums];
@@ -52,14 +55,15 @@ const ExerciseCard = ({
     sets: UnifiedResistanceSet[] | UnifiedCardioSet[];
     title: string;
   };
-}) => {
-  return (
-    <Link
-      asChild
-      style={exerciseStyles.exerciseCard}
-      href={`/(app)/(tabs)/workouts/${workoutId}/${exercise.exerciseId}`}
-    >
-      <Pressable>
+} & PressableProps;
+
+const ExerciseCard = forwardRef(
+  (
+    { workoutId, exercise, ...pressableProps }: ExerciseCardProps,
+    ref: Ref<View>
+  ) => {
+    return (
+      <Pressable ref={ref} {...pressableProps}>
         <Text className="text-3xl font-bold text-black dark:text-white">
           {exercise.title}
         </Text>
@@ -67,9 +71,9 @@ const ExerciseCard = ({
           <ResistanceSetList sets={exercise.sets as UnifiedResistanceSet[]} />
         : <CardioSetList sets={exercise.sets as UnifiedCardioSet[]} />}
       </Pressable>
-    </Link>
-  );
-};
+    );
+  }
+);
 
 const exerciseStyles = StyleSheet.create({
   exerciseCard: {
@@ -79,4 +83,4 @@ const exerciseStyles = StyleSheet.create({
   },
 });
 
-export { ExerciseCard };
+export { ExerciseCard, exerciseStyles };
