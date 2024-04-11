@@ -15,7 +15,6 @@ export default function TabTwoScreen() {
       className="flex-1 items-center justify-center" // NATIVEWIND WORKS BABY!!!!!
       //style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
     >
-      <View lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       <FlatList
         className="w-full flex-1"
         data={workouts}
