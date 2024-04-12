@@ -234,7 +234,7 @@ export default function Graph() {
   let rawInputLastIdx: number | null = 0;
   let PrFirstVal = 0;
   let PrLastVal = 0;
-  let selectedTimeRange: Date = new Date();
+  let selectedTimeRange: Date = workoutSessionData[0].date;
 
   // Function components
   function ActivityCard(props: {
@@ -590,6 +590,7 @@ export default function Graph() {
         return graphCalorieData;
     }
   }
+
   function normalizePrData(data: PersonalRecordHistory[]): SessionData[] {
     let filterRes = (data as PersonalRecordHistory[]).find(
       (obj) => obj.exerciseClassName === personalRecordExercise
@@ -626,54 +627,46 @@ export default function Graph() {
   // grabs correct array
   let graphInput = getSelectedData(graphDataType) as any;
 
-  if (!(graphDataType === "personal record")) {
-    // button range logic
-    if (graphRange === "1W") {
-      selectedTimeRange = new Date(
-        getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS
-      );
-      graphInput = averagePlotData(
-        graphInput.filter((obj: any) => new Date(obj.date) > selectedTimeRange)
-      ) as SessionData[] | null;
-    } else if (graphRange === "1M") {
-      selectedTimeRange = new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0));
-      graphInput = averagePlotData(
-        graphInput.filter((obj: any) => new Date(obj.date) > selectedTimeRange)
-      );
-    } else if (graphRange === "3M") {
-      selectedTimeRange = new Date(getPriorTime(0, 3, 0).setHours(0, 0, 0, 0));
-      graphInput = averagePlotData(
-        graphInput.filter((obj: any) => new Date(obj.date) > selectedTimeRange)
-      );
-    } else if (graphRange === "6M") {
-      selectedTimeRange = new Date(getPriorTime(0, 6, 0).setHours(0, 0, 0, 0));
-      graphInput = averagePlotData(
-        graphInput.filter((obj: any) => new Date(obj.date) > selectedTimeRange)
-      );
-    } else if (graphRange === "YTD") {
-      selectedTimeRange = new Date(new Date().getFullYear(), 0, 1);
-      graphInput = averagePlotData(
-        graphInput.filter((obj: any) => new Date(obj.date) > selectedTimeRange)!
-      );
-    } else if (graphRange === "1Y") {
-      selectedTimeRange = new Date(
-        getLastDayOfMonth(
-          new Date(getPriorTime(0, 0, 1).getTime() + 1)
-        ).setHours(0, 0, 0, 0)
-      );
-      graphInput = averagePlotData(
-        graphInput.filter((obj: any) => new Date(obj.date) > selectedTimeRange)!
-      );
-    } else {
-      selectedTimeRange = workoutSessionData[0].date;
-      graphInput = averagePlotData(graphInput);
-    }
+  // button range logic
+  if (graphRange === "1W") {
+    selectedTimeRange = new Date(
+      getPriorTime(1, 0, 0).setHours(0, 0, 0, 0) + DAY_MS
+    );
+  } else if (graphRange === "1M") {
+    selectedTimeRange = new Date(getPriorTime(0, 1, 0).setHours(0, 0, 0, 0));
+  } else if (graphRange === "3M") {
+    selectedTimeRange = new Date(getPriorTime(0, 3, 0).setHours(0, 0, 0, 0));
+  } else if (graphRange === "6M") {
+    selectedTimeRange = new Date(getPriorTime(0, 6, 0).setHours(0, 0, 0, 0));
+  } else if (graphRange === "YTD") {
+    selectedTimeRange = new Date(new Date().getFullYear(), 0, 1);
+  } else if (graphRange === "1Y") {
+    selectedTimeRange = new Date(
+      getLastDayOfMonth(new Date(getPriorTime(0, 0, 1).getTime() + 1)).setHours(
+        0,
+        0,
+        0,
+        0
+      )
+    );
+  } else {
+    selectedTimeRange = workoutSessionData[0].date;
+  }
+
+  if (graphDataType !== "personal record") {
+    graphInput = averagePlotData(
+      graphInput.filter((obj: any) => new Date(obj.date) > selectedTimeRange)
+    ) as SessionData[] | null;
   } else {
     graphInput = normalizePrData(graphInput);
   }
+
   let maxGraphValue = graphInput.reduce((p: any, c: any) =>
     p.value > c.value ? p : c
   );
+  // Rounds maxGraphValue up to the nearest 100s place
+  maxGraphValue =
+    Math.ceil((maxGraphValue ? maxGraphValue?.value! : 400) / 100) * 100;
 
   // creating goal line
   let goalLine = [];
@@ -779,10 +772,7 @@ export default function Graph() {
             endOpacity2={0}
             initialSpacing={7.5}
             noOfSections={4}
-            maxValue={
-              Math.ceil((maxGraphValue ? maxGraphValue?.value! : 400) / 100) *
-              100
-            }
+            maxValue={maxGraphValue}
             yAxisColor="#575757"
             yAxisThickness={0}
             yAxisTextStyle={{ color: "gray" }}
@@ -1346,7 +1336,6 @@ export default function Graph() {
           }}
         >
           <Text style={[summaryGrid.mainTitle]}>Activity</Text>
-
           {workoutSessionData
             .filter((obj) => obj.date >= selectedTimeRange)
             .slice()
@@ -1419,15 +1408,20 @@ const summaryGrid = StyleSheet.create({
 
 /* Summary Page Tasks - Priority is functionality
 
+DB consideration - * user wants to record time taken without using app to workout with
+                 - * user wants to have goals for running (runs per week/ distance+pace+time per run, etc.)
+
 Completed = ✔️
 Current Task = 🔨
 Next Tasks = ⚠️
 Needs Consideration = ❗
 
+Priority:
+1) Add goal section below summary
+2) Remove datapoint highlight off of goal line
+3) To improve preformance add activity cards into a flat list
+
 Other
-- display activity cards ✔️
-- add goals button [top nav right side] ✔️
-- fix activity cards not showing for pr section ⚠️
 - refactor code to reduce repeated code [averaging function for example]
 - pretty up "figmatize" page
 - GitHub project board
