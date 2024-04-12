@@ -10,8 +10,10 @@ import { useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
 import {
+  CardioSection,
   ExerciseParams,
   ExerciseSection,
+  ResistanceSection,
   UnifiedCardioSet,
   UnifiedResistanceSet,
   exerciseEnums,
@@ -27,11 +29,12 @@ function useExerciseData() {
     return exerciseSection;
   }
 
-  const getExerciseSection = (exercise: ExerciseParams) =>
-    db
-      .getAllAsync<UnifiedResistanceSet | UnifiedCardioSet>(
-        exercise.exercise_type_id === exerciseEnums.RESISTANCE_ENUM ?
-          `
+  const getResistanceSection = async (
+    exercise: ExerciseParams
+  ): Promise<ResistanceSection> => {
+    return db
+      .getAllAsync<UnifiedResistanceSet>(
+        `
         SELECT 
           exercise_set.id AS exercise_set_id,
           exercise_set.list_order,
@@ -43,8 +46,22 @@ function useExerciseData() {
         FROM exercise_set 
         INNER JOIN resistance_set ON exercise_set.id = resistance_set.exercise_set_id 
         WHERE exercise_set.exercise_id = ?
-          `
-        : `
+        `,
+        exercise.exercise_id
+      )
+      .then((rows) => ({
+        exerciseType: exerciseEnums.RESISTANCE_ENUM,
+        exercise,
+        data: rows,
+      }));
+  };
+
+  const getCardioSection = async (
+    exercise: ExerciseParams
+  ): Promise<CardioSection> => {
+    return db
+      .getAllAsync<UnifiedCardioSet>(
+        `
         SELECT
           exercise_set.id AS exercise_set_id,
           exercise_set.list_order,
@@ -57,16 +74,15 @@ function useExerciseData() {
         FROM exercise_set 
         INNER JOIN cardio_set ON exercise_set.id = cardio_set.exercise_set_id 
         WHERE exercise_set.exercise_id = ?
-          `,
-        exerciseId
+        `,
+        exercise.exercise_id
       )
       .then((rows) => ({
+        exerciseType: exerciseEnums.CARDIO_ENUM,
         exercise,
         data: rows,
-      }))
-      .catch((err) => {
-        console.log(err);
-      });
+      }));
+  };
 
   db.getFirstAsync<ExerciseParams>(
     `
@@ -90,7 +106,10 @@ function useExerciseData() {
       };
     })
     .then(
-      (exercise) => getExerciseSection(exercise) as unknown as ExerciseSection
+      (exercise) =>
+        (exercise.exercise_type_id === exerciseEnums.RESISTANCE_ENUM ?
+          getResistanceSection(exercise)
+        : getCardioSection(exercise)) as Promise<ExerciseSection>
     )
     .then((section) => setExerciseSection(section));
 
