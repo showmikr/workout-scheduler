@@ -32,12 +32,12 @@ export type ExerciseParams = {
   title: string;
 };
 
-type ResistanceSection = {
+export type ResistanceSection = {
   exerciseType: ExerciseEnums["RESISTANCE_ENUM"];
   exercise: ExerciseParams;
   data: UnifiedResistanceSet[];
 };
-type CardioSection = {
+export type CardioSection = {
   exerciseType: ExerciseEnums["CARDIO_ENUM"];
   exercise: ExerciseParams;
   data: UnifiedCardioSet[];
