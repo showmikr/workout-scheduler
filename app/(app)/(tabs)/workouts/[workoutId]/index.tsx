@@ -42,7 +42,10 @@ const AddExerciseBtn = ({ workoutId }: { workoutId: string }) => {
 };
 
 export default function WorkoutDetails() {
-  const { workoutId } = useLocalSearchParams<{ workoutId: string }>();
+  const { workoutId, workoutTitle } = useLocalSearchParams<{
+    workoutId: string;
+    workoutTitle: string;
+  }>();
   const db = useSQLiteContext();
 
   const exercises = db.getAllSync<ExerciseParams>(
@@ -121,13 +124,25 @@ export default function WorkoutDetails() {
 
   return (
     <SafeAreaView className="flex-1 justify-center">
-      <View className="items-center pb-8 pt-8">
-        <Text className="text-3xl dark:text-white">
-          Workout Id: {workoutId}
-        </Text>
-        <Text className="text-3xl dark:text-white">Exercise List</Text>
-      </View>
       <FlatList
+        ListHeaderComponent={() => {
+          return (
+            <View className="items-center border pb-6 pt-6">
+              <Text className="text-3xl font-bold text-black dark:text-white">
+                {workoutTitle}
+              </Text>
+              <View
+                className="justify-end"
+                style={{
+                  marginTop: 16,
+                  width: "90%",
+                  borderBottomWidth: 1,
+                  borderColor: twColors.neutral700,
+                }}
+              />
+            </View>
+          );
+        }}
         data={sectionData}
         keyExtractor={(item) => item.exercise.exercise_id.toString()}
         renderItem={({ item }) => (
