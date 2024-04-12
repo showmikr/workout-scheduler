@@ -1,5 +1,4 @@
-import { StyleSheet, FlatList } from "react-native";
-import { View } from "../../../../components/Themed";
+import { StyleSheet, FlatList, SafeAreaView } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import WorkoutCard from "../../../../components/WorkoutCard";
 import { useWorkoutsContext } from "../../../../context/workouts-context";
@@ -11,17 +10,14 @@ export default function TabTwoScreen() {
   const { workouts } = useWorkoutsContext();
 
   return (
-    <View
-      className="flex-1 items-center justify-center" // NATIVEWIND WORKS BABY!!!!!
-      //style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-    >
+    <SafeAreaView className="flex-1 items-center justify-center">
       <FlatList
         className="w-full flex-1"
         data={workouts}
         renderItem={({ item }) => <WorkoutCard workout={item} />}
         keyExtractor={(item) => item.id.toString()}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
