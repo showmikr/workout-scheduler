@@ -135,7 +135,7 @@ export default function () {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView style={{ borderWidth: 1, borderColor: "red" }}>
+      <ScrollView>
         <Text className="text-3xl text-black dark:text-white">
           Hello, I'm an exercise page placeholder
         </Text>
