@@ -134,7 +134,7 @@ export default function () {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#0D0D0D" }}>
       <ScrollView>
         <Text className="text-3xl text-black dark:text-white">
           Hello, I'm an exercise page placeholder
@@ -161,10 +161,15 @@ const ResistanceSet = ({ set }: { set: UnifiedResistanceSet }) => {
       style={[
         setStyles.rowContainer,
         setStyles.inline,
-        { justifyContent: "space-around" },
+        {
+          borderWidth: 1,
+          borderColor: "red",
+          flex: 1,
+          justifyContent: "space-around",
+        },
       ]}
     >
-      <View>
+      <View style={{ maxWidth: 100 }}>
         <Text style={setStyles.inputLabel}>Reps</Text>
         <TextInput
           inputMode="decimal"
@@ -173,7 +178,7 @@ const ResistanceSet = ({ set }: { set: UnifiedResistanceSet }) => {
           style={[setStyles.textInput, setStyles.inertInputState]}
         />
       </View>
-      <View>
+      <View style={{ maxWidth: 100 }}>
         <Text style={setStyles.inputLabel}>Weight</Text>
         <View style={setStyles.inline}>
           <TextInput
@@ -181,10 +186,10 @@ const ResistanceSet = ({ set }: { set: UnifiedResistanceSet }) => {
             value={set.total_weight.toFixed(2)}
             style={[setStyles.textInput, setStyles.inertInputState]}
           />
-          <Text style={setStyles.inputLabel}>kg</Text>
+          <Text style={setStyles.unitsLabel}>kg</Text>
         </View>
       </View>
-      <View>
+      <View style={{ maxWidth: 100 }}>
         <Text style={setStyles.inputLabel}>Rest</Text>
         <View style={setStyles.inline}>
           <TextInput
@@ -192,7 +197,7 @@ const ResistanceSet = ({ set }: { set: UnifiedResistanceSet }) => {
             value={set.rest_time.toString()}
             style={[setStyles.textInput, setStyles.inertInputState]}
           />
-          <Text style={setStyles.inputLabel}>s</Text>
+          <Text style={setStyles.unitsLabel}>s</Text>
         </View>
       </View>
     </View>
@@ -206,21 +211,27 @@ const setStyles = StyleSheet.create({
     textAlign: "left",
     paddingBottom: 2,
   },
+  unitsLabel: {
+    fontSize: 18,
+    color: "white",
+  },
   textInput: {
+    //width: 64,
     fontSize: 20,
     color: "white",
-    textAlign: "right",
+    textAlign: "left",
   },
   inline: {
     flexDirection: "row",
+    alignItems: "baseline",
   },
   rowContainer: {
     paddingTop: 4,
     paddingBottom: 4,
   },
   inertInputState: {
-    backgroundColor: twColors.neutral800,
-    minWidth: 32,
+    //backgroundColor: twColors.neutral800,
+    //minWidth: 32,
     borderRadius: 5,
     paddingLeft: 2,
     paddingRight: 2,
