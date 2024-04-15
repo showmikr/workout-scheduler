@@ -250,21 +250,21 @@ export default function Graph() {
       <View
         className="flex flex-row"
         style={{
-          backgroundColor: "#0D0D0D",
+          backgroundColor: "#1C1C1C",
           width: 370,
-          borderColor: "grey",
+          // borderColor: "grey",
+          // borderWidth: 2,
           borderRadius: 5,
-          borderWidth: 2,
           marginTop: 10,
           padding: 5,
         }}
       >
-        <ResistanceIcon width={45} height={45} />
+        <ResistanceIcon width={45} height={45} left={5} />
         <View
           style={{
-            backgroundColor: "#0D0D0D",
+            backgroundColor: "#1C1C1C",
             justifyContent: "space-evenly",
-            left: 5,
+            left: 15,
           }}
         >
           <Text
@@ -278,7 +278,7 @@ export default function Graph() {
           <View
             className="flex flex-row"
             style={{
-              backgroundColor: "#0D0D0D",
+              backgroundColor: "#1C1C1C",
               width: 300,
               alignItems: "baseline",
             }}
@@ -790,6 +790,7 @@ export default function Graph() {
               pointerStripColor: "lightgray",
               pointerStripWidth: 2,
               pointerColor: "white",
+              hidePointer2: true,
               //showPointerStrip: false,
               radius: 6,
               pointerLabelWidth: 110,
@@ -1319,6 +1320,15 @@ export default function Graph() {
                 onChangeText={setCalorieGoal}
                 value={calorieGoal}
               />
+              <Text
+                style={{
+                  color: "grey", //"#A53535",BDBDBD
+                  top: 2,
+                  left: 2,
+                }}
+              >
+                {/* Placeholder in case we place label here */}
+              </Text>
             </View>
 
             <Text style={stats.rowText}></Text>
@@ -1349,6 +1359,15 @@ export default function Graph() {
                 onChangeText={setWeightGoal}
                 value={weightGoal}
               />
+              <Text
+                style={{
+                  color: "grey", //"#A53535",BDBDBD
+                  top: 2,
+                  left: 2,
+                }}
+              >
+                kg
+              </Text>
             </View>
             <Text style={stats.rowText}></Text>
           </View>
@@ -1444,9 +1463,10 @@ Next Tasks = ⚠️
 Needs Consideration = ❗
 
 Priority:
-1) Add goal section below summary
+1) Add goal section below summary ✔️
 2) Remove datapoint highlight off of goal line
 3) To improve preformance add activity cards into a flat list
+4) Goal line reflects goal hook
 
 Other
 - refactor code to reduce repeated code [averaging function for example]
