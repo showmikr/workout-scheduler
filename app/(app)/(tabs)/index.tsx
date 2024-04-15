@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TextStyle,
   ScrollView,
+  TextInput,
 } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
@@ -204,11 +205,14 @@ export default function Graph() {
 
   const [graphType, setGraphType] = useState(true); // true -> LineChart; false -> BarChart
 
+  const [calorieGoal, setCalorieGoal] = useState("");
+  const [weightGoal, setWeightGoal] = useState("");
+
   // If all the graph data isn't fully loaded, display a loading screen
   if (!graphData) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={summaryGrid.mainTitle}>Loading...</Text>
+        <Text style={stats.viewTitle}>Loading...</Text>
       </View>
     );
   }
@@ -1012,15 +1016,8 @@ export default function Graph() {
         </View>
 
         {/* summary view */}
-        <View
-          style={{
-            justifyContent: "center",
-            backgroundColor: "#0D0D0D",
-            marginLeft: 10,
-            marginTop: 10,
-          }}
-        >
-          <Text style={[summaryGrid.mainTitle]}>Summary</Text>
+        <View style={[stats.viewStyle]}>
+          <Text style={[stats.viewTitle]}>Summary</Text>
 
           {
             // please refactor me (uses anonymous function)
@@ -1031,41 +1028,33 @@ export default function Graph() {
                     <>
                       <View
                         className="flex flex-row"
-                        style={[summaryGrid.viewRows, { marginTop: 0 }]}
+                        style={[stats.viewRows, { marginTop: 0 }]}
                       >
-                        <Text
-                          style={[summaryGrid.text, { color: "grey" }]}
-                        ></Text>
-                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                        <Text style={[stats.rowText, { color: "grey" }]}></Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
                           Total
                         </Text>
-                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
                           Average
                         </Text>
                       </View>
-                      <View
-                        className="flex flex-row"
-                        style={summaryGrid.viewRows}
-                      >
-                        <Text style={summaryGrid.text}>Workouts</Text>
-                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                      <View className="flex flex-row" style={stats.viewRows}>
+                        <Text style={stats.rowText}>Workouts</Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
                           {rawInputLength}
                         </Text>
-                        <Text style={summaryGrid.text}></Text>
+                        <Text style={stats.rowText}></Text>
                       </View>
-                      <View
-                        className="flex flex-row"
-                        style={summaryGrid.viewRows}
-                      >
-                        <Text style={summaryGrid.text}>Time</Text>
-                        <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                      <View className="flex flex-row" style={stats.viewRows}>
+                        <Text style={stats.rowText}>Time</Text>
+                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
                           {("00" + Math.floor(rawInputTime / 3600)).slice(-2)}:
                           {(
                             "00" + Math.floor((rawInputTime % 3600) / 60)
                           ).slice(-2)}
                           :{("00" + ((rawInputTime % 3600) % 60)).slice(-2)}
                         </Text>
-                        <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
                           {rawInputTime === 0 ?
                             "00:00:00"
                           : (
@@ -1097,15 +1086,12 @@ export default function Graph() {
                           }
                         </Text>
                       </View>
-                      <View
-                        className="flex flex-row"
-                        style={summaryGrid.viewRows}
-                      >
-                        <Text style={summaryGrid.text}>Calories</Text>
-                        <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+                      <View className="flex flex-row" style={stats.viewRows}>
+                        <Text style={stats.rowText}>Calories</Text>
+                        <Text style={[stats.rowText, { color: "#A53535" }]}>
                           {rawInputValue.toLocaleString()} cal
                         </Text>
-                        <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+                        <Text style={[stats.rowText, { color: "#A53535" }]}>
                           {Math.round(rawInputValue / rawInputLength)} cal
                         </Text>
                       </View>
@@ -1117,24 +1103,19 @@ export default function Graph() {
                     <>
                       <View
                         className="flex flex-row"
-                        style={[summaryGrid.viewRows, { marginTop: 0 }]}
+                        style={[stats.viewRows, { marginTop: 0 }]}
                       >
-                        <Text
-                          style={[summaryGrid.text, { color: "grey" }]}
-                        ></Text>
-                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                        <Text style={[stats.rowText, { color: "grey" }]}></Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
                           Trend
                         </Text>
-                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
                           Current
                         </Text>
                       </View>
-                      <View
-                        className="flex flex-row "
-                        style={summaryGrid.viewRows}
-                      >
-                        <Text style={summaryGrid.text}>B.M.I</Text>
-                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                      <View className="flex flex-row " style={stats.viewRows}>
+                        <Text style={stats.rowText}>B.M.I</Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
                           {(
                             rawInputLastIdx /
                               Math.pow(userProfileData.userHeight ?? 0, 2) -
@@ -1157,19 +1138,16 @@ export default function Graph() {
                             ).toFixed(2)
                           }{" "}
                         </Text>
-                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
                           {(
                             rawInputLastIdx /
                             Math.pow(userProfileData.userHeight ?? 0, 2)
                           ).toFixed(2)}
                         </Text>
                       </View>
-                      <View
-                        className="flex flex-row "
-                        style={summaryGrid.viewRows}
-                      >
-                        <Text style={summaryGrid.text}>Goal</Text>
-                        <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                      <View className="flex flex-row " style={stats.viewRows}>
+                        <Text style={stats.rowText}>Goal</Text>
+                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
                           {userProfileData.bodyWeightGoal ?
                             (
                               (rawInputLastIdx + rawInputFirstIdx) / 2 -
@@ -1177,24 +1155,21 @@ export default function Graph() {
                             ).toFixed(2) + " kg"
                           : "-"}
                         </Text>
-                        <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
                           {userProfileData.bodyWeightGoal ?
                             userProfileData.bodyWeightGoal.toFixed(2)
                           : 0}{" "}
                           {" kg"}
                         </Text>
                       </View>
-                      <View
-                        className="flex flex-row "
-                        style={summaryGrid.viewRows}
-                      >
-                        <Text style={summaryGrid.text}>Weight</Text>
-                        <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+                      <View className="flex flex-row " style={stats.viewRows}>
+                        <Text style={stats.rowText}>Weight</Text>
+                        <Text style={[stats.rowText, { color: "#A53535" }]}>
                           {(rawInputLastIdx - rawInputFirstIdx > 0 ? "+" : "") +
                             (rawInputLastIdx - rawInputFirstIdx).toFixed(2) +
                             " kg"}
                         </Text>
-                        <Text style={[summaryGrid.text, { color: "#A53535" }]}>
+                        <Text style={[stats.rowText, { color: "#A53535" }]}>
                           {rawInputLastIdx.toFixed(2) + " kg"}
                         </Text>
                       </View>
@@ -1206,24 +1181,19 @@ export default function Graph() {
                     <>
                       <View
                         className="flex flex-row"
-                        style={[summaryGrid.viewRows, { marginTop: 0 }]}
+                        style={[stats.viewRows, { marginTop: 0 }]}
                       >
-                        <Text
-                          style={[summaryGrid.text, { color: "grey" }]}
-                        ></Text>
-                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                        <Text style={[stats.rowText, { color: "grey" }]}></Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
                           Trend
                         </Text>
-                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
                           Current
                         </Text>
                       </View>
-                      <View
-                        className="flex flex-row "
-                        style={summaryGrid.viewRows}
-                      >
-                        <Text style={summaryGrid.text}>Resistance</Text>
-                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                      <View className="flex flex-row " style={stats.viewRows}>
+                        <Text style={stats.rowText}>Resistance</Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
                           {
                             // Ugly but this determines the sign
                             Math.round(PrLastVal - PrFirstVal) > 0 ?
@@ -1235,17 +1205,14 @@ export default function Graph() {
                           {Math.round(PrLastVal - PrFirstVal)}
                           {" kg"}
                         </Text>
-                        <Text style={[summaryGrid.text, { color: "grey" }]}>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
                           {PrLastVal.toFixed(2)}
                           {" kg"}
                         </Text>
                       </View>
-                      <View
-                        className="flex flex-row "
-                        style={summaryGrid.viewRows}
-                      >
-                        <Text style={summaryGrid.text}>Body %</Text>
-                        <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                      <View className="flex flex-row " style={stats.viewRows}>
+                        <Text style={stats.rowText}>Body %</Text>
+                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
                           {(
                             PrLastVal /
                               bodyWeightData[bodyWeightData.length - 1].weight -
@@ -1273,7 +1240,7 @@ export default function Graph() {
                           ).toFixed(2)}
                           {"%"}
                         </Text>
-                        <Text style={[summaryGrid.text, { color: "#AD760A" }]}>
+                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
                           {(
                             ((PrLastVal /
                               bodyWeightData[bodyWeightData.length - 1]
@@ -1303,20 +1270,17 @@ export default function Graph() {
                           {"%"}
                         </Text>
                       </View>
-                      <View
-                        className="flex flex-row "
-                        style={summaryGrid.viewRows}
-                      >
-                        <Text style={summaryGrid.text}>
+                      <View className="flex flex-row " style={stats.viewRows}>
+                        <Text style={stats.rowText}>
                           {
                             "" /* vs Average [hidden until futher implementation and discussion]*/
                           }
                         </Text>
                         <Text
-                          style={[summaryGrid.text, { color: "#A53535" }]}
+                          style={[stats.rowText, { color: "#A53535" }]}
                         ></Text>
                         <Text
-                          style={[summaryGrid.text, { color: "#A53535" }]}
+                          style={[stats.rowText, { color: "#A53535" }]}
                         ></Text>
                       </View>
                     </>
@@ -1326,16 +1290,73 @@ export default function Graph() {
           }
         </View>
 
+        {/* goal view */}
+        <View style={[stats.viewStyle]}>
+          <Text style={[stats.viewTitle]}>Goals</Text>
+          <View className="flex flex-row" style={stats.viewRows}>
+            <Text style={stats.rowText}>Calories</Text>
+            <View
+              className="flex flex-row"
+              style={{
+                width: 120,
+                backgroundColor: "#0D0D0D",
+              }}
+            >
+              <TextInput
+                //onChangeText={onChangeText}
+                keyboardType="number-pad"
+                style={[
+                  stats.rowText,
+                  {
+                    backgroundColor: "#1C1C1C",
+                    width: 50,
+                    borderRadius: 5,
+                    fontWeight: "400",
+                    textAlign: "center",
+                  },
+                ]}
+                placeholder="0"
+                onChangeText={setCalorieGoal}
+                value={calorieGoal}
+              />
+            </View>
+
+            <Text style={stats.rowText}></Text>
+          </View>
+          <View className="flex flex-row" style={stats.viewRows}>
+            <Text style={stats.rowText}>Body Weight</Text>
+            <View
+              className="flex flex-row"
+              style={{
+                width: 120,
+                backgroundColor: "#0D0D0D",
+              }}
+            >
+              <TextInput
+                //onChangeText={onChangeText}
+                keyboardType="number-pad"
+                style={[
+                  stats.rowText,
+                  {
+                    backgroundColor: "#1C1C1C",
+                    width: 50,
+                    borderRadius: 5,
+                    fontWeight: "400",
+                    textAlign: "center",
+                  },
+                ]}
+                placeholder="0"
+                onChangeText={setWeightGoal}
+                value={weightGoal}
+              />
+            </View>
+            <Text style={stats.rowText}></Text>
+          </View>
+        </View>
+
         {/* activity view */}
-        <View
-          style={{
-            justifyContent: "center",
-            backgroundColor: "#0D0D0D",
-            marginLeft: 10,
-            marginTop: 15,
-          }}
-        >
-          <Text style={[summaryGrid.mainTitle]}>Activity</Text>
+        <View style={[stats.viewStyle]}>
+          <Text style={[stats.viewTitle]}>Activity</Text>
           {workoutSessionData
             .filter((obj) => obj.date >= selectedTimeRange)
             .slice()
@@ -1385,24 +1406,30 @@ const graphStyle = StyleSheet.create({
   toolTip: {},
 });
 
-const summaryGrid = StyleSheet.create({
+const stats = StyleSheet.create({
   viewRows: {
     justifyContent: "space-evenly",
     backgroundColor: "#0D0D0D",
     marginTop: 10,
   },
-  mainTitle: {
+  viewTitle: {
     color: "#BDBDBD",
     fontWeight: "bold",
     fontSize: 22,
   },
-  text: {
+  rowText: {
     fontSize: 16,
     fontWeight: "300",
     color: "#BDBDBD",
     // borderWidth: 1,
     // borderColor: "white",
     width: 360 / 3,
+  },
+  viewStyle: {
+    justifyContent: "center",
+    backgroundColor: "#0D0D0D",
+    marginLeft: 10,
+    marginTop: 25,
   },
 });
 
