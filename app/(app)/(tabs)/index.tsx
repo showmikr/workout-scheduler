@@ -764,9 +764,9 @@ function Graph({
         style={{
           flex: 1,
           justifyContent: "center",
-          paddingVertical: 134,
+          paddingTop: 60,
           paddingLeft: 0,
-          backgroundColor: "#0D0D0D", //white
+          backgroundColor: "#0D0D0D", //#0D0D0D
         }}
       >
         {/* chart view */}

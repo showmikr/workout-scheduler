@@ -7,7 +7,7 @@ export function ActivityCard(props: {
   date: Date;
 }) {
   return (
-    <View style={activityStyles.outerView}>
+    <View style={[activityStyles.outerView, { left: 10 }]}>
       <ResistanceIcon width={45} height={45} left={5} />
       <View style={activityStyles.titleView}>
         <Text
