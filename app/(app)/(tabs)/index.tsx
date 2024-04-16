@@ -1108,7 +1108,7 @@ function Graph({
   const graphRangeButtons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
 
   return (
-    <ScrollView>
+    <View>
       {/* graph type button */}
       <View
         style={{
@@ -1458,7 +1458,7 @@ function Graph({
           <Text style={[stats.viewTitle]}>Activity</Text>
         </View>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 

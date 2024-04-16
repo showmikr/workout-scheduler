@@ -48,23 +48,6 @@ export default function TabLayout() {
         options={{
           title: "Summary",
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/goals" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <Text
-                    style={{
-                      color: "rgb(10, 132, 255)",
-                      paddingRight: 20,
-                      fontSize: 16,
-                    }}
-                  >
-                    Goals
-                  </Text>
-                )}
-              </Pressable>
-            </Link>
-          ),
         }}
       />
 
