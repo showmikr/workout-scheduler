@@ -697,6 +697,7 @@ function Goals({
                 console.log("Calorie Goal Change");
               }
             }}
+            maxLength={3}
             onChangeText={(text) => setCalorie(parseInt(text))}
             value={calorie ? calorie.toString() : ""}
           />
@@ -742,6 +743,7 @@ function Goals({
                 console.log("Weight Goal Change");
               }
             }}
+            maxLength={3}
             onChangeText={(text) => setWeight(parseInt(text.toString()))}
             value={weight ? Math.round(weight).toString() : ""}
           />
@@ -1527,7 +1529,8 @@ Next Tasks = ⚠️
 Needs Consideration = ❗
 
 Priority:
-1) Goal line reflects goal hook 
+1) Goal line reflects goal hook
+2) Modify Activity Card to display only a certain amount of cards
 
 Other
 - consider using memorization for queried lists and data
