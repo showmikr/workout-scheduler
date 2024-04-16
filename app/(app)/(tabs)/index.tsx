@@ -127,7 +127,7 @@ function useGraphData() {
         return readData;
       });
 
-      // Grab body weight resulst
+      // Grab body weight results
       const bodyWeightResults = bodyWeightRows.map((row) => {
         const { app_user_id, weight, date } = row;
         const readData: UserBodyWeight = {
@@ -204,9 +204,6 @@ export default function SummaryPage() {
   const graphDataTypeButtons = ["calorie", "body weight", "personal record"];
 
   const [graphType, setGraphType] = useState(true); // true -> LineChart; false -> BarChart
-
-  const [calorieGoal, setCalorieGoal] = useState(0);
-  const [weightGoal, setWeightGoal] = useState(0);
 
   // If all the graph data isn't fully loaded, display a loading screen
   if (!graphData) {
@@ -598,11 +595,11 @@ export default function SummaryPage() {
 
   // creating goal line
   let goalLine: { value: number | null }[] = [];
-  if (graphDataType === "calorie")
+  if (graphDataType === "calorie") {
     for (let i = 0; i < graphInput.length; i++) {
       goalLine.push({ value: userProfileData.calorieGoal });
     }
-  else if (graphDataType === "body weight") {
+  } else if (graphDataType === "body weight") {
     for (let i = 0; i < graphInput.length; i++) {
       goalLine.push({ value: userProfileData.bodyWeightGoal });
     }
@@ -650,15 +647,113 @@ export default function SummaryPage() {
           PrLastVal={PrLastVal}
           PrFirstVal={PrFirstVal}
           bodyWeightData={bodyWeightData}
-          calorieGoal={calorieGoal}
-          setCalorieGoal={setCalorieGoal}
-          weightGoal={weightGoal}
-          setWeightGoal={setWeightGoal}
           graphRange={graphRange}
           setGraphRange={setGraphRange}
         />
       }
     />
+  );
+}
+
+function Goals({
+  calorieGoal,
+  weightGoal,
+}: {
+  calorieGoal: number;
+  weightGoal: number;
+}) {
+  const [calorie, setCalorie] = useState(calorieGoal);
+  const [weight, setWeight] = useState(weightGoal);
+
+  return (
+    <View style={[stats.viewStyle]}>
+      <Text style={[stats.viewTitle]}>Goals</Text>
+      <View className="flex flex-row" style={stats.viewRows}>
+        <Text style={stats.rowText}>Calories</Text>
+        <View
+          className="flex flex-row"
+          style={{
+            width: 120,
+            backgroundColor: "#0D0D0D",
+          }}
+        >
+          <TextInput
+            keyboardType="number-pad"
+            style={[
+              stats.rowText,
+              {
+                backgroundColor: "#1C1C1C",
+                width: 50,
+                borderRadius: 5,
+                fontWeight: "400",
+                textAlign: "center",
+              },
+            ]}
+            placeholder="0"
+            onBlur={(e) => {
+              if (calorie === Number(e.nativeEvent.text)) {
+                console.log("Calorie Goal Change");
+              }
+            }}
+            onChangeText={(text) => setCalorie(parseInt(text))}
+            value={calorie ? calorie.toString() : ""}
+          />
+          <Text
+            style={{
+              color: "grey",
+              top: 2,
+              left: 2,
+            }}
+          >
+            {/* Placeholder in case we place label here */}
+          </Text>
+        </View>
+
+        <Text style={stats.rowText}></Text>
+      </View>
+      <View className="flex flex-row" style={stats.viewRows}>
+        <Text style={stats.rowText}>Body Weight</Text>
+        <View
+          className="flex flex-row"
+          style={{
+            width: 120,
+            backgroundColor: "#0D0D0D",
+          }}
+        >
+          <TextInput
+            keyboardType="number-pad"
+            style={[
+              stats.rowText,
+              {
+                backgroundColor: "#1C1C1C",
+                width: 50,
+                borderRadius: 5,
+                fontWeight: "400",
+                textAlign: "center",
+              },
+            ]}
+            placeholder="0"
+            onBlur={(e) => {
+              if (weight === Number(e.nativeEvent.text)) {
+                console.log("Weight Goal Change");
+              }
+            }}
+            onChangeText={(text) => setWeight(parseInt(text.toString()))}
+            value={weight ? weight.toString() : ""}
+          />
+          <Text
+            style={{
+              color: "grey",
+              top: 2,
+              left: 2,
+            }}
+          >
+            kg
+          </Text>
+        </View>
+        <Text style={stats.rowText}></Text>
+      </View>
+    </View>
   );
 }
 
@@ -684,10 +779,6 @@ function Graph({
   PrLastVal,
   PrFirstVal,
   bodyWeightData,
-  calorieGoal,
-  setCalorieGoal,
-  weightGoal,
-  setWeightGoal,
   graphRange,
   setGraphRange,
 }: {
@@ -712,10 +803,6 @@ function Graph({
   PrLastVal: number;
   PrFirstVal: number;
   bodyWeightData: UserBodyWeight[];
-  calorieGoal: number | null;
-  setCalorieGoal: React.Dispatch<number>;
-  weightGoal: number;
-  setWeightGoal: React.Dispatch<number>;
   graphRange: string;
   setGraphRange: React.Dispatch<string>;
 }) {
@@ -731,7 +818,7 @@ function Graph({
           flexDirection: "row",
           justifyContent: "flex-end",
           alignItems: "center",
-          backgroundColor: "#0D0D0D",
+          backgroundColor: "#0D0D0D", // #0D0D0D
         }}
       >
         <Pressable
@@ -1323,89 +1410,10 @@ function Graph({
           }
         </View>
 
-        {/* goal view */}
-        <View style={[stats.viewStyle]}>
-          <Text style={[stats.viewTitle]}>Goals</Text>
-          <View className="flex flex-row" style={stats.viewRows}>
-            <Text style={stats.rowText}>Calories</Text>
-            <View
-              className="flex flex-row"
-              style={{
-                width: 120,
-                backgroundColor: "#0D0D0D",
-              }}
-            >
-              <TextInput
-                //onChangeText={onChangeText}
-                keyboardType="number-pad"
-                style={[
-                  stats.rowText,
-                  {
-                    backgroundColor: "#1C1C1C",
-                    width: 50,
-                    borderRadius: 5,
-                    fontWeight: "400",
-                    textAlign: "center",
-                  },
-                ]}
-                placeholder="0"
-                onChangeText={(text) => setCalorieGoal(parseInt(text))}
-                value={calorieGoal ? calorieGoal.toString() : ""}
-              />
-              <Text
-                style={{
-                  color: "grey", //"#A53535",BDBDBD
-                  top: 2,
-                  left: 2,
-                }}
-              >
-                {/* Placeholder in case we place label here */}
-              </Text>
-            </View>
-
-            <Text style={stats.rowText}></Text>
-          </View>
-          <View className="flex flex-row" style={stats.viewRows}>
-            <Text style={stats.rowText}>Body Weight</Text>
-            <View
-              className="flex flex-row"
-              style={{
-                width: 120,
-                backgroundColor: "#0D0D0D",
-              }}
-            >
-              <TextInput
-                //onChangeText={onChangeText}
-                keyboardType="number-pad"
-                style={[
-                  stats.rowText,
-                  {
-                    backgroundColor: "#1C1C1C",
-                    width: 50,
-                    borderRadius: 5,
-                    fontWeight: "400",
-                    textAlign: "center",
-                  },
-                ]}
-                placeholder="0"
-                onChangeText={(text) =>
-                  setWeightGoal(parseInt(text.toString()))
-                }
-                value={weightGoal ? weightGoal.toString() : ""}
-              />
-              <Text
-                style={{
-                  color: "grey", //"#A53535",BDBDBD
-                  top: 2,
-                  left: 2,
-                }}
-              >
-                kg
-              </Text>
-            </View>
-            <Text style={stats.rowText}></Text>
-          </View>
-        </View>
+        <Goals
+          calorieGoal={userProfileData.calorieGoal}
+          weightGoal={userProfileData.bodyWeightGoal}
+        />
 
         {/* activity view */}
         <View style={[stats.viewStyle]}>
@@ -1485,7 +1493,7 @@ Needs Consideration = ❗
 Priority:
 1) Add goal section below summary ✔️
 2) Remove datapoint highlight off of goal line ✔️
-3) To improve preformance add activity cards into a flat list
+3) To improve preformance add activity cards into a flat list ✔️
 4) Goal line reflects goal hook
 
 Other
