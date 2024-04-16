@@ -190,7 +190,7 @@ function useGraphData() {
   return graphData;
 }
 
-export default function Graph() {
+export default function SummaryPage() {
   const graphData = useGraphData();
 
   const personalRecordOptions = ["Bench Press", "Squat", "Deadlift"]; // replace with dynamic type after querying (bench, squat, etc)
@@ -198,7 +198,6 @@ export default function Graph() {
     personalRecordOptions[0]
   );
 
-  const graphRangeButtons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
   const [graphRange, setGraphRange] = useState("1M");
 
   const [graphDataType, setGraphDataType] = useState("calorie");
@@ -206,8 +205,8 @@ export default function Graph() {
 
   const [graphType, setGraphType] = useState(true); // true -> LineChart; false -> BarChart
 
-  const [calorieGoal, setCalorieGoal] = useState("");
-  const [weightGoal, setWeightGoal] = useState("");
+  const [calorieGoal, setCalorieGoal] = useState(0);
+  const [weightGoal, setWeightGoal] = useState(0);
 
   // If all the graph data isn't fully loaded, display a loading screen
   if (!graphData) {
@@ -231,15 +230,15 @@ export default function Graph() {
   const MONTH_MS = 2629799928;
   const YEAR_MS = 31557599136;
 
-  let rawInputLength: number = 0;
-  let rawInputValue: number = 0;
-  let rawInputTime: number = 0;
-  let rawInputTimeNum: number = 0;
-  let rawInputFirstIdx: number | null = 0;
-  let rawInputLastIdx: number | null = 0;
+  let rawInputLength = 0;
+  let rawInputValue = 0;
+  let rawInputTime = 0;
+  let rawInputTimeNum = 0;
+  let rawInputFirstIdx = 0;
+  let rawInputLastIdx = 0;
   let PrFirstVal = 0;
   let PrLastVal = 0;
-  let selectedTimeRange: Date = workoutSessionData[0].date;
+  let selectedTimeRange = workoutSessionData[0].date;
 
   // returns a previous date (time) given # of weeks, months, years based on current time
   function getPriorTime(week: number, month: number, year: number) {
@@ -307,10 +306,10 @@ export default function Graph() {
     // used to calculate values for summary
     rawInputLength = transformData.length;
     rawInputValue = 0;
-    rawInputFirstIdx = transformData.length > 0 ? transformData[0].value : 0;
+    rawInputFirstIdx = transformData.length > 0 ? transformData[0].value! : 0;
     rawInputLastIdx =
       transformData.length > 0 ?
-        transformData[transformData.length - 1].value
+        transformData[transformData.length - 1].value!
       : 0;
 
     transformData.forEach((obj) => {
@@ -412,7 +411,9 @@ export default function Graph() {
             : avg / amt,
           date: first,
           label:
-            first > currMonth ? currMonth.toDateString().substring(4, 8) : null,
+            first > currMonth ?
+              currMonth.toDateString().substring(4, 8)
+            : undefined,
           labelTextStyle: graphStyle.weekLabel,
         });
         if (first > currMonth) {
@@ -456,7 +457,7 @@ export default function Graph() {
           label:
             first.toDateString() === getFirstDayOfWeek(first).toDateString() ?
               first.toDateString().substring(4, 10)
-            : null,
+            : undefined,
           labelTextStyle: graphStyle.weekLabel,
         });
 
@@ -596,7 +597,7 @@ export default function Graph() {
     Math.ceil((maxGraphValue ? maxGraphValue?.value! : 400) / 100) * 100;
 
   // creating goal line
-  let goalLine = [];
+  let goalLine: { value: number | null }[] = [];
   if (graphDataType === "calorie")
     for (let i = 0; i < graphInput.length; i++) {
       goalLine.push({ value: userProfileData.calorieGoal });
@@ -610,39 +611,416 @@ export default function Graph() {
   }
 
   return (
-    <>
-      <FlatList
-        style={{ backgroundColor: "#0D0D0D" }}
-        initialNumToRender={4}
-        data={workoutSessionData
-          .filter((obj) => obj.date >= selectedTimeRange)
-          .slice()
-          .reverse()}
-        renderItem={({ item }) => (
-          <ActivityCard
-            calories={item.calories}
-            title={item.title}
-            date={item.date}
-            key={item.sessionId}
+    <FlatList
+      style={{ backgroundColor: "#0D0D0D" }}
+      initialNumToRender={4}
+      data={workoutSessionData
+        .filter((obj) => obj.date >= selectedTimeRange)
+        .slice()
+        .reverse()}
+      renderItem={({ item }) => (
+        <ActivityCard
+          calories={item.calories}
+          title={item.title}
+          date={item.date}
+          key={item.sessionId}
+        />
+      )}
+      keyExtractor={(item) => item.sessionId.toString()}
+      ListHeaderComponent={
+        <Graph
+          graphType
+          graphInput={graphInput}
+          graphDataType={graphDataType}
+          setGraphType={setGraphType}
+          goalLine={goalLine}
+          maxGraphValue={maxGraphValue}
+          personalRecordOptions={personalRecordOptions}
+          personalRecordExercise={personalRecordExercise}
+          setPersonalRecordExercise={setPersonalRecordExercise}
+          graphDataTypeButtons={graphDataTypeButtons}
+          setGraphDataType={setGraphDataType}
+          rawInputLength={rawInputLength}
+          rawInputTime={rawInputTime}
+          rawInputTimeNum={rawInputTimeNum}
+          rawInputValue={rawInputValue}
+          rawInputLastIdx={rawInputLastIdx}
+          userProfileData={userProfileData}
+          rawInputFirstIdx={rawInputFirstIdx}
+          PrLastVal={PrLastVal}
+          PrFirstVal={PrFirstVal}
+          bodyWeightData={bodyWeightData}
+          calorieGoal={calorieGoal}
+          setCalorieGoal={setCalorieGoal}
+          weightGoal={weightGoal}
+          setWeightGoal={setWeightGoal}
+          graphRange={graphRange}
+          setGraphRange={setGraphRange}
+        />
+      }
+    />
+  );
+}
+
+function Graph({
+  graphType,
+  graphInput,
+  graphDataType,
+  setGraphType,
+  goalLine,
+  maxGraphValue,
+  personalRecordOptions,
+  personalRecordExercise,
+  setPersonalRecordExercise,
+  graphDataTypeButtons,
+  setGraphDataType,
+  rawInputLength,
+  rawInputTime,
+  rawInputTimeNum,
+  rawInputValue,
+  rawInputLastIdx,
+  userProfileData,
+  rawInputFirstIdx,
+  PrLastVal,
+  PrFirstVal,
+  bodyWeightData,
+  calorieGoal,
+  setCalorieGoal,
+  weightGoal,
+  setWeightGoal,
+  graphRange,
+  setGraphRange,
+}: {
+  graphType: boolean;
+  graphInput: any;
+  graphDataType: string;
+  setGraphType: React.Dispatch<boolean>;
+  goalLine: { value: number | null }[];
+  maxGraphValue: number;
+  personalRecordOptions: string[];
+  personalRecordExercise: string;
+  setPersonalRecordExercise: React.Dispatch<string>;
+  graphDataTypeButtons: string[];
+  setGraphDataType: React.Dispatch<string>;
+  rawInputLength: number;
+  rawInputTime: number;
+  rawInputTimeNum: number;
+  rawInputValue: number;
+  rawInputLastIdx: number;
+  userProfileData: UserData;
+  rawInputFirstIdx: number;
+  PrLastVal: number;
+  PrFirstVal: number;
+  bodyWeightData: UserBodyWeight[];
+  calorieGoal: number | null;
+  setCalorieGoal: React.Dispatch<number>;
+  weightGoal: number;
+  setWeightGoal: React.Dispatch<number>;
+  graphRange: string;
+  setGraphRange: React.Dispatch<string>;
+}) {
+  const graphRangeButtons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
+
+  return (
+    <ScrollView>
+      {/* graph type button */}
+      <View
+        style={{
+          paddingVertical: 10,
+          paddingEnd: 10,
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          backgroundColor: "#0D0D0D",
+        }}
+      >
+        <Pressable
+          style={{
+            backgroundColor: "#1C1C1C",
+            alignItems: "center",
+            justifyContent: "center",
+            paddingVertical: 4,
+            paddingHorizontal: 4,
+            borderRadius: 4,
+            elevation: 3,
+            width: 120,
+            height: 30,
+          }}
+          onPress={() => {
+            setGraphType(!graphType);
+          }}
+        >
+          <Text
+            style={{
+              color: "white",
+              fontWeight: "300",
+            }}
+          >
+            {graphType ? "BarChart" : "LineChart"}
+          </Text>
+        </Pressable>
+      </View>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          paddingVertical: 134,
+          paddingLeft: 0,
+          backgroundColor: "#0D0D0D", //white
+        }}
+      >
+        {/* chart view */}
+        {graphType ?
+          <LineChart
+            areaChart
+            // Chart //
+            isAnimated={true}
+            // curved={true} // Interesting style
+            animationDuration={1000}
+            //animateOnDataChange={true}
+            adjustToWidth={true}
+            disableScroll={true}
+            data={graphInput}
+            data2={goalLine as { value: number }[]}
+            showDataPointOnFocus={false}
+            showDataPointOnFocus2={false}
+            width={347}
+            overflowTop={70}
+            // Data //
+            onlyPositive={true}
+            hideDataPoints={true}
+            dataPointsColor="#A53535"
+            interpolateMissingValues={true}
+            leftShiftForTooltip={400}
+            // focusEnabled={true}
+            // showDataPointOnFocus={false}
+            // showStripOnFocus={false}
+            // stripOpacity={2}
+
+            // Gradient //
+            color="#A53535"
+            color2="#AD760A" //#AD760A
+            thickness={2}
+            startFillColor="rgba(165,53,53,1)"
+            endFillColor="rgba(165,53,53,1)"
+            startFillColor2="rgba(173, 118, 10, 0)"
+            endFillColor2="rgba(173, 118, 10, 0)"
+            startOpacity={0.6}
+            endOpacity={0.1}
+            startOpacity2={0.15}
+            endOpacity2={0}
+            initialSpacing={7.5}
+            noOfSections={4}
+            maxValue={maxGraphValue}
+            yAxisColor="#575757"
+            yAxisThickness={0}
+            yAxisTextStyle={{ color: "gray" }}
+            yAxisSide={yAxisSides.LEFT}
+            xAxisColor="#575757"
+            rulesType="solid"
+            rulesColor="#202020"
+            pointerConfig={{
+              //pointerStripUptoDataPoint: true,
+              pointerStripHeight: 235,
+              pointerStripColor: "lightgray",
+              pointerStripWidth: 2,
+              pointerColor: "white",
+              hidePointer2: true,
+              //showPointerStrip: false,
+              radius: 6,
+              pointerLabelWidth: 110,
+              pointerLabelHeight: 90,
+              //activatePointersOnLongPress: false,
+              //autoAdjustPointerLabelPosition: true,
+              pointerLabelComponent: (
+                items: {
+                  value: number;
+                  date: Date;
+                  label: string;
+                  labelTextStyle?: {
+                    color: string;
+                    width: number;
+                  };
+                }[]
+              ) => {
+                return (
+                  <View
+                    style={{
+                      position: "absolute",
+                      width: 110,
+                      left: -30,
+                      borderRadius: 16,
+                      justifyContent: "center",
+                      paddingVertical: 5,
+                      paddingHorizontal: 5,
+                      marginVertical: 20,
+                      marginHorizontal: -10,
+                      backgroundColor: "#0D0D0D",
+                      // borderWidth: 1,
+                      // borderColor: "white",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "white",
+                        fontSize: 14,
+                        marginBottom: 6,
+                        textAlign: "center",
+                        fontWeight: "300",
+                      }}
+                    >
+                      {graphRange === "ALL" || graphRange === "1Y" ?
+                        items[0].date.toDateString().substring(4, 7) +
+                        items[0].date.toDateString().substring(10)
+                      : items[0].date
+                          .toDateString()
+                          .substring(4, items[0].date.toDateString().length)
+                      }
+                    </Text>
+                    <View
+                      style={{
+                        paddingHorizontal: 14,
+                        borderRadius: 16,
+                        backgroundColor: "white",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontWeight: "bold",
+                          textAlign: "center",
+                          fontSize: 18,
+                        }}
+                      >
+                        {Math.round(items[0].value) +
+                          (graphDataType === "calorie" ? " cal" : " kg")}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              },
+            }}
           />
-        )}
-        keyExtractor={(item) => item.sessionId.toString()}
-        ListHeaderComponent={
-          <ScrollView>
-            {/* graph type button */}
-            <View
-              style={{
-                paddingVertical: 10,
-                paddingEnd: 10,
-                flexDirection: "row",
-                justifyContent: "flex-end",
-                alignItems: "center",
-                backgroundColor: "#0D0D0D",
-              }}
-            >
+        : <BarChart
+            width={345}
+            adjustToWidth={true}
+            barWidth={5}
+            overflowTop={70}
+            frontColor="#A53535"
+            noOfSections={4}
+            maxValue={maxGraphValue}
+            spacing={2}
+            initialSpacing={7.5}
+            yAxisColor="#575757"
+            yAxisThickness={0}
+            yAxisTextStyle={{ color: "gray" }}
+            yAxisSide={yAxisSides.LEFT}
+            xAxisColor="#575757"
+            rulesColor="#252525"
+            data={graphInput}
+          />
+        }
+
+        {/* chart range buttons */}
+        {graphDataType === "personal record" ?
+          <View
+            className="flex flex-row"
+            style={{
+              backgroundColor: "#0D0D0D",
+              justifyContent: "space-evenly",
+              marginTop: 10,
+            }}
+          >
+            {personalRecordOptions.map((title) => {
+              return (
+                <Pressable
+                  style={{
+                    backgroundColor:
+                      personalRecordExercise === title ? "#343434" : "#1C1C1C",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingVertical: 4,
+                    paddingHorizontal: 4,
+                    marginLeft: 7,
+                    borderRadius: 4,
+                    elevation: 3,
+                    width: 120,
+                    height: 30,
+                  }}
+                  onPress={() => {
+                    setPersonalRecordExercise(title);
+                  }}
+                  key={title}
+                >
+                  <Text
+                    style={{
+                      color: "white",
+                      fontWeight:
+                        personalRecordExercise === title ? "bold" : "300",
+                    }}
+                  >
+                    {title}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        : <View
+            className="flex flex-row"
+            style={{
+              backgroundColor: "#0D0D0D",
+              justifyContent: "space-evenly",
+              marginTop: 10,
+            }}
+          >
+            {graphRangeButtons.map((title) => {
+              return (
+                <Pressable
+                  style={{
+                    backgroundColor:
+                      graphRange === title ? "#343434" : "#1C1C1C",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingVertical: 4,
+                    paddingHorizontal: 4,
+                    borderRadius: 4,
+                    elevation: 3,
+                    width: 36,
+                    height: 30,
+                  }}
+                  onPress={() => {
+                    setGraphRange(title);
+                  }}
+                  key={title}
+                >
+                  <Text
+                    style={{
+                      color: "white",
+                      fontWeight: graphRange === title ? "bold" : "300",
+                    }}
+                  >
+                    {title}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        }
+
+        {/* data type buttons*/}
+        <View
+          className="flex flex-row"
+          style={{
+            backgroundColor: "#0D0D0D",
+            justifyContent: "space-evenly",
+            marginTop: 10,
+          }}
+        >
+          {graphDataTypeButtons.map((title) => {
+            return (
               <Pressable
                 style={{
-                  backgroundColor: "#1C1C1C",
+                  backgroundColor:
+                    graphDataType === title ? "#343434" : "#1C1C1C",
                   alignItems: "center",
                   justifyContent: "center",
                   paddingVertical: 4,
@@ -653,771 +1031,388 @@ export default function Graph() {
                   height: 30,
                 }}
                 onPress={() => {
-                  setGraphType(!graphType);
+                  setGraphDataType(title);
                 }}
+                key={title}
               >
                 <Text
                   style={{
                     color: "white",
-                    fontWeight: "300",
+                    fontWeight: graphDataType === title ? "bold" : "300",
                   }}
                 >
-                  {graphType ? "BarChart" : "LineChart"}
+                  {title}
                 </Text>
               </Pressable>
-            </View>
+            );
+          })}
+        </View>
+
+        {/* summary view */}
+        <View style={[stats.viewStyle]}>
+          <Text style={[stats.viewTitle]}>Summary</Text>
+
+          {
+            // please refactor me (uses anonymous function)
+            (() => {
+              switch (graphDataType) {
+                case "calorie":
+                  return (
+                    <>
+                      <View
+                        className="flex flex-row"
+                        style={[stats.viewRows, { marginTop: 0 }]}
+                      >
+                        <Text style={[stats.rowText, { color: "grey" }]}></Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
+                          Total
+                        </Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
+                          Average
+                        </Text>
+                      </View>
+                      <View className="flex flex-row" style={stats.viewRows}>
+                        <Text style={stats.rowText}>Workouts</Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
+                          {rawInputLength}
+                        </Text>
+                        <Text style={stats.rowText}></Text>
+                      </View>
+                      <View className="flex flex-row" style={stats.viewRows}>
+                        <Text style={stats.rowText}>Time</Text>
+                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
+                          {("00" + Math.floor(rawInputTime / 3600)).slice(-2)}:
+                          {(
+                            "00" + Math.floor((rawInputTime % 3600) / 60)
+                          ).slice(-2)}
+                          :{("00" + ((rawInputTime % 3600) % 60)).slice(-2)}
+                        </Text>
+                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
+                          {rawInputTime === 0 ?
+                            "00:00:00"
+                          : (
+                              "00" +
+                              Math.floor(
+                                rawInputLength ?
+                                  rawInputTime / rawInputTimeNum / 3600
+                                : 0
+                              )
+                            ).slice(-2) +
+                            ":" +
+                            (
+                              "00" +
+                              Math.floor(
+                                rawInputLength ?
+                                  ((rawInputTime / rawInputTimeNum) % 3600) / 60
+                                : 0
+                              )
+                            ).slice(-2) +
+                            ":" +
+                            (
+                              "00" +
+                              Math.floor(
+                                rawInputLength ?
+                                  ((rawInputTime / rawInputTimeNum) % 3600) % 60
+                                : 0
+                              )
+                            ).slice(-2)
+                          }
+                        </Text>
+                      </View>
+                      <View className="flex flex-row" style={stats.viewRows}>
+                        <Text style={stats.rowText}>Calories</Text>
+                        <Text style={[stats.rowText, { color: "#A53535" }]}>
+                          {rawInputValue.toLocaleString()} cal
+                        </Text>
+                        <Text style={[stats.rowText, { color: "#A53535" }]}>
+                          {Math.round(rawInputValue / rawInputLength)} cal
+                        </Text>
+                      </View>
+                    </>
+                  );
+                  break;
+                case "body weight":
+                  return (
+                    <>
+                      <View
+                        className="flex flex-row"
+                        style={[stats.viewRows, { marginTop: 0 }]}
+                      >
+                        <Text style={[stats.rowText, { color: "grey" }]}></Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
+                          Trend
+                        </Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
+                          Current
+                        </Text>
+                      </View>
+                      <View className="flex flex-row " style={stats.viewRows}>
+                        <Text style={stats.rowText}>B.M.I</Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
+                          {(
+                            rawInputLastIdx /
+                              Math.pow(userProfileData.userHeight ?? 0, 2) -
+                              rawInputFirstIdx /
+                                Math.pow(userProfileData.userHeight ?? 0, 2) >
+                            0
+                          ) ?
+                            "+" +
+                            (
+                              rawInputLastIdx /
+                                Math.pow(userProfileData.userHeight ?? 0, 2) -
+                              rawInputFirstIdx /
+                                Math.pow(userProfileData.userHeight ?? 0, 2)
+                            ).toFixed(2)
+                          : (
+                              rawInputLastIdx /
+                                Math.pow(userProfileData.userHeight ?? 0, 2) -
+                              rawInputFirstIdx /
+                                Math.pow(userProfileData.userHeight ?? 0, 2)
+                            ).toFixed(2)
+                          }{" "}
+                        </Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
+                          {(
+                            rawInputLastIdx /
+                            Math.pow(userProfileData.userHeight ?? 0, 2)
+                          ).toFixed(2)}
+                        </Text>
+                      </View>
+                      <View className="flex flex-row " style={stats.viewRows}>
+                        <Text style={stats.rowText}>Goal</Text>
+                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
+                          {userProfileData.bodyWeightGoal ?
+                            (
+                              (rawInputLastIdx + rawInputFirstIdx) / 2 -
+                              userProfileData.bodyWeightGoal
+                            ).toFixed(2) + " kg"
+                          : "-"}
+                        </Text>
+                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
+                          {userProfileData.bodyWeightGoal ?
+                            userProfileData.bodyWeightGoal.toFixed(2)
+                          : 0}{" "}
+                          {" kg"}
+                        </Text>
+                      </View>
+                      <View className="flex flex-row " style={stats.viewRows}>
+                        <Text style={stats.rowText}>Weight</Text>
+                        <Text style={[stats.rowText, { color: "#A53535" }]}>
+                          {(rawInputLastIdx - rawInputFirstIdx > 0 ? "+" : "") +
+                            (rawInputLastIdx - rawInputFirstIdx).toFixed(2) +
+                            " kg"}
+                        </Text>
+                        <Text style={[stats.rowText, { color: "#A53535" }]}>
+                          {rawInputLastIdx.toFixed(2) + " kg"}
+                        </Text>
+                      </View>
+                    </>
+                  );
+                  break;
+                case "personal record":
+                  return (
+                    <>
+                      <View
+                        className="flex flex-row"
+                        style={[stats.viewRows, { marginTop: 0 }]}
+                      >
+                        <Text style={[stats.rowText, { color: "grey" }]}></Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
+                          Trend
+                        </Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
+                          Current
+                        </Text>
+                      </View>
+                      <View className="flex flex-row " style={stats.viewRows}>
+                        <Text style={stats.rowText}>Resistance</Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
+                          {
+                            // Ugly but this determines the sign
+                            Math.round(PrLastVal - PrFirstVal) > 0 ?
+                              "+"
+                            : Math.round(PrLastVal - PrFirstVal) < 0 ?
+                              "-"
+                            : ""
+                          }
+                          {Math.round(PrLastVal - PrFirstVal)}
+                          {" kg"}
+                        </Text>
+                        <Text style={[stats.rowText, { color: "grey" }]}>
+                          {PrLastVal.toFixed(2)}
+                          {" kg"}
+                        </Text>
+                      </View>
+                      <View className="flex flex-row " style={stats.viewRows}>
+                        <Text style={stats.rowText}>Body %</Text>
+                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
+                          {(
+                            PrLastVal /
+                              bodyWeightData[bodyWeightData.length - 1].weight -
+                              PrFirstVal /
+                                bodyWeightData[bodyWeightData.length - 1]
+                                  .weight >
+                            0
+                          ) ?
+                            "+"
+                          : (
+                            PrLastVal /
+                              bodyWeightData[bodyWeightData.length - 1].weight -
+                              PrFirstVal /
+                                bodyWeightData[bodyWeightData.length - 1]
+                                  .weight <
+                            0
+                          ) ?
+                            "-"
+                          : ""}
+                          {(
+                            PrLastVal /
+                              bodyWeightData[bodyWeightData.length - 1].weight -
+                            PrFirstVal /
+                              bodyWeightData[bodyWeightData.length - 1].weight
+                          ).toFixed(2)}
+                          {"%"}
+                        </Text>
+                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
+                          {(
+                            ((PrLastVal /
+                              bodyWeightData[bodyWeightData.length - 1]
+                                .weight) *
+                              100) %
+                              100 >
+                            0
+                          ) ?
+                            "+"
+                          : (
+                            ((PrLastVal /
+                              bodyWeightData[bodyWeightData.length - 1]
+                                .weight) *
+                              100) %
+                              100 <
+                            0
+                          ) ?
+                            "-"
+                          : ""}
+                          {(
+                            ((PrLastVal /
+                              bodyWeightData[bodyWeightData.length - 1]
+                                .weight) *
+                              100) %
+                            100
+                          ).toFixed(1)}
+                          {"%"}
+                        </Text>
+                      </View>
+                      <View className="flex flex-row " style={stats.viewRows}>
+                        <Text style={stats.rowText}>
+                          {
+                            "" /* vs Average [hidden until futher implementation and discussion]*/
+                          }
+                        </Text>
+                        <Text
+                          style={[stats.rowText, { color: "#A53535" }]}
+                        ></Text>
+                        <Text
+                          style={[stats.rowText, { color: "#A53535" }]}
+                        ></Text>
+                      </View>
+                    </>
+                  );
+              }
+            })()
+          }
+        </View>
+
+        {/* goal view */}
+        <View style={[stats.viewStyle]}>
+          <Text style={[stats.viewTitle]}>Goals</Text>
+          <View className="flex flex-row" style={stats.viewRows}>
+            <Text style={stats.rowText}>Calories</Text>
             <View
+              className="flex flex-row"
               style={{
-                flex: 1,
-                justifyContent: "center",
-                paddingVertical: 134,
-                paddingLeft: 0,
-                backgroundColor: "#0D0D0D", //white
+                width: 120,
+                backgroundColor: "#0D0D0D",
               }}
             >
-              {/* chart view */}
-              {graphType ?
-                <LineChart
-                  areaChart
-                  // Chart //
-                  isAnimated={true}
-                  // curved={true} // Interesting style
-                  animationDuration={1000}
-                  //animateOnDataChange={true}
-                  adjustToWidth={true}
-                  disableScroll={true}
-                  data={graphInput}
-                  data2={goalLine}
-                  showDataPointOnFocus={false}
-                  width={347}
-                  overflowTop={70}
-                  // Data //
-                  onlyPositive={true}
-                  showDataPointOnFocus2={false}
-                  hideDataPoints={true}
-                  dataPointsColor="#A53535"
-                  interpolateMissingValues={true}
-                  leftShiftForTooltip={400}
-                  // focusEnabled={true}
-                  // showDataPointOnFocus={false}
-                  // showStripOnFocus={false}
-                  // stripOpacity={2}
-
-                  // Gradient //
-                  color="#A53535"
-                  color2="#AD760A" //#AD760A
-                  thickness={2}
-                  startFillColor="rgba(165,53,53,1)"
-                  endFillColor="rgba(165,53,53,1)"
-                  startFillColor2="rgba(173, 118, 10, 0)"
-                  endFillColor2="rgba(173, 118, 10, 0)"
-                  startOpacity={0.6}
-                  endOpacity={0.1}
-                  startOpacity2={0.15}
-                  endOpacity2={0}
-                  initialSpacing={7.5}
-                  noOfSections={4}
-                  maxValue={maxGraphValue}
-                  yAxisColor="#575757"
-                  yAxisThickness={0}
-                  yAxisTextStyle={{ color: "gray" }}
-                  yAxisSide={yAxisSides.LEFT}
-                  xAxisColor="#575757"
-                  rulesType="solid"
-                  rulesColor="#202020"
-                  pointerConfig={{
-                    //pointerStripUptoDataPoint: true,
-                    pointerStripHeight: 235,
-                    pointerStripColor: "lightgray",
-                    pointerStripWidth: 2,
-                    pointerColor: "white",
-                    hidePointer2: true,
-                    //showPointerStrip: false,
-                    radius: 6,
-                    pointerLabelWidth: 110,
-                    pointerLabelHeight: 90,
-                    //activatePointersOnLongPress: false,
-                    //autoAdjustPointerLabelPosition: true,
-                    pointerLabelComponent: (
-                      items: {
-                        value: number;
-                        date: Date;
-                        label: string;
-                        labelTextStyle?: {
-                          color: string;
-                          width: number;
-                        };
-                      }[]
-                    ) => {
-                      return (
-                        <View
-                          style={{
-                            position: "absolute",
-                            width: 110,
-                            left: -30,
-                            borderRadius: 16,
-                            justifyContent: "center",
-                            paddingVertical: 5,
-                            paddingHorizontal: 5,
-                            marginVertical: 20,
-                            marginHorizontal: -10,
-                            backgroundColor: "#0D0D0D",
-                            // borderWidth: 1,
-                            // borderColor: "white",
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: "white",
-                              fontSize: 14,
-                              marginBottom: 6,
-                              textAlign: "center",
-                              fontWeight: "300",
-                            }}
-                          >
-                            {graphRange === "ALL" || graphRange === "1Y" ?
-                              items[0].date.toDateString().substring(4, 7) +
-                              items[0].date.toDateString().substring(10)
-                            : items[0].date
-                                .toDateString()
-                                .substring(
-                                  4,
-                                  items[0].date.toDateString().length
-                                )
-                            }
-                          </Text>
-                          <View
-                            style={{
-                              paddingHorizontal: 14,
-                              borderRadius: 16,
-                              backgroundColor: "white",
-                            }}
-                          >
-                            <Text
-                              style={{
-                                fontWeight: "bold",
-                                textAlign: "center",
-                                fontSize: 18,
-                              }}
-                            >
-                              {Math.round(items[0].value) +
-                                (graphDataType === "calorie" ? " cal" : " kg")}
-                            </Text>
-                          </View>
-                        </View>
-                      );
-                    },
-                  }}
-                />
-              : <BarChart
-                  width={345}
-                  adjustToWidth={true}
-                  barWidth={5}
-                  overflowTop={70}
-                  frontColor="#A53535"
-                  noOfSections={4}
-                  maxValue={
-                    Math.ceil(
-                      (maxGraphValue ? maxGraphValue?.value! : 400) / 100
-                    ) * 100
-                  }
-                  spacing={2}
-                  initialSpacing={7.5}
-                  yAxisColor="#575757"
-                  yAxisThickness={0}
-                  yAxisTextStyle={{ color: "gray" }}
-                  yAxisSide={yAxisSides.LEFT}
-                  xAxisColor="#575757"
-                  rulesColor="#252525"
-                  data={graphInput}
-                />
-              }
-
-              {/* chart range buttons */}
-              {graphDataType === "personal record" ?
-                <View
-                  className="flex flex-row"
-                  style={{
-                    backgroundColor: "#0D0D0D",
-                    justifyContent: "space-evenly",
-                    marginTop: 10,
-                  }}
-                >
-                  {personalRecordOptions.map((title) => {
-                    return (
-                      <Pressable
-                        style={{
-                          backgroundColor:
-                            personalRecordExercise === title ? "#343434" : (
-                              "#1C1C1C"
-                            ),
-                          alignItems: "center",
-                          justifyContent: "center",
-                          paddingVertical: 4,
-                          paddingHorizontal: 4,
-                          marginLeft: 7,
-                          borderRadius: 4,
-                          elevation: 3,
-                          width: 120,
-                          height: 30,
-                        }}
-                        onPress={() => {
-                          setPersonalRecordExercise(title);
-                        }}
-                        key={title}
-                      >
-                        <Text
-                          style={{
-                            color: "white",
-                            fontWeight:
-                              personalRecordExercise === title ? "bold" : "300",
-                          }}
-                        >
-                          {title}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              : <View
-                  className="flex flex-row"
-                  style={{
-                    backgroundColor: "#0D0D0D",
-                    justifyContent: "space-evenly",
-                    marginTop: 10,
-                  }}
-                >
-                  {graphRangeButtons.map((title) => {
-                    return (
-                      <Pressable
-                        style={{
-                          backgroundColor:
-                            graphRange === title ? "#343434" : "#1C1C1C",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          paddingVertical: 4,
-                          paddingHorizontal: 4,
-                          borderRadius: 4,
-                          elevation: 3,
-                          width: 36,
-                          height: 30,
-                        }}
-                        onPress={() => {
-                          setGraphRange(title);
-                        }}
-                        key={title}
-                      >
-                        <Text
-                          style={{
-                            color: "white",
-                            fontWeight: graphRange === title ? "bold" : "300",
-                          }}
-                        >
-                          {title}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              }
-
-              {/* data type buttons*/}
-              <View
-                className="flex flex-row"
+              <TextInput
+                //onChangeText={onChangeText}
+                keyboardType="number-pad"
+                style={[
+                  stats.rowText,
+                  {
+                    backgroundColor: "#1C1C1C",
+                    width: 50,
+                    borderRadius: 5,
+                    fontWeight: "400",
+                    textAlign: "center",
+                  },
+                ]}
+                placeholder="0"
+                onChangeText={(text) => setCalorieGoal(parseInt(text))}
+                value={calorieGoal ? calorieGoal.toString() : ""}
+              />
+              <Text
                 style={{
-                  backgroundColor: "#0D0D0D",
-                  justifyContent: "space-evenly",
-                  marginTop: 10,
+                  color: "grey", //"#A53535",BDBDBD
+                  top: 2,
+                  left: 2,
                 }}
               >
-                {graphDataTypeButtons.map((title) => {
-                  return (
-                    <Pressable
-                      style={{
-                        backgroundColor:
-                          graphDataType === title ? "#343434" : "#1C1C1C",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        paddingVertical: 4,
-                        paddingHorizontal: 4,
-                        borderRadius: 4,
-                        elevation: 3,
-                        width: 120,
-                        height: 30,
-                      }}
-                      onPress={() => {
-                        setGraphDataType(title);
-                      }}
-                      key={title}
-                    >
-                      <Text
-                        style={{
-                          color: "white",
-                          fontWeight: graphDataType === title ? "bold" : "300",
-                        }}
-                      >
-                        {title}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-
-              {/* summary view */}
-              <View style={[stats.viewStyle]}>
-                <Text style={[stats.viewTitle]}>Summary</Text>
-
-                {
-                  // please refactor me (uses anonymous function)
-                  (() => {
-                    switch (graphDataType) {
-                      case "calorie":
-                        return (
-                          <>
-                            <View
-                              className="flex flex-row"
-                              style={[stats.viewRows, { marginTop: 0 }]}
-                            >
-                              <Text
-                                style={[stats.rowText, { color: "grey" }]}
-                              ></Text>
-                              <Text style={[stats.rowText, { color: "grey" }]}>
-                                Total
-                              </Text>
-                              <Text style={[stats.rowText, { color: "grey" }]}>
-                                Average
-                              </Text>
-                            </View>
-                            <View
-                              className="flex flex-row"
-                              style={stats.viewRows}
-                            >
-                              <Text style={stats.rowText}>Workouts</Text>
-                              <Text style={[stats.rowText, { color: "grey" }]}>
-                                {rawInputLength}
-                              </Text>
-                              <Text style={stats.rowText}></Text>
-                            </View>
-                            <View
-                              className="flex flex-row"
-                              style={stats.viewRows}
-                            >
-                              <Text style={stats.rowText}>Time</Text>
-                              <Text
-                                style={[stats.rowText, { color: "#AD760A" }]}
-                              >
-                                {("00" + Math.floor(rawInputTime / 3600)).slice(
-                                  -2
-                                )}
-                                :
-                                {(
-                                  "00" + Math.floor((rawInputTime % 3600) / 60)
-                                ).slice(-2)}
-                                :
-                                {("00" + ((rawInputTime % 3600) % 60)).slice(
-                                  -2
-                                )}
-                              </Text>
-                              <Text
-                                style={[stats.rowText, { color: "#AD760A" }]}
-                              >
-                                {rawInputTime === 0 ?
-                                  "00:00:00"
-                                : (
-                                    "00" +
-                                    Math.floor(
-                                      rawInputLength ?
-                                        rawInputTime / rawInputTimeNum / 3600
-                                      : 0
-                                    )
-                                  ).slice(-2) +
-                                  ":" +
-                                  (
-                                    "00" +
-                                    Math.floor(
-                                      rawInputLength ?
-                                        ((rawInputTime / rawInputTimeNum) %
-                                          3600) /
-                                          60
-                                      : 0
-                                    )
-                                  ).slice(-2) +
-                                  ":" +
-                                  (
-                                    "00" +
-                                    Math.floor(
-                                      rawInputLength ?
-                                        ((rawInputTime / rawInputTimeNum) %
-                                          3600) %
-                                          60
-                                      : 0
-                                    )
-                                  ).slice(-2)
-                                }
-                              </Text>
-                            </View>
-                            <View
-                              className="flex flex-row"
-                              style={stats.viewRows}
-                            >
-                              <Text style={stats.rowText}>Calories</Text>
-                              <Text
-                                style={[stats.rowText, { color: "#A53535" }]}
-                              >
-                                {rawInputValue.toLocaleString()} cal
-                              </Text>
-                              <Text
-                                style={[stats.rowText, { color: "#A53535" }]}
-                              >
-                                {Math.round(rawInputValue / rawInputLength)} cal
-                              </Text>
-                            </View>
-                          </>
-                        );
-                        break;
-                      case "body weight":
-                        return (
-                          <>
-                            <View
-                              className="flex flex-row"
-                              style={[stats.viewRows, { marginTop: 0 }]}
-                            >
-                              <Text
-                                style={[stats.rowText, { color: "grey" }]}
-                              ></Text>
-                              <Text style={[stats.rowText, { color: "grey" }]}>
-                                Trend
-                              </Text>
-                              <Text style={[stats.rowText, { color: "grey" }]}>
-                                Current
-                              </Text>
-                            </View>
-                            <View
-                              className="flex flex-row "
-                              style={stats.viewRows}
-                            >
-                              <Text style={stats.rowText}>B.M.I</Text>
-                              <Text style={[stats.rowText, { color: "grey" }]}>
-                                {(
-                                  rawInputLastIdx /
-                                    Math.pow(
-                                      userProfileData.userHeight ?? 0,
-                                      2
-                                    ) -
-                                    rawInputFirstIdx /
-                                      Math.pow(
-                                        userProfileData.userHeight ?? 0,
-                                        2
-                                      ) >
-                                  0
-                                ) ?
-                                  "+" +
-                                  (
-                                    rawInputLastIdx /
-                                      Math.pow(
-                                        userProfileData.userHeight ?? 0,
-                                        2
-                                      ) -
-                                    rawInputFirstIdx /
-                                      Math.pow(
-                                        userProfileData.userHeight ?? 0,
-                                        2
-                                      )
-                                  ).toFixed(2)
-                                : (
-                                    rawInputLastIdx /
-                                      Math.pow(
-                                        userProfileData.userHeight ?? 0,
-                                        2
-                                      ) -
-                                    rawInputFirstIdx /
-                                      Math.pow(
-                                        userProfileData.userHeight ?? 0,
-                                        2
-                                      )
-                                  ).toFixed(2)
-                                }{" "}
-                              </Text>
-                              <Text style={[stats.rowText, { color: "grey" }]}>
-                                {(
-                                  rawInputLastIdx /
-                                  Math.pow(userProfileData.userHeight ?? 0, 2)
-                                ).toFixed(2)}
-                              </Text>
-                            </View>
-                            <View
-                              className="flex flex-row "
-                              style={stats.viewRows}
-                            >
-                              <Text style={stats.rowText}>Goal</Text>
-                              <Text
-                                style={[stats.rowText, { color: "#AD760A" }]}
-                              >
-                                {userProfileData.bodyWeightGoal ?
-                                  (
-                                    (rawInputLastIdx + rawInputFirstIdx) / 2 -
-                                    userProfileData.bodyWeightGoal
-                                  ).toFixed(2) + " kg"
-                                : "-"}
-                              </Text>
-                              <Text
-                                style={[stats.rowText, { color: "#AD760A" }]}
-                              >
-                                {userProfileData.bodyWeightGoal ?
-                                  userProfileData.bodyWeightGoal.toFixed(2)
-                                : 0}{" "}
-                                {" kg"}
-                              </Text>
-                            </View>
-                            <View
-                              className="flex flex-row "
-                              style={stats.viewRows}
-                            >
-                              <Text style={stats.rowText}>Weight</Text>
-                              <Text
-                                style={[stats.rowText, { color: "#A53535" }]}
-                              >
-                                {(rawInputLastIdx - rawInputFirstIdx > 0 ?
-                                  "+"
-                                : "") +
-                                  (rawInputLastIdx - rawInputFirstIdx).toFixed(
-                                    2
-                                  ) +
-                                  " kg"}
-                              </Text>
-                              <Text
-                                style={[stats.rowText, { color: "#A53535" }]}
-                              >
-                                {rawInputLastIdx.toFixed(2) + " kg"}
-                              </Text>
-                            </View>
-                          </>
-                        );
-                        break;
-                      case "personal record":
-                        return (
-                          <>
-                            <View
-                              className="flex flex-row"
-                              style={[stats.viewRows, { marginTop: 0 }]}
-                            >
-                              <Text
-                                style={[stats.rowText, { color: "grey" }]}
-                              ></Text>
-                              <Text style={[stats.rowText, { color: "grey" }]}>
-                                Trend
-                              </Text>
-                              <Text style={[stats.rowText, { color: "grey" }]}>
-                                Current
-                              </Text>
-                            </View>
-                            <View
-                              className="flex flex-row "
-                              style={stats.viewRows}
-                            >
-                              <Text style={stats.rowText}>Resistance</Text>
-                              <Text style={[stats.rowText, { color: "grey" }]}>
-                                {
-                                  // Ugly but this determines the sign
-                                  Math.round(PrLastVal - PrFirstVal) > 0 ?
-                                    "+"
-                                  : Math.round(PrLastVal - PrFirstVal) < 0 ?
-                                    "-"
-                                  : ""
-                                }
-                                {Math.round(PrLastVal - PrFirstVal)}
-                                {" kg"}
-                              </Text>
-                              <Text style={[stats.rowText, { color: "grey" }]}>
-                                {PrLastVal.toFixed(2)}
-                                {" kg"}
-                              </Text>
-                            </View>
-                            <View
-                              className="flex flex-row "
-                              style={stats.viewRows}
-                            >
-                              <Text style={stats.rowText}>Body %</Text>
-                              <Text
-                                style={[stats.rowText, { color: "#AD760A" }]}
-                              >
-                                {(
-                                  PrLastVal /
-                                    bodyWeightData[bodyWeightData.length - 1]
-                                      .weight -
-                                    PrFirstVal /
-                                      bodyWeightData[bodyWeightData.length - 1]
-                                        .weight >
-                                  0
-                                ) ?
-                                  "+"
-                                : (
-                                  PrLastVal /
-                                    bodyWeightData[bodyWeightData.length - 1]
-                                      .weight -
-                                    PrFirstVal /
-                                      bodyWeightData[bodyWeightData.length - 1]
-                                        .weight <
-                                  0
-                                ) ?
-                                  "-"
-                                : ""}
-                                {(
-                                  PrLastVal /
-                                    bodyWeightData[bodyWeightData.length - 1]
-                                      .weight -
-                                  PrFirstVal /
-                                    bodyWeightData[bodyWeightData.length - 1]
-                                      .weight
-                                ).toFixed(2)}
-                                {"%"}
-                              </Text>
-                              <Text
-                                style={[stats.rowText, { color: "#AD760A" }]}
-                              >
-                                {(
-                                  ((PrLastVal /
-                                    bodyWeightData[bodyWeightData.length - 1]
-                                      .weight) *
-                                    100) %
-                                    100 >
-                                  0
-                                ) ?
-                                  "+"
-                                : (
-                                  ((PrLastVal /
-                                    bodyWeightData[bodyWeightData.length - 1]
-                                      .weight) *
-                                    100) %
-                                    100 <
-                                  0
-                                ) ?
-                                  "-"
-                                : ""}
-                                {(
-                                  ((PrLastVal /
-                                    bodyWeightData[bodyWeightData.length - 1]
-                                      .weight) *
-                                    100) %
-                                  100
-                                ).toFixed(1)}
-                                {"%"}
-                              </Text>
-                            </View>
-                            <View
-                              className="flex flex-row "
-                              style={stats.viewRows}
-                            >
-                              <Text style={stats.rowText}>
-                                {
-                                  "" /* vs Average [hidden until futher implementation and discussion]*/
-                                }
-                              </Text>
-                              <Text
-                                style={[stats.rowText, { color: "#A53535" }]}
-                              ></Text>
-                              <Text
-                                style={[stats.rowText, { color: "#A53535" }]}
-                              ></Text>
-                            </View>
-                          </>
-                        );
-                    }
-                  })()
-                }
-              </View>
-
-              {/* goal view */}
-              <View style={[stats.viewStyle]}>
-                <Text style={[stats.viewTitle]}>Goals</Text>
-                <View className="flex flex-row" style={stats.viewRows}>
-                  <Text style={stats.rowText}>Calories</Text>
-                  <View
-                    className="flex flex-row"
-                    style={{
-                      width: 120,
-                      backgroundColor: "#0D0D0D",
-                    }}
-                  >
-                    <TextInput
-                      //onChangeText={onChangeText}
-                      keyboardType="number-pad"
-                      style={[
-                        stats.rowText,
-                        {
-                          backgroundColor: "#1C1C1C",
-                          width: 50,
-                          borderRadius: 5,
-                          fontWeight: "400",
-                          textAlign: "center",
-                        },
-                      ]}
-                      placeholder="0"
-                      onChangeText={setCalorieGoal}
-                      value={calorieGoal}
-                    />
-                    <Text
-                      style={{
-                        color: "grey", //"#A53535",BDBDBD
-                        top: 2,
-                        left: 2,
-                      }}
-                    >
-                      {/* Placeholder in case we place label here */}
-                    </Text>
-                  </View>
-
-                  <Text style={stats.rowText}></Text>
-                </View>
-                <View className="flex flex-row" style={stats.viewRows}>
-                  <Text style={stats.rowText}>Body Weight</Text>
-                  <View
-                    className="flex flex-row"
-                    style={{
-                      width: 120,
-                      backgroundColor: "#0D0D0D",
-                    }}
-                  >
-                    <TextInput
-                      //onChangeText={onChangeText}
-                      keyboardType="number-pad"
-                      style={[
-                        stats.rowText,
-                        {
-                          backgroundColor: "#1C1C1C",
-                          width: 50,
-                          borderRadius: 5,
-                          fontWeight: "400",
-                          textAlign: "center",
-                        },
-                      ]}
-                      placeholder="0"
-                      onChangeText={setWeightGoal}
-                      value={weightGoal}
-                    />
-                    <Text
-                      style={{
-                        color: "grey", //"#A53535",BDBDBD
-                        top: 2,
-                        left: 2,
-                      }}
-                    >
-                      kg
-                    </Text>
-                  </View>
-                  <Text style={stats.rowText}></Text>
-                </View>
-              </View>
-
-              {/* activity view */}
-              <View style={[stats.viewStyle]}>
-                <Text style={[stats.viewTitle]}>Activity</Text>
-              </View>
+                {/* Placeholder in case we place label here */}
+              </Text>
             </View>
-          </ScrollView>
-        }
-      />
-    </>
+
+            <Text style={stats.rowText}></Text>
+          </View>
+          <View className="flex flex-row" style={stats.viewRows}>
+            <Text style={stats.rowText}>Body Weight</Text>
+            <View
+              className="flex flex-row"
+              style={{
+                width: 120,
+                backgroundColor: "#0D0D0D",
+              }}
+            >
+              <TextInput
+                //onChangeText={onChangeText}
+                keyboardType="number-pad"
+                style={[
+                  stats.rowText,
+                  {
+                    backgroundColor: "#1C1C1C",
+                    width: 50,
+                    borderRadius: 5,
+                    fontWeight: "400",
+                    textAlign: "center",
+                  },
+                ]}
+                placeholder="0"
+                onChangeText={(text) =>
+                  setWeightGoal(parseInt(text.toString()))
+                }
+                value={weightGoal ? weightGoal.toString() : ""}
+              />
+              <Text
+                style={{
+                  color: "grey", //"#A53535",BDBDBD
+                  top: 2,
+                  left: 2,
+                }}
+              >
+                kg
+              </Text>
+            </View>
+            <Text style={stats.rowText}></Text>
+          </View>
+        </View>
+
+        {/* activity view */}
+        <View style={[stats.viewStyle]}>
+          <Text style={[stats.viewTitle]}>Activity</Text>
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 
