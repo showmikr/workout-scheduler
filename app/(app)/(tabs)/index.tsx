@@ -668,6 +668,8 @@ function Goals({
   return (
     <View style={[stats.viewStyle]}>
       <Text style={[stats.viewTitle]}>Goals</Text>
+
+      {/* Calorie Goal */}
       <View className="flex flex-row" style={stats.viewRows}>
         <Text style={stats.rowText}>Calories</Text>
         <View
@@ -711,6 +713,8 @@ function Goals({
 
         <Text style={stats.rowText}></Text>
       </View>
+
+      {/* Body Weight Goal */}
       <View className="flex flex-row" style={stats.viewRows}>
         <Text style={stats.rowText}>Body Weight</Text>
         <View
@@ -739,7 +743,7 @@ function Goals({
               }
             }}
             onChangeText={(text) => setWeight(parseInt(text.toString()))}
-            value={weight ? weight.toString() : ""}
+            value={weight ? Math.round(weight).toString() : ""}
           />
           <Text
             style={{
@@ -753,6 +757,299 @@ function Goals({
         </View>
         <Text style={stats.rowText}></Text>
       </View>
+    </View>
+  );
+}
+
+function Summary({
+  graphDataType,
+  rawInputLength,
+  rawInputTime,
+  rawInputTimeNum,
+  rawInputValue,
+  rawInputLastIdx,
+  userProfileData,
+  rawInputFirstIdx,
+  PrLastVal,
+  PrFirstVal,
+  bodyWeightData,
+}: {
+  graphDataType: string;
+  rawInputLength: number;
+  rawInputTime: number;
+  rawInputTimeNum: number;
+  rawInputValue: number;
+  rawInputLastIdx: number;
+  userProfileData: UserData;
+  rawInputFirstIdx: number;
+  PrLastVal: number;
+  PrFirstVal: number;
+  bodyWeightData: UserBodyWeight[];
+}) {
+  return (
+    <View style={[stats.viewStyle]}>
+      <Text style={[stats.viewTitle]}>Summary</Text>
+
+      {
+        // please refactor me (uses anonymous function)
+        (() => {
+          switch (graphDataType) {
+            case "calorie":
+              return (
+                <>
+                  <View
+                    className="flex flex-row"
+                    style={[stats.viewRows, { marginTop: 0 }]}
+                  >
+                    <Text style={[stats.rowText, { color: "grey" }]}></Text>
+                    <Text style={[stats.rowText, { color: "grey" }]}>
+                      Total
+                    </Text>
+                    <Text style={[stats.rowText, { color: "grey" }]}>
+                      Average
+                    </Text>
+                  </View>
+                  <View className="flex flex-row" style={stats.viewRows}>
+                    <Text style={stats.rowText}>Workouts</Text>
+                    <Text style={[stats.rowText, { color: "grey" }]}>
+                      {rawInputLength}
+                    </Text>
+                    <Text style={stats.rowText}></Text>
+                  </View>
+                  <View className="flex flex-row" style={stats.viewRows}>
+                    <Text style={stats.rowText}>Time</Text>
+                    <Text style={[stats.rowText, { color: "#AD760A" }]}>
+                      {("00" + Math.floor(rawInputTime / 3600)).slice(-2)}:
+                      {("00" + Math.floor((rawInputTime % 3600) / 60)).slice(
+                        -2
+                      )}
+                      :{("00" + ((rawInputTime % 3600) % 60)).slice(-2)}
+                    </Text>
+                    <Text style={[stats.rowText, { color: "#AD760A" }]}>
+                      {rawInputTime === 0 ?
+                        "00:00:00"
+                      : (
+                          "00" +
+                          Math.floor(
+                            rawInputLength ?
+                              rawInputTime / rawInputTimeNum / 3600
+                            : 0
+                          )
+                        ).slice(-2) +
+                        ":" +
+                        (
+                          "00" +
+                          Math.floor(
+                            rawInputLength ?
+                              ((rawInputTime / rawInputTimeNum) % 3600) / 60
+                            : 0
+                          )
+                        ).slice(-2) +
+                        ":" +
+                        (
+                          "00" +
+                          Math.floor(
+                            rawInputLength ?
+                              ((rawInputTime / rawInputTimeNum) % 3600) % 60
+                            : 0
+                          )
+                        ).slice(-2)
+                      }
+                    </Text>
+                  </View>
+                  <View className="flex flex-row" style={stats.viewRows}>
+                    <Text style={stats.rowText}>Calories</Text>
+                    <Text style={[stats.rowText, { color: "#A53535" }]}>
+                      {rawInputValue.toLocaleString()} cal
+                    </Text>
+                    <Text style={[stats.rowText, { color: "#A53535" }]}>
+                      {Math.round(rawInputValue / rawInputLength)} cal
+                    </Text>
+                  </View>
+                </>
+              );
+              break;
+            case "body weight":
+              return (
+                <>
+                  <View
+                    className="flex flex-row"
+                    style={[stats.viewRows, { marginTop: 0 }]}
+                  >
+                    <Text style={[stats.rowText, { color: "grey" }]}></Text>
+                    <Text style={[stats.rowText, { color: "grey" }]}>
+                      Trend
+                    </Text>
+                    <Text style={[stats.rowText, { color: "grey" }]}>
+                      Current
+                    </Text>
+                  </View>
+                  <View className="flex flex-row " style={stats.viewRows}>
+                    <Text style={stats.rowText}>B.M.I</Text>
+                    <Text style={[stats.rowText, { color: "grey" }]}>
+                      {(
+                        rawInputLastIdx /
+                          Math.pow(userProfileData.userHeight ?? 0, 2) -
+                          rawInputFirstIdx /
+                            Math.pow(userProfileData.userHeight ?? 0, 2) >
+                        0
+                      ) ?
+                        "+" +
+                        (
+                          rawInputLastIdx /
+                            Math.pow(userProfileData.userHeight ?? 0, 2) -
+                          rawInputFirstIdx /
+                            Math.pow(userProfileData.userHeight ?? 0, 2)
+                        ).toFixed(2)
+                      : (
+                          rawInputLastIdx /
+                            Math.pow(userProfileData.userHeight ?? 0, 2) -
+                          rawInputFirstIdx /
+                            Math.pow(userProfileData.userHeight ?? 0, 2)
+                        ).toFixed(2)
+                      }{" "}
+                    </Text>
+                    <Text style={[stats.rowText, { color: "grey" }]}>
+                      {(
+                        rawInputLastIdx /
+                        Math.pow(userProfileData.userHeight ?? 0, 2)
+                      ).toFixed(2)}
+                    </Text>
+                  </View>
+                  <View className="flex flex-row " style={stats.viewRows}>
+                    <Text style={stats.rowText}>Goal</Text>
+                    <Text style={[stats.rowText, { color: "#AD760A" }]}>
+                      {userProfileData.bodyWeightGoal ?
+                        (
+                          (rawInputLastIdx + rawInputFirstIdx) / 2 -
+                          userProfileData.bodyWeightGoal
+                        ).toFixed(2) + " kg"
+                      : "-"}
+                    </Text>
+                    <Text style={[stats.rowText, { color: "#AD760A" }]}>
+                      {userProfileData.bodyWeightGoal ?
+                        userProfileData.bodyWeightGoal.toFixed(2)
+                      : 0}{" "}
+                      {" kg"}
+                    </Text>
+                  </View>
+                  <View className="flex flex-row " style={stats.viewRows}>
+                    <Text style={stats.rowText}>Weight</Text>
+                    <Text style={[stats.rowText, { color: "#A53535" }]}>
+                      {(rawInputLastIdx - rawInputFirstIdx > 0 ? "+" : "") +
+                        (rawInputLastIdx - rawInputFirstIdx).toFixed(2) +
+                        " kg"}
+                    </Text>
+                    <Text style={[stats.rowText, { color: "#A53535" }]}>
+                      {rawInputLastIdx.toFixed(2) + " kg"}
+                    </Text>
+                  </View>
+                </>
+              );
+              break;
+            case "personal record":
+              return (
+                <>
+                  <View
+                    className="flex flex-row"
+                    style={[stats.viewRows, { marginTop: 0 }]}
+                  >
+                    <Text style={[stats.rowText, { color: "grey" }]}></Text>
+                    <Text style={[stats.rowText, { color: "grey" }]}>
+                      Trend
+                    </Text>
+                    <Text style={[stats.rowText, { color: "grey" }]}>
+                      Current
+                    </Text>
+                  </View>
+                  <View className="flex flex-row " style={stats.viewRows}>
+                    <Text style={stats.rowText}>Resistance</Text>
+                    <Text style={[stats.rowText, { color: "grey" }]}>
+                      {
+                        // Ugly but this determines the sign
+                        Math.round(PrLastVal - PrFirstVal) > 0 ?
+                          "+"
+                        : Math.round(PrLastVal - PrFirstVal) < 0 ?
+                          "-"
+                        : ""
+                      }
+                      {Math.round(PrLastVal - PrFirstVal)}
+                      {" kg"}
+                    </Text>
+                    <Text style={[stats.rowText, { color: "grey" }]}>
+                      {PrLastVal.toFixed(2)}
+                      {" kg"}
+                    </Text>
+                  </View>
+                  <View className="flex flex-row " style={stats.viewRows}>
+                    <Text style={stats.rowText}>Body %</Text>
+                    <Text style={[stats.rowText, { color: "#AD760A" }]}>
+                      {(
+                        PrLastVal /
+                          bodyWeightData[bodyWeightData.length - 1].weight -
+                          PrFirstVal /
+                            bodyWeightData[bodyWeightData.length - 1].weight >
+                        0
+                      ) ?
+                        "+"
+                      : (
+                        PrLastVal /
+                          bodyWeightData[bodyWeightData.length - 1].weight -
+                          PrFirstVal /
+                            bodyWeightData[bodyWeightData.length - 1].weight <
+                        0
+                      ) ?
+                        "-"
+                      : ""}
+                      {(
+                        PrLastVal /
+                          bodyWeightData[bodyWeightData.length - 1].weight -
+                        PrFirstVal /
+                          bodyWeightData[bodyWeightData.length - 1].weight
+                      ).toFixed(2)}
+                      {"%"}
+                    </Text>
+                    <Text style={[stats.rowText, { color: "#AD760A" }]}>
+                      {(
+                        ((PrLastVal /
+                          bodyWeightData[bodyWeightData.length - 1].weight) *
+                          100) %
+                          100 >
+                        0
+                      ) ?
+                        "+"
+                      : (
+                        ((PrLastVal /
+                          bodyWeightData[bodyWeightData.length - 1].weight) *
+                          100) %
+                          100 <
+                        0
+                      ) ?
+                        "-"
+                      : ""}
+                      {(
+                        ((PrLastVal /
+                          bodyWeightData[bodyWeightData.length - 1].weight) *
+                          100) %
+                        100
+                      ).toFixed(1)}
+                      {"%"}
+                    </Text>
+                  </View>
+                  <View className="flex flex-row " style={stats.viewRows}>
+                    <Text style={stats.rowText}>
+                      {
+                        "" /* vs Average [hidden until futher implementation and discussion]*/
+                      }
+                    </Text>
+                    <Text style={[stats.rowText, { color: "#A53535" }]}></Text>
+                    <Text style={[stats.rowText, { color: "#A53535" }]}></Text>
+                  </View>
+                </>
+              );
+          }
+        })()
+      }
     </View>
   );
 }
@@ -1135,280 +1432,19 @@ function Graph({
           })}
         </View>
 
-        {/* summary view */}
-        <View style={[stats.viewStyle]}>
-          <Text style={[stats.viewTitle]}>Summary</Text>
-
-          {
-            // please refactor me (uses anonymous function)
-            (() => {
-              switch (graphDataType) {
-                case "calorie":
-                  return (
-                    <>
-                      <View
-                        className="flex flex-row"
-                        style={[stats.viewRows, { marginTop: 0 }]}
-                      >
-                        <Text style={[stats.rowText, { color: "grey" }]}></Text>
-                        <Text style={[stats.rowText, { color: "grey" }]}>
-                          Total
-                        </Text>
-                        <Text style={[stats.rowText, { color: "grey" }]}>
-                          Average
-                        </Text>
-                      </View>
-                      <View className="flex flex-row" style={stats.viewRows}>
-                        <Text style={stats.rowText}>Workouts</Text>
-                        <Text style={[stats.rowText, { color: "grey" }]}>
-                          {rawInputLength}
-                        </Text>
-                        <Text style={stats.rowText}></Text>
-                      </View>
-                      <View className="flex flex-row" style={stats.viewRows}>
-                        <Text style={stats.rowText}>Time</Text>
-                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
-                          {("00" + Math.floor(rawInputTime / 3600)).slice(-2)}:
-                          {(
-                            "00" + Math.floor((rawInputTime % 3600) / 60)
-                          ).slice(-2)}
-                          :{("00" + ((rawInputTime % 3600) % 60)).slice(-2)}
-                        </Text>
-                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
-                          {rawInputTime === 0 ?
-                            "00:00:00"
-                          : (
-                              "00" +
-                              Math.floor(
-                                rawInputLength ?
-                                  rawInputTime / rawInputTimeNum / 3600
-                                : 0
-                              )
-                            ).slice(-2) +
-                            ":" +
-                            (
-                              "00" +
-                              Math.floor(
-                                rawInputLength ?
-                                  ((rawInputTime / rawInputTimeNum) % 3600) / 60
-                                : 0
-                              )
-                            ).slice(-2) +
-                            ":" +
-                            (
-                              "00" +
-                              Math.floor(
-                                rawInputLength ?
-                                  ((rawInputTime / rawInputTimeNum) % 3600) % 60
-                                : 0
-                              )
-                            ).slice(-2)
-                          }
-                        </Text>
-                      </View>
-                      <View className="flex flex-row" style={stats.viewRows}>
-                        <Text style={stats.rowText}>Calories</Text>
-                        <Text style={[stats.rowText, { color: "#A53535" }]}>
-                          {rawInputValue.toLocaleString()} cal
-                        </Text>
-                        <Text style={[stats.rowText, { color: "#A53535" }]}>
-                          {Math.round(rawInputValue / rawInputLength)} cal
-                        </Text>
-                      </View>
-                    </>
-                  );
-                  break;
-                case "body weight":
-                  return (
-                    <>
-                      <View
-                        className="flex flex-row"
-                        style={[stats.viewRows, { marginTop: 0 }]}
-                      >
-                        <Text style={[stats.rowText, { color: "grey" }]}></Text>
-                        <Text style={[stats.rowText, { color: "grey" }]}>
-                          Trend
-                        </Text>
-                        <Text style={[stats.rowText, { color: "grey" }]}>
-                          Current
-                        </Text>
-                      </View>
-                      <View className="flex flex-row " style={stats.viewRows}>
-                        <Text style={stats.rowText}>B.M.I</Text>
-                        <Text style={[stats.rowText, { color: "grey" }]}>
-                          {(
-                            rawInputLastIdx /
-                              Math.pow(userProfileData.userHeight ?? 0, 2) -
-                              rawInputFirstIdx /
-                                Math.pow(userProfileData.userHeight ?? 0, 2) >
-                            0
-                          ) ?
-                            "+" +
-                            (
-                              rawInputLastIdx /
-                                Math.pow(userProfileData.userHeight ?? 0, 2) -
-                              rawInputFirstIdx /
-                                Math.pow(userProfileData.userHeight ?? 0, 2)
-                            ).toFixed(2)
-                          : (
-                              rawInputLastIdx /
-                                Math.pow(userProfileData.userHeight ?? 0, 2) -
-                              rawInputFirstIdx /
-                                Math.pow(userProfileData.userHeight ?? 0, 2)
-                            ).toFixed(2)
-                          }{" "}
-                        </Text>
-                        <Text style={[stats.rowText, { color: "grey" }]}>
-                          {(
-                            rawInputLastIdx /
-                            Math.pow(userProfileData.userHeight ?? 0, 2)
-                          ).toFixed(2)}
-                        </Text>
-                      </View>
-                      <View className="flex flex-row " style={stats.viewRows}>
-                        <Text style={stats.rowText}>Goal</Text>
-                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
-                          {userProfileData.bodyWeightGoal ?
-                            (
-                              (rawInputLastIdx + rawInputFirstIdx) / 2 -
-                              userProfileData.bodyWeightGoal
-                            ).toFixed(2) + " kg"
-                          : "-"}
-                        </Text>
-                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
-                          {userProfileData.bodyWeightGoal ?
-                            userProfileData.bodyWeightGoal.toFixed(2)
-                          : 0}{" "}
-                          {" kg"}
-                        </Text>
-                      </View>
-                      <View className="flex flex-row " style={stats.viewRows}>
-                        <Text style={stats.rowText}>Weight</Text>
-                        <Text style={[stats.rowText, { color: "#A53535" }]}>
-                          {(rawInputLastIdx - rawInputFirstIdx > 0 ? "+" : "") +
-                            (rawInputLastIdx - rawInputFirstIdx).toFixed(2) +
-                            " kg"}
-                        </Text>
-                        <Text style={[stats.rowText, { color: "#A53535" }]}>
-                          {rawInputLastIdx.toFixed(2) + " kg"}
-                        </Text>
-                      </View>
-                    </>
-                  );
-                  break;
-                case "personal record":
-                  return (
-                    <>
-                      <View
-                        className="flex flex-row"
-                        style={[stats.viewRows, { marginTop: 0 }]}
-                      >
-                        <Text style={[stats.rowText, { color: "grey" }]}></Text>
-                        <Text style={[stats.rowText, { color: "grey" }]}>
-                          Trend
-                        </Text>
-                        <Text style={[stats.rowText, { color: "grey" }]}>
-                          Current
-                        </Text>
-                      </View>
-                      <View className="flex flex-row " style={stats.viewRows}>
-                        <Text style={stats.rowText}>Resistance</Text>
-                        <Text style={[stats.rowText, { color: "grey" }]}>
-                          {
-                            // Ugly but this determines the sign
-                            Math.round(PrLastVal - PrFirstVal) > 0 ?
-                              "+"
-                            : Math.round(PrLastVal - PrFirstVal) < 0 ?
-                              "-"
-                            : ""
-                          }
-                          {Math.round(PrLastVal - PrFirstVal)}
-                          {" kg"}
-                        </Text>
-                        <Text style={[stats.rowText, { color: "grey" }]}>
-                          {PrLastVal.toFixed(2)}
-                          {" kg"}
-                        </Text>
-                      </View>
-                      <View className="flex flex-row " style={stats.viewRows}>
-                        <Text style={stats.rowText}>Body %</Text>
-                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
-                          {(
-                            PrLastVal /
-                              bodyWeightData[bodyWeightData.length - 1].weight -
-                              PrFirstVal /
-                                bodyWeightData[bodyWeightData.length - 1]
-                                  .weight >
-                            0
-                          ) ?
-                            "+"
-                          : (
-                            PrLastVal /
-                              bodyWeightData[bodyWeightData.length - 1].weight -
-                              PrFirstVal /
-                                bodyWeightData[bodyWeightData.length - 1]
-                                  .weight <
-                            0
-                          ) ?
-                            "-"
-                          : ""}
-                          {(
-                            PrLastVal /
-                              bodyWeightData[bodyWeightData.length - 1].weight -
-                            PrFirstVal /
-                              bodyWeightData[bodyWeightData.length - 1].weight
-                          ).toFixed(2)}
-                          {"%"}
-                        </Text>
-                        <Text style={[stats.rowText, { color: "#AD760A" }]}>
-                          {(
-                            ((PrLastVal /
-                              bodyWeightData[bodyWeightData.length - 1]
-                                .weight) *
-                              100) %
-                              100 >
-                            0
-                          ) ?
-                            "+"
-                          : (
-                            ((PrLastVal /
-                              bodyWeightData[bodyWeightData.length - 1]
-                                .weight) *
-                              100) %
-                              100 <
-                            0
-                          ) ?
-                            "-"
-                          : ""}
-                          {(
-                            ((PrLastVal /
-                              bodyWeightData[bodyWeightData.length - 1]
-                                .weight) *
-                              100) %
-                            100
-                          ).toFixed(1)}
-                          {"%"}
-                        </Text>
-                      </View>
-                      <View className="flex flex-row " style={stats.viewRows}>
-                        <Text style={stats.rowText}>
-                          {
-                            "" /* vs Average [hidden until futher implementation and discussion]*/
-                          }
-                        </Text>
-                        <Text
-                          style={[stats.rowText, { color: "#A53535" }]}
-                        ></Text>
-                        <Text
-                          style={[stats.rowText, { color: "#A53535" }]}
-                        ></Text>
-                      </View>
-                    </>
-                  );
-              }
-            })()
-          }
-        </View>
+        <Summary
+          graphDataType={graphDataType}
+          rawInputLength={rawInputLength}
+          rawInputTime={rawInputTime}
+          rawInputTimeNum={rawInputTimeNum}
+          rawInputValue={rawInputValue}
+          rawInputLastIdx={rawInputLastIdx}
+          userProfileData={userProfileData}
+          rawInputFirstIdx={rawInputFirstIdx}
+          PrLastVal={PrLastVal}
+          PrFirstVal={PrFirstVal}
+          bodyWeightData={bodyWeightData}
+        />
 
         <Goals
           calorieGoal={userProfileData.calorieGoal}
@@ -1491,10 +1527,7 @@ Next Tasks = ⚠️
 Needs Consideration = ❗
 
 Priority:
-1) Add goal section below summary ✔️
-2) Remove datapoint highlight off of goal line ✔️
-3) To improve preformance add activity cards into a flat list ✔️
-4) Goal line reflects goal hook
+1) Goal line reflects goal hook 
 
 Other
 - consider using memorization for queried lists and data
@@ -1502,6 +1535,8 @@ Other
 - pretty up "figmatize" page
 - GitHub project board
 - Readme update
+- fix BarChart button
+
 
 Graph Section
 - create personal record summary view [vs Average row] ❗ (many different exercises have different standards, only support the popular exercise?https://strengthlevel.com/strength-standards/bench-press/lb)
