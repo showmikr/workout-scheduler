@@ -26,7 +26,7 @@ const AddExerciseBtn = ({ workoutId }: { workoutId: string }) => {
       })}
       onPress={() => {
         router.push({
-          pathname: "/(app)/(tabs)/workouts/[workoutId]/add-exercise/",
+          pathname: "/(app)/(tabs)/workout-list/[workoutId]/add-exercise/",
           params: { workoutId: workoutId },
         });
       }}
@@ -149,7 +149,7 @@ export default function WorkoutDetails() {
           <Link
             asChild
             style={exerciseStyles.exerciseCard}
-            href={`/(app)/(tabs)/workouts/${workoutId}/${item.exercise.exercise_id}`}
+            href={`/(app)/(tabs)/workout-list/${workoutId}/${item.exercise.exercise_id}`}
           >
             <ExerciseCard
               workoutId={parseInt(workoutId)}

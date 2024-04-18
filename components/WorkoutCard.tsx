@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import { Pressable, Text } from "react-native";
-import type { TaggedWorkout } from "../app/(app)/(tabs)/workouts";
+import type { TaggedWorkout } from "../app/(app)/(tabs)/workout-list";
 
 type WorkoutCardProps = { workout: TaggedWorkout };
 
@@ -9,7 +9,7 @@ export default function WorkoutCard(props: WorkoutCardProps) {
   return (
     <Link
       href={{
-        pathname: "/(app)/(tabs)/workouts/[workoutId]/",
+        pathname: "/(app)/(tabs)/workout-list/[workoutId]/",
         params: { workoutId: id, workoutTitle: title },
       }}
       asChild

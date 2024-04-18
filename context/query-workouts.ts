@@ -1,5 +1,5 @@
 import { SQLiteDatabase } from "expo-sqlite/next";
-import { TaggedWorkout } from "../app/(app)/(tabs)/workouts";
+import { TaggedWorkout } from "../app/(app)/(tabs)/workout-list";
 
 /* 
 This function requires that we pass a database connection handle.
