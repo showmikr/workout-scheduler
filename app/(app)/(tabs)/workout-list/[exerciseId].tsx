@@ -17,8 +17,8 @@ import {
   UnifiedCardioSet,
   UnifiedResistanceSet,
   exerciseEnums,
-} from "../../../../../utils/exercise-types";
-import { twColors } from "../../../../../constants/Colors";
+} from "../../../../utils/exercise-types";
+import { twColors } from "../../../../constants/Colors";
 
 function useExerciseData() {
   const { exerciseId } = useLocalSearchParams<{ exerciseId: string }>();

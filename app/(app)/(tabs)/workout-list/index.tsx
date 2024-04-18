@@ -2,6 +2,7 @@ import { StyleSheet, FlatList, SafeAreaView } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import WorkoutCard from "../../../../components/WorkoutCard";
 import { useWorkoutsContext } from "../../../../context/workouts-context";
+import { Link, Stack } from "expo-router";
 
 export type TaggedWorkout = { id: number; title: string; tags: string[] };
 

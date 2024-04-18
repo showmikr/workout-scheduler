@@ -94,7 +94,10 @@ export default function NewWorkoutModal() {
             title,
           };
           workoutsDispatch({ type: "add_new_workout", newWorkout });
-          router.replace(`/workout-list/${newWorkoutId}`);
+          router.replace({
+            pathname: "/workout-list/workout",
+            params: { workoutId: newWorkoutId },
+          });
         }}
       >
         <Animated.Text
