@@ -45,7 +45,7 @@ export default function TabTwoLayout() {
           }}
         />
         <Stack.Screen
-          name="[workoutId]/add-exercise/index"
+          name="add-exercise/index"
           options={{ presentation: "modal", headerTitle: "Choose an exercise" }}
         />
       </Stack>

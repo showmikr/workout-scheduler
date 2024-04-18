@@ -2,17 +2,17 @@ import { FontAwesome } from "@expo/vector-icons";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { Text, SafeAreaView, View, Pressable, FlatList } from "react-native";
-import { twColors } from "../../../../../constants/Colors";
+import { twColors } from "../../../../constants/Colors";
 import {
   ExerciseCard,
   exerciseStyles,
-} from "../../../../../components/ExerciseCard";
+} from "../../../../components/ExerciseCard";
 import {
   ExerciseParams,
   UnifiedCardioSet,
   UnifiedResistanceSet,
   exerciseEnums,
-} from "../../../../../utils/exercise-types";
+} from "../../../../utils/exercise-types";
 
 const AddExerciseBtn = ({ workoutId }: { workoutId: string }) => {
   return (
@@ -26,7 +26,7 @@ const AddExerciseBtn = ({ workoutId }: { workoutId: string }) => {
       })}
       onPress={() => {
         router.push({
-          pathname: "/(app)/(tabs)/workout-list/[workoutId]/add-exercise/",
+          pathname: "/(app)/(tabs)/workout-list/add-exercise/",
           params: { workoutId: workoutId },
         });
       }}
@@ -149,7 +149,13 @@ export default function WorkoutDetails() {
           <Link
             asChild
             style={exerciseStyles.exerciseCard}
-            href={`/(app)/(tabs)/workout-list/${workoutId}/${item.exercise.exercise_id}`}
+            href={{
+              pathname: "/(app)/(tabs)/workout-list/[exerciseId]",
+              params: {
+                exerciseId: item.exercise.exercise_id,
+                workoutId: workoutId,
+              },
+            }}
           >
             <ExerciseCard
               workoutId={parseInt(workoutId)}

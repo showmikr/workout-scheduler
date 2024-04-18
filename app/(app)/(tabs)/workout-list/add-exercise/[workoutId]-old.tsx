@@ -10,14 +10,14 @@ import {
   StyleSheet,
 } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { twColors } from "../../../../../../constants/Colors";
+import { twColors } from "../../../../../constants/Colors";
 import {
   CardioSetParams,
   ExerciseEnums,
   ExerciseSetParams,
   ResistanceSetParams,
   exerciseEnums,
-} from "../../../../../../utils/exercise-types";
+} from "../../../../../utils/exercise-types";
 
 type ExerciseSetInput = Pick<ExerciseSetParams, "reps" | "rest_time" | "title">;
 type ResistanceSetInput = Pick<ResistanceSetParams, "total_weight"> &

@@ -1,5 +1,5 @@
 import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite/next";
-import { ExerciseEnums } from "../../../../../../utils/exercise-types";
+import { ExerciseEnums } from "../../../../../utils/exercise-types";
 import { useState } from "react";
 import { SafeAreaView, Text } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
@@ -58,7 +58,10 @@ export default function AddExerciseIndex() {
       {availableExercises.length > 0 ?
         availableExercises.map((exerciseClass) => (
           <Link
-            href={`/workouts/${workoutId}`}
+            href={{
+              pathname: "/workout-list/workout",
+              params: { workoutId: workoutId },
+            }}
             key={exerciseClass.id}
             className="pb-2 pl-4 pt-2 text-3xl text-black dark:text-white"
             onPress={() => {
