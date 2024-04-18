@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { TaggedWorkout } from "../app/(app)/(tabs)/workouts";
+import { TaggedWorkout } from "../app/(app)/(tabs)/workout-list";
 
 type WorkoutsAction = { type: "add_new_workout"; newWorkout: TaggedWorkout };
 
