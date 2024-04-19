@@ -29,8 +29,10 @@ function useExerciseClasses(db: SQLiteDatabase) {
 }
 
 export default function AddExerciseIndex() {
-  const localSearchParams = useLocalSearchParams<{ workoutId: string }>();
-  const workoutId = parseInt(localSearchParams.workoutId);
+  const { workoutId, workoutTitle } = useLocalSearchParams<{
+    workoutId: string;
+    workoutTitle: string;
+  }>();
 
   const db = useSQLiteContext();
   const availableExercises = useExerciseClasses(db);
@@ -60,7 +62,7 @@ export default function AddExerciseIndex() {
           <Link
             href={{
               pathname: "/workout-list/workout",
-              params: { workoutId: workoutId },
+              params: { workoutId: workoutId, workoutTitle: workoutTitle },
             }}
             key={exerciseClass.id}
             className="pb-2 pl-4 pt-2 text-3xl text-black dark:text-white"

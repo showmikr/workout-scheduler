@@ -14,7 +14,13 @@ import {
   exerciseEnums,
 } from "../../../../utils/exercise-types";
 
-const AddExerciseBtn = ({ workoutId }: { workoutId: string }) => {
+const AddExerciseBtn = ({
+  workoutId,
+  workoutTitle,
+}: {
+  workoutId: string;
+  workoutTitle: string;
+}) => {
   return (
     <Pressable
       style={({ pressed }) => ({
@@ -27,7 +33,7 @@ const AddExerciseBtn = ({ workoutId }: { workoutId: string }) => {
       onPress={() => {
         router.push({
           pathname: "/(app)/(tabs)/workout-list/add-exercise/",
-          params: { workoutId: workoutId },
+          params: { workoutId: workoutId, workoutTitle: workoutTitle },
         });
       }}
     >
@@ -72,7 +78,7 @@ export default function WorkoutDetails() {
         <Text className="text-3xl text-neutral-500 dark:text-neutral-500">
           Wow, much empty...
         </Text>
-        <AddExerciseBtn workoutId={workoutId} />
+        <AddExerciseBtn workoutId={workoutId} workoutTitle={workoutTitle} />
       </SafeAreaView>
     );
   }
@@ -172,7 +178,7 @@ export default function WorkoutDetails() {
           </Link>
         )}
       />
-      <AddExerciseBtn workoutId={workoutId} />
+      <AddExerciseBtn workoutId={workoutId} workoutTitle={workoutTitle} />
     </SafeAreaView>
   );
 }
