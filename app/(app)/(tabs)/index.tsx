@@ -8,6 +8,7 @@ import {
   ScrollView,
   TextInput,
   FlatList,
+  SectionList,
 } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
@@ -188,6 +189,41 @@ function useGraphData() {
     });
 
   return graphData;
+}
+
+function groupActivityCards(list: WorkoutSession[]) {
+  let res: { title: string; data: WorkoutSession[] }[] = [];
+  let ind = 0;
+
+  list.forEach((card) => {
+    if (res.length === 0) {
+      res.push({
+        title:
+          card.date.toLocaleString("default", { month: "long" }) +
+          ", " +
+          card.date.getFullYear(),
+        data: [card],
+      });
+    } else if (
+      res[ind].title !==
+      card.date.toLocaleString("default", { month: "long" }) +
+        ", " +
+        card.date.getFullYear()
+    ) {
+      ind += 1;
+      res.push({
+        title:
+          card.date.toLocaleString("default", { month: "long" }) +
+          ", " +
+          card.date.getFullYear(),
+        data: [card],
+      });
+    } else {
+      res[ind].data.push(card);
+    }
+  });
+
+  return res;
 }
 
 export default function SummaryPage() {
@@ -607,21 +643,29 @@ export default function SummaryPage() {
     goalLine = [];
   }
 
+  let previousCard: WorkoutSession | null = null;
+
   return (
-    <FlatList
+    <SectionList
       style={{ backgroundColor: "#0D0D0D" }}
       initialNumToRender={4}
-      data={workoutSessionData
-        .filter((obj) => obj.date >= selectedTimeRange)
-        .slice()
-        .reverse()}
+      sections={groupActivityCards(
+        workoutSessionData
+          .filter((obj) => obj.date >= selectedTimeRange)
+          .slice()
+          .reverse()
+      )}
       renderItem={({ item }) => (
         <ActivityCard
-          calories={item.calories}
           title={item.title}
+          calories={item.calories}
           date={item.date}
-          key={item.sessionId}
         />
+      )}
+      renderSectionHeader={({ section: { title } }) => (
+        <View style={stats.viewStyle}>
+          <Text style={stats.viewTitle}>{title}</Text>
+        </View>
       )}
       keyExtractor={(item) => item.sessionId.toString()}
       ListHeaderComponent={
@@ -1530,7 +1574,8 @@ Needs Consideration = ❗
 
 Priority:
 1) Goal line reflects goal hook
-2) Modify Activity Card to display only a certain amount of cards
+2) Add Month and year to seperate cards
+3) Modify Activity Card to display only a certain amount of cards ❗
 
 Other
 - consider using memorization for queried lists and data
