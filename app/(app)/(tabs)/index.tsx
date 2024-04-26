@@ -11,8 +11,9 @@ import {
   SectionList,
 } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ActivityCard } from "../../../components/ActivityCard";
+import { Link, router } from "expo-router";
 
 type WorkoutSession = {
   sessionId: number;
@@ -643,8 +644,6 @@ export default function SummaryPage() {
     goalLine = [];
   }
 
-  let previousCard: WorkoutSession | null = null;
-
   return (
     <SectionList
       style={{ backgroundColor: "#0D0D0D" }}
@@ -1150,7 +1149,6 @@ function Graph({
   setGraphRange: React.Dispatch<string>;
 }) {
   const graphRangeButtons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
-
   return (
     <View>
       {/* graph type button */}
@@ -1498,8 +1496,52 @@ function Graph({
         />
 
         {/* activity view */}
-        <View style={[stats.viewStyle]}>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "flex-start",
+            backgroundColor: "#0D0D0D",
+            marginLeft: 10,
+            marginTop: 25,
+          }}
+        >
           <Text style={[stats.viewTitle]}>Activity</Text>
+          <Pressable
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "#0D0D0D",
+
+              width: 22,
+              height: 22,
+              marginStart: 8,
+
+              borderColor: "#A53535",
+              borderWidth: 1.5,
+              borderRadius: 12,
+              top: 3,
+            }}
+            onPress={() => {
+              router.navigate("/hello");
+            }}
+          >
+            <Text
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                textAlign: "center",
+                bottom: 4,
+
+                fontWeight: "500",
+                fontSize: 20,
+                color: "#A53535",
+              }}
+            >
+              +
+            </Text>
+          </Pressable>
         </View>
       </View>
     </View>
@@ -1550,8 +1592,6 @@ const stats = StyleSheet.create({
     fontSize: 16,
     fontWeight: "300",
     color: "#BDBDBD",
-    // borderWidth: 1,
-    // borderColor: "white",
     width: 360 / 3,
   },
   viewStyle: {
@@ -1574,7 +1614,7 @@ Needs Consideration = ❗
 
 Priority:
 1) Goal line reflects goal hook
-2) Add Month and year to seperate cards
+2) Add Month and year to seperate cards ✔️
 3) Modify Activity Card to display only a certain amount of cards ❗
 
 Other
@@ -1584,6 +1624,11 @@ Other
 - GitHub project board
 - Readme update
 - fix BarChart button
+- Support for current dark/light mode
+- Goal calorie input text field to support up to 4 digits
+- Adjust Activity Icon (shrink) + displays appropriate icon based on activity
+- Remove all classsNames to ->  flex: 1,
+                                flexDirection: "row",
 
 
 Graph Section
