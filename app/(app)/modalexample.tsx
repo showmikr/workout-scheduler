@@ -37,7 +37,7 @@ export default function ModalExample() {
           }}
           onPress={() => {
             setModal(!modal);
-            handlePresentModalPress;
+            handlePresentModalPress();
           }}
         >
           <Text

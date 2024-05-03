@@ -13,6 +13,7 @@ import "../global.css";
 import { SQLiteProvider, SQLiteDatabase } from "expo-sqlite/next";
 import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -54,7 +55,9 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <SessionProvider>
         <SQLiteProvider databaseName="next-sqlite.db" onInit={initDb}>
-          <Slot />
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Slot />
+          </GestureHandlerRootView>
         </SQLiteProvider>
       </SessionProvider>
     </ThemeProvider>
