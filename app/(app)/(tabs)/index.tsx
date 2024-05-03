@@ -1523,7 +1523,7 @@ function Graph({
               top: 3,
             }}
             onPress={() => {
-              router.navigate("/hello");
+              router.navigate("/modalexample");
             }}
           >
             <Text
@@ -1616,6 +1616,7 @@ Priority:
 1) Goal line reflects goal hook
 2) Add Month and year to seperate cards ✔️
 3) Modify Activity Card to display only a certain amount of cards ❗
+4) fix: Activity Card labels stay appearent after scrolling past them and have a gap between the top bar and the label
 
 Other
 - consider using memorization for queried lists and data
