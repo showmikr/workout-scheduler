@@ -1,11 +1,11 @@
 import { Link, Stack } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { getWorkouts } from "../../../../context/query-workouts";
-import { useWorkoutStore } from "../../../../external-store";
+import { useExternalStore } from "../../../../external-store";
 
 export default function TabTwoLayout() {
   const db = useSQLiteContext();
-  const [workouts, setWorkouts] = useWorkoutStore((state) => [
+  const [workouts, setWorkouts] = useExternalStore((state) => [
     state.workouts,
     state.setWorkouts,
   ]);

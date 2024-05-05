@@ -2,13 +2,13 @@ import { StyleSheet, FlatList, SafeAreaView } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import WorkoutCard from "../../../../components/WorkoutCard";
 import { Link, Stack } from "expo-router";
-import { useWorkoutStore } from "../../../../external-store";
+import { useExternalStore } from "../../../../external-store";
 
 export type TaggedWorkout = { id: number; title: string; tags: string[] };
 
 export default function TabTwoScreen() {
   const db = useSQLiteContext();
-  const workouts = useWorkoutStore((state) => state.workouts);
+  const workouts = useExternalStore((state) => state.workouts);
 
   return (
     <SafeAreaView className="flex-1 items-center justify-center">

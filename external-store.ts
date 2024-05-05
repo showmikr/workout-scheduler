@@ -1,13 +1,13 @@
 import { create } from "zustand";
 import { TaggedWorkout } from "./app/(app)/(tabs)/workout-list";
 
-type WorkoutStore = {
+type ExternalStore = {
   workouts: null | TaggedWorkout[];
   addWorkout: (workout: TaggedWorkout) => void;
   setWorkouts: (workoutList: TaggedWorkout[]) => void;
 };
 
-const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
+const useExternalStore = create<ExternalStore>()((set, get) => ({
   workouts: null,
   addWorkout: (wo) => {
     const currentWorkouts = get().workouts;
@@ -21,4 +21,4 @@ const useWorkoutStore = create<WorkoutStore>()((set, get) => ({
   },
 }));
 
-export { useWorkoutStore };
+export { useExternalStore };

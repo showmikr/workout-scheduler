@@ -13,12 +13,12 @@ import Animated from "react-native-reanimated";
 import { twColors } from "../../../../constants/Colors";
 import { router } from "expo-router";
 import { TaggedWorkout } from ".";
-import { useWorkoutStore } from "../../../../external-store";
+import { useExternalStore } from "../../../../external-store";
 
 export default function NewWorkoutModal() {
   const colorScheme = useColorScheme();
   const db = useSQLiteContext();
-  const addWorkout = useWorkoutStore((state) => state.addWorkout);
+  const addWorkout = useExternalStore((state) => state.addWorkout);
 
   const workoutCount =
     db.getFirstSync<{ workout_count: number }>(
