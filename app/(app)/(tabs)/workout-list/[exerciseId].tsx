@@ -7,7 +7,7 @@ import {
   TextInput,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { useSQLiteContext } from "expo-sqlite/next";
+import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
 import {
   CardioSection,
@@ -19,6 +19,7 @@ import {
   exerciseEnums,
 } from "../../../../utils/exercise-types";
 import { twColors } from "../../../../constants/Colors";
+import { useMutation } from "@tanstack/react-query";
 
 function useExerciseData() {
   // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
@@ -160,7 +161,48 @@ export default function () {
   );
 }
 
+type SetWeightArgs = {
+  db: SQLiteDatabase;
+  resistanceSetId: number;
+  weight: number;
+};
+
+async function updateResistanceSetWeight({
+  db,
+  resistanceSetId,
+  weight,
+}: SetWeightArgs) {
+  const updatedWeight = await db.getFirstAsync<{ total_weight: number }>(
+    `
+    UPDATE resistance_set
+    SET total_weight = ?
+    WHERE exercise_set_id = ?
+    RETURNING resistance_set.total_weight;
+    `,
+    [weight, resistanceSetId]
+  );
+  //  Non-null assert is okay here b/c we can handle the error
+  //  in the onError() handler for the weightMutation
+  return updatedWeight!;
+}
+
 const ResistanceSet = ({ set }: { set: UnifiedResistanceSet }) => {
+  const db = useSQLiteContext();
+  const weightMutation = useMutation({
+    mutationFn: (argsObject: SetWeightArgs) => {
+      return updateResistanceSetWeight(argsObject);
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+    onSuccess: (data) => {
+      console.log("Updated Exercise Set Weight!", data.total_weight);
+    },
+  });
+  const [weightString, setWeightString] = useState(
+    set.total_weight.toFixed(2).toString()
+  );
+
   return (
     <View
       style={[
@@ -188,8 +230,21 @@ const ResistanceSet = ({ set }: { set: UnifiedResistanceSet }) => {
         <View style={setStyles.inline}>
           <TextInput
             inputMode="decimal"
-            value={set.total_weight.toFixed(2)}
+            value={weightString}
+            maxLength={5}
             style={[setStyles.textInput, setStyles.inertInputState]}
+            onChangeText={(text) => {
+              setWeightString(text);
+            }}
+            onEndEditing={(e) => {
+              // if the changed input is the same as our initial state, don't update the db
+              if (Number(e.nativeEvent.text) === set.total_weight) return;
+              weightMutation.mutate({
+                db,
+                resistanceSetId: set.resistance_set_id,
+                weight: Number(e.nativeEvent.text),
+              });
+            }}
           />
           <Text style={setStyles.unitsLabel}>kg</Text>
         </View>
