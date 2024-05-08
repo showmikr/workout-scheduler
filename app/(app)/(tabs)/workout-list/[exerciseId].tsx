@@ -177,7 +177,7 @@ const ResistanceSet = ({ set }: { set: UnifiedResistanceSet }) => {
       <View style={{ maxWidth: 100 }}>
         <Text style={setStyles.inputLabel}>Reps</Text>
         <TextInput
-          inputMode="decimal"
+          inputMode="numeric"
           value={set.reps.toString()}
           maxLength={5}
           style={[setStyles.textInput, setStyles.inertInputState]}
