@@ -1,7 +1,6 @@
 import { StyleSheet, FlatList, SafeAreaView } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import WorkoutCard from "../../../../components/WorkoutCard";
-import { Link, Stack } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { getWorkoutsAsync } from "../../../../context/query-workouts";
 
