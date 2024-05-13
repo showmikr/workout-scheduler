@@ -174,9 +174,6 @@ export default function WorkoutDetails() {
                 title: item.exercise.title,
                 sets: item.data,
               }}
-              onPress={(_event) => {
-                console.log("Pressed");
-              }}
             />
           </Link>
         )}
