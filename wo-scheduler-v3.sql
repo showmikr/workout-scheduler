@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS "exercise_equipment" (
 CREATE TABLE IF NOT EXISTS "workout_tag" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
-  "title" text NOT NULL,
+  "title" text UNIQUE NOT NULL,
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
