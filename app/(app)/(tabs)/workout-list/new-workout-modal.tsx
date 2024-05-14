@@ -8,37 +8,64 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Pressable,
+  SafeAreaView,
 } from "react-native";
-import Animated from "react-native-reanimated";
 import { twColors } from "../../../../constants/Colors";
 import { router } from "expo-router";
-import { TaggedWorkout } from ".";
-import { useWorkoutsContext } from "../../../../context/workouts-context";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  AddNewWorkoutArgsObj,
+  addNewWorkout,
+  getWorkoutCount,
+} from "../../../../context/query-workouts";
 
 export default function NewWorkoutModal() {
-  const colorScheme = useColorScheme();
   const db = useSQLiteContext();
-  const { workoutsDispatch } = useWorkoutsContext();
+  const { data: workoutCount } = useQuery({
+    queryKey: ["workout_count"],
+    queryFn: () => getWorkoutCount(db),
+  });
 
-  const workoutCount =
-    db.getFirstSync<{ workout_count: number }>(
-      `
-        SELECT count(id) AS workout_count
-        FROM workout
-        WHERE app_user_id = 1 AND training_day_id IS NULL;
-        `
-    )?.workout_count ?? 0;
-  const defaultTitle = `New Workout #${workoutCount + 1}`;
+  return (
+    <SafeAreaView
+      style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+    >
+      {!workoutCount ?
+        <Text style={{ color: "#BDBDBD", fontWeight: "bold", fontSize: 22 }}>
+          Loading...
+        </Text>
+      : <AddWorkoutCard workoutCount={workoutCount} />}
+    </SafeAreaView>
+  );
+}
+
+const AddWorkoutCard = (props: { workoutCount: number }) => {
+  const db = useSQLiteContext();
+  const colorScheme = useColorScheme();
+  const queryClient = useQueryClient();
+  const defaultTitle = `New Workout #${props.workoutCount}`;
   const [title, setTitle] = useState(defaultTitle);
-
-  const addNewEmptyWorkout = () => {
-    const newWorkoutId = db.getFirstSync<{ id: number }>(
-      `INSERT INTO workout (app_user_id, title, list_order) VALUES (1, ?, ?) RETURNING workout.id;`,
-      [title.length > 0 ? title : defaultTitle, workoutCount + 1]
-    );
-    return newWorkoutId!.id;
-  };
-
+  const newWorkoutMutation = useMutation({
+    mutationFn: (argsObject: AddNewWorkoutArgsObj) => addNewWorkout(argsObject),
+    onSuccess: (newWorkout) => {
+      queryClient.invalidateQueries({ queryKey: ["workout_count"] });
+      queryClient.invalidateQueries({ queryKey: ["workouts"] });
+      queryClient.invalidateQueries({ queryKey: ["workout_tag_mappings"] });
+      console.log(
+        "Added new workout, id:",
+        newWorkout.id,
+        ", title:",
+        newWorkout.title
+      );
+      router.replace({
+        pathname: "/workout-list/workout",
+        params: { workoutId: newWorkout.title },
+      });
+    },
+    onError: (err) => {
+      console.error(err);
+    },
+  });
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -67,7 +94,7 @@ export default function NewWorkoutModal() {
           setTitle(text);
         }}
         style={{
-          width: "95%",
+          minWidth: "80%",
           fontSize: 36,
           borderBottomWidth: 1,
           borderBottomColor: twColors.neutral500,
@@ -75,7 +102,7 @@ export default function NewWorkoutModal() {
           color: colorScheme == "dark" ? "white" : "black",
         }}
         placeholder={defaultTitle}
-      ></TextInput>
+      />
       <Pressable
         style={({ pressed }) => ({
           paddingVertical: 8,
@@ -86,21 +113,15 @@ export default function NewWorkoutModal() {
           height: "auto",
           width: "auto",
         })}
-        onPress={() => {
-          const newWorkoutId = addNewEmptyWorkout();
-          const newWorkout: TaggedWorkout = {
-            id: newWorkoutId,
-            tags: [],
+        onPress={() =>
+          newWorkoutMutation.mutate({
+            db,
             title,
-          };
-          workoutsDispatch({ type: "add_new_workout", newWorkout });
-          router.replace({
-            pathname: "/workout-list/workout",
-            params: { workoutId: newWorkoutId },
-          });
-        }}
+            workoutCount: props.workoutCount,
+          })
+        }
       >
-        <Animated.Text
+        <Text
           style={{
             textShadowColor: "black",
             textShadowRadius: 0,
@@ -111,10 +132,10 @@ export default function NewWorkoutModal() {
           }}
         >
           Submit
-        </Animated.Text>
+        </Text>
       </Pressable>
       {/* Use a light status bar on iOS to account for the black space above the modal */}
       <StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
     </KeyboardAvoidingView>
   );
-}
+};

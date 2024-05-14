@@ -1,11 +1,12 @@
 import { Link } from "expo-router";
 import { Pressable, Text } from "react-native";
-import type { TaggedWorkout } from "../app/(app)/(tabs)/workout-list";
+import { Workout } from "../context/query-workouts";
 
-type WorkoutCardProps = { workout: TaggedWorkout };
+type WorkoutCardProps = { workout: Workout; tags: string[] };
 
 export default function WorkoutCard(props: WorkoutCardProps) {
-  const { id, title, tags } = props.workout;
+  const { id, title } = props.workout;
+  const tags = props.tags;
   return (
     <Link
       href={{
