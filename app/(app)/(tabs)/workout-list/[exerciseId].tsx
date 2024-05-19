@@ -21,7 +21,10 @@ import {
 import { twColors } from "../../../../constants/Colors";
 
 function useExerciseData() {
-  const { exerciseId } = useLocalSearchParams<{ exerciseId: string }>();
+  // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
+  const searchParams = useLocalSearchParams<{ exerciseId: string }>();
+  const exerciseId = searchParams.exerciseId!;
+
   const db = useSQLiteContext();
   const [exerciseSection, setExerciseSection] = useState<ExerciseSection>();
 
@@ -117,7 +120,9 @@ function useExerciseData() {
 }
 
 export default function () {
-  const { exerciseId } = useLocalSearchParams<{ exerciseId: string }>();
+  // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
+  const searchParams = useLocalSearchParams<{ exerciseId: string }>();
+  const exerciseId = searchParams.exerciseId!;
 
   const exerciseSection = useExerciseData();
   // If all the exercise set data isn't fully loaded, display a loading screen

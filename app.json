@@ -32,7 +32,7 @@
       }
     },
     "owner": "showmikr",
-    "plugins": ["expo-router"],
+    "plugins": ["expo-router", "expo-asset", "expo-font", "expo-secure-store"],
     "scheme": "workoutscheduler",
     "experiments": {
       "typedRoutes": true

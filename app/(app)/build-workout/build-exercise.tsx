@@ -279,14 +279,15 @@ function AddSetButton({ onPress }: { onPress: () => void }) {
 }
 
 export default function BuildExerciseComponent() {
+  // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
   const localSearchParams = useLocalSearchParams<{
     exercise_class_id: string;
     exercise_title: string;
     exercise_type_id: string;
   }>();
-  const exerciseClassIdParam = parseInt(localSearchParams.exercise_class_id);
-  const exerciseTypeIdParam = parseInt(localSearchParams.exercise_type_id);
-  const exerciseTitleParam = localSearchParams.exercise_title;
+  const exerciseClassIdParam = parseInt(localSearchParams.exercise_class_id!);
+  const exerciseTypeIdParam = parseInt(localSearchParams.exercise_type_id!);
+  const exerciseTitleParam = localSearchParams.exercise_title!;
 
   const db = useSQLiteContext();
 

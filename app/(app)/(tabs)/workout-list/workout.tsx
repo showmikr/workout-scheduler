@@ -48,10 +48,13 @@ const AddExerciseBtn = ({
 };
 
 export default function WorkoutDetails() {
-  const { workoutId, workoutTitle } = useLocalSearchParams<{
+  // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
+  const searchParams = useLocalSearchParams<{
     workoutId: string;
     workoutTitle: string;
   }>();
+  const workoutId = searchParams.workoutId!;
+  const workoutTitle = searchParams.workoutTitle!;
   const db = useSQLiteContext();
 
   const exercises = db.getAllSync<ExerciseParams>(

@@ -21,10 +21,11 @@ export default function AddWorkoutComponent() {
   const db = useSQLiteContext();
   const [workoutTitle, setWorkoutTitle] = useState<string>("");
 
+  // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
   const { newWorkoutIdString } = useLocalSearchParams<{
     newWorkoutIdString: string;
   }>();
-  const emptyWorkoutId = parseInt(newWorkoutIdString);
+  const emptyWorkoutId = parseInt(newWorkoutIdString!);
   console.log("Empty Workout Id:", emptyWorkoutId);
 
   const getExercises = () => {
