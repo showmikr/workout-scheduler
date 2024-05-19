@@ -1,4 +1,4 @@
-import { StyleSheet, FlatList, SafeAreaView } from "react-native";
+import { StyleSheet, FlatList, Text, SafeAreaView } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import WorkoutCard from "../../../../components/WorkoutCard";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -32,6 +32,16 @@ export default function TabTwoScreen() {
     queryKey: ["workout_count"],
     queryFn: () => getWorkoutCount(db),
   });
+
+  if (!(workouts && tagMap && workoutTagMap)) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center">
+        <Text style={{ color: "#BDBDBD", fontWeight: "bold", fontSize: 22 }}>
+          Loading...
+        </Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 items-center justify-center">
