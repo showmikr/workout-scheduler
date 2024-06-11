@@ -47,8 +47,21 @@ WebBrowser.maybeCompleteAuthSession({
   skipRedirectCheck: true,
 });
 
-const clientId = process.env.EXPO_PUBLIC_AWS_COGNITO_CLIENT_ID!;
-const userPoolUrl = process.env.EXPO_PUBLIC_AWS_COGNITO_USER_POOL!;
+if (!process.env.EXPO_PUBLIC_AWS_COGNITO_CLIENT_ID) {
+  throw new Error(
+    "clientId environment variable (aws cognito client id) was not found"
+  );
+}
+
+if (!process.env.EXPO_PUBLIC_AWS_COGNITO_USER_POOL) {
+  throw new Error(
+    "userPoolUrl environment variable (aws cognito user pool) was not found"
+  );
+}
+
+const clientId = process.env.EXPO_PUBLIC_AWS_COGNITO_CLIENT_ID;
+const userPoolUrl = process.env.EXPO_PUBLIC_AWS_COGNITO_USER_POOL;
+
 const redirectUri = AuthSession.makeRedirectUri();
 console.log("redirectUri: " + redirectUri);
 
