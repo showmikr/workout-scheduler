@@ -23,7 +23,7 @@ export default function TabOneScreen() {
   };
 
   const { colorScheme, setColorScheme } = useColorScheme();
-  const { fakeSignOut, signOut, session } = useSession()!;
+  const { signOut, session } = useSession()!;
   const [userData, setUserData] = useState<Partial<AppUser> | null>(null);
   const db = useSQLiteContext();
   type SelectFields = Pick<
@@ -102,7 +102,7 @@ export default function TabOneScreen() {
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
-      <Pressable onPress={fakeSignOut}>
+      <Pressable onPress={signOut}>
         <Text className="text-center text-3xl">Sign Me Out!</Text>
       </Pressable>
     </ScrollView>

@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useStorageState } from "./useStorageState";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { Alert } from "react-native";
+
+const enableFakeAuth: boolean = true;
 
 // This represents the default initialized AuthContext
 // This initial version is always supposed to be overriden with properties/functions that actually do something.
@@ -11,9 +13,6 @@ const AuthContext = React.createContext<{
   signOut: () => void;
   session: string | null; // session will need to be an object with multiple properties such as {username, idToken, email, etc} in the future
   isLoading: boolean;
-  // delete fakeSignIn and fakeSignOut once you no longer need them
-  fakeSignIn: () => void;
-  fakeSignOut: () => void;
 }>({
   signIn: () => {
     // No behavior initialized
@@ -23,12 +22,6 @@ const AuthContext = React.createContext<{
   },
   session: null,
   isLoading: true,
-  fakeSignIn: () => {
-    // No behavior initialized
-  },
-  fakeSignOut: () => {
-    // No behavior initialized
-  },
 });
 
 // This hook can be used to access the user info.
@@ -67,6 +60,20 @@ console.log("redirectUri: " + redirectUri);
 
 export function SessionProvider(props: React.PropsWithChildren) {
   const [[isLoading, session], setSession] = useStorageState("session");
+  const fakeSignOut = useCallback(() => {
+    setSession(null);
+  }, []);
+  const fakeSignIn = useCallback(() => {
+    // putting fake info into setSession
+    setSession(
+      JSON.stringify({
+        subjectClaim: "c8bf7e34-7dcf-11ee-b962-0242ac120002",
+        accessToken: "fake_access_token",
+        tokenType: "bearer",
+        issuedAt: Math.floor(Date.now() / 1000),
+      })
+    );
+  }, []);
   const discoveryDocument = useMemo(
     () => ({
       authorizationEndpoint: userPoolUrl + "/oauth2/authorize",
@@ -134,62 +141,58 @@ export function SessionProvider(props: React.PropsWithChildren) {
   return (
     <AuthContext.Provider
       value={{
-        signIn: () =>
-          promptAsync({
-            // @ts-expect-error
-            preferEphemeralSession: true, // prevents the mobile browser from remembering username and password
-          }),
-        signOut: () => {
-          if (!session) {
-            throw new Error("session is null");
-          }
-          const authTokens = JSON.parse(session) as AuthSession.TokenResponse;
-          AuthSession.revokeAsync(
-            {
-              clientId: clientId,
-              token: authTokens.accessToken,
-            },
-            discoveryDocument
-          )
-            .then((response) => {
-              if (response) {
-                console.log("Auth Server successfully revoked access token.");
-              } else {
-                console.log(
-                  "Auth server could NOT revoke access tokens. \
+        signIn:
+          enableFakeAuth ? fakeSignIn : (
+            () =>
+              promptAsync({
+                // @ts-expect-error
+                preferEphemeralSession: true, // prevents the mobile browser from remembering username and password
+              })
+          ),
+        signOut:
+          enableFakeAuth ? fakeSignOut : (
+            () => {
+              if (!session) {
+                throw new Error("session is null");
+              }
+              const authTokens = JSON.parse(
+                session
+              ) as AuthSession.TokenResponse;
+              AuthSession.revokeAsync(
+                {
+                  clientId: clientId,
+                  token: authTokens.accessToken,
+                },
+                discoveryDocument
+              )
+                .then((response) => {
+                  if (response) {
+                    console.log(
+                      "Auth Server successfully revoked access token."
+                    );
+                  } else {
+                    console.log(
+                      "Auth server could NOT revoke access tokens. \
                     However, you're seeing this log b/c we got a response back from the auth server, \
                     so at least we're online."
-                );
-              }
-            })
-            .catch((err) => {
-              console.error(err);
-            })
-            .finally(() => {
-              /**
-               * Always log the user out whether they are online or offline
-               * no matter what the auth server says (as to whether it could revoke the tokens or not).
-               * This will likely need to change for production.
-               */
-              setSession(null);
-            });
-        },
+                    );
+                  }
+                })
+                .catch((err) => {
+                  console.error(err);
+                })
+                .finally(() => {
+                  /**
+                   * Always log the user out whether they are online or offline
+                   * no matter what the auth server says (as to whether it could revoke the tokens or not).
+                   * This will likely need to change for production.
+                   */
+                  setSession(null);
+                });
+            }
+          ),
         session,
         isLoading: isLoading,
-        fakeSignIn: () => {
-          // putting fake info into setSession
-          setSession(
-            JSON.stringify({
-              subjectClaim: "c8bf7e34-7dcf-11ee-b962-0242ac120002",
-              accessToken: "fake_access_token",
-              tokenType: "bearer",
-              issuedAt: Math.floor(Date.now() / 1000),
-            })
-          );
-        },
-        fakeSignOut: () => {
-          setSession(null);
-        },
       }}
     >
       {props.children}
