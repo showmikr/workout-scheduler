@@ -134,33 +134,44 @@ export function SessionProvider(props: React.PropsWithChildren) {
   return (
     <AuthContext.Provider
       value={{
-        signIn: promptAsync,
+        signIn: () =>
+          promptAsync({
+            // @ts-expect-error
+            preferEphemeralSession: true, // prevents the mobile browser from remembering username and password
+          }),
         signOut: () => {
-          const authTokens =
-            session ? (JSON.parse(session) as AuthSession.TokenResponse) : null;
-          if (!authTokens?.refreshToken) {
-            console.log("in ctx.tsx, calling signOut function");
-            console.error(
-              "Auth Tokens are null, can't logout if you're already logged out"
-            );
-            return;
+          if (!session) {
+            throw new Error("session is null");
           }
-          WebBrowser.openAuthSessionAsync(
-            `${userPoolUrl}/logout?client_id=${clientId}&logout_uri=${redirectUri}`
+          const authTokens = JSON.parse(session) as AuthSession.TokenResponse;
+          AuthSession.revokeAsync(
+            {
+              clientId: clientId,
+              token: authTokens.accessToken,
+            },
+            discoveryDocument
           )
-            .then((authSessionResult) => {
-              if (
-                authSessionResult.type === "cancel" ||
-                authSessionResult.type === "dismiss"
-              ) {
-                // Since the user is cancelling the logout flow, we do nothing
-                return;
-              } else if (authSessionResult.type === "success") {
-                setSession(null);
+            .then((response) => {
+              if (response) {
+                console.log("Auth Server successfully revoked access token.");
+              } else {
+                console.log(
+                  "Auth server could NOT revoke access tokens. \
+                    However, you're seeing this log b/c we got a response back from the auth server, \
+                    so at least we're online."
+                );
               }
             })
             .catch((err) => {
-              console.error("browser problem: " + err);
+              console.error(err);
+            })
+            .finally(() => {
+              /**
+               * Always log the user out whether they are online or offline
+               * no matter what the auth server says (as to whether it could revoke the tokens or not).
+               * This will likely need to change for production.
+               */
+              setSession(null);
             });
         },
         session,
