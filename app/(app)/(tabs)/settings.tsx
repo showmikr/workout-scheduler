@@ -23,7 +23,7 @@ export default function TabOneScreen() {
   };
 
   const { colorScheme, setColorScheme } = useColorScheme();
-  const { signOut, session } = useSession()!;
+  const { signOut, session } = useSession();
   const [userData, setUserData] = useState<Partial<AppUser> | null>(null);
   const db = useSQLiteContext();
   type SelectFields = Pick<
@@ -32,7 +32,7 @@ export default function TabOneScreen() {
   >;
 
   if (session && !userData) {
-    const subjectClaim: string = JSON.parse(session).subjectClaim;
+    const subjectClaim: string = session.subjectClaim;
     db.getFirstAsync<SelectFields>(
       "SELECT id, first_name, last_name, user_name, email, creation_date FROM app_user WHERE aws_cognito_sub = ?",
       [subjectClaim]

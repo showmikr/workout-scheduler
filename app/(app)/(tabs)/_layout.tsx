@@ -1,10 +1,9 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, Redirect, Tabs, router } from "expo-router";
-import { Pressable, View, Text, useColorScheme, Button } from "react-native";
+import { Link, Redirect, Tabs } from "expo-router";
+import { Pressable, useColorScheme } from "react-native";
 
 import Colors from "../../../constants/Colors";
 import { useSession } from "../../../ctx";
-import { useSQLiteContext } from "expo-sqlite/next";
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
@@ -18,17 +17,8 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const db = useSQLiteContext();
+  const { session } = useSession();
 
-  // Kinda gross, but it works. useSession object is either a full object with all properties defined or is completely null, so this is the workaround...
-  const { session, isLoading } = useSession();
-  if (isLoading) {
-    return (
-      <View className="flex-1 items-center justify-center ">
-        <Text className="text-3xl dark:text-white">Loading...</Text>
-      </View>
-    );
-  }
   // Only require authentication within the (app) group's layout as users
   // need to be able to access the (auth) group and sign in again.
   if (!session) {
