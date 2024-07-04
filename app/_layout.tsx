@@ -67,12 +67,12 @@ export default function RootLayout() {
 }
 
 async function initDb(db: SQLiteDatabase) {
-  const tableInfo = db.getFirstSync<{ table_count: number }>(
+  const tableInfo = await db.getFirstAsync<{ table_count: number }>(
     "SELECT COUNT(name) as table_count FROM sqlite_master WHERE type=?",
     ["table"]
   );
 
-  const tableCount = tableInfo ? tableInfo.table_count : 0;
+  const tableCount = tableInfo?.table_count ?? 0;
 
   if (tableCount > 0) {
     return;
@@ -87,6 +87,6 @@ async function initDb(db: SQLiteDatabase) {
     return;
   }
   const sqlScript = await FileSystem.readAsStringAsync(sqlFile.localUri);
-  db.execSync(sqlScript);
+  await db.execAsync(sqlScript);
   console.log("db script executed to load wo-scheduler-v3 schema");
 }
