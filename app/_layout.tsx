@@ -10,9 +10,6 @@ import { useEffect } from "react";
 import { useColorScheme } from "nativewind";
 import { SessionProvider } from "../ctx";
 import "../global.css";
-import { SQLiteProvider, SQLiteDatabase } from "expo-sqlite/next";
-import { Asset } from "expo-asset";
-import * as FileSystem from "expo-file-system";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export {
@@ -57,36 +54,9 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <QueryClientProvider client={queryClient}>
         <SessionProvider>
-          <SQLiteProvider databaseName="next-sqlite.db" onInit={initDb}>
-            <Slot />
-          </SQLiteProvider>
+          <Slot />
         </SessionProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );
-}
-
-async function initDb(db: SQLiteDatabase) {
-  const tableInfo = await db.getFirstAsync<{ table_count: number }>(
-    "SELECT COUNT(name) as table_count FROM sqlite_master WHERE type=?",
-    ["table"]
-  );
-
-  const tableCount = tableInfo?.table_count ?? 0;
-
-  if (tableCount > 0) {
-    return;
-  }
-
-  const sqlFile = await Asset.fromModule(
-    require("../wo-scheduler-v3.sql")
-  ).downloadAsync();
-
-  if (!sqlFile.localUri) {
-    console.log("wo-scheduler-v3.sql asset was not correctly downloaded");
-    return;
-  }
-  const sqlScript = await FileSystem.readAsStringAsync(sqlFile.localUri);
-  await db.execAsync(sqlScript);
-  console.log("db script executed to load wo-scheduler-v3 schema");
 }

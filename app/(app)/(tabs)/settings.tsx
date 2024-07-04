@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, ScrollView, DevSettings } from "react-native";
+import { Pressable, StyleSheet, ScrollView } from "react-native";
 import EditScreenInfo from "../../../components/EditScreenInfo";
 import { deleteDB } from "../../../db-utils";
 import { Text, View } from "../../../components/Themed";
@@ -31,7 +31,11 @@ export default function TabOneScreen() {
     "id" | "first_name" | "last_name" | "user_name" | "email" | "creation_date"
   >;
 
-  if (session && !userData) {
+  if (!session) {
+    throw new Error("session is null despite being in page that requires auth");
+  }
+
+  if (!userData) {
     const subjectClaim: string = session.subjectClaim;
     db.getFirstAsync<SelectFields>(
       "SELECT id, first_name, last_name, user_name, email, creation_date FROM app_user WHERE aws_cognito_sub = ?",
@@ -47,9 +51,9 @@ export default function TabOneScreen() {
       <Pressable
         className="center justify-content-center m-10 border-2 border-solid border-slate-400 bg-slate-600 p-1"
         onPress={() => {
-          deleteDB().then(() => {
-            DevSettings.reload();
-          });
+          const subject = session.subjectClaim;
+          signOut();
+          deleteDB(`${subject}.db`).then();
         }}
       >
         <Text className="text-center text-lg/10">Reinitialize Database</Text>

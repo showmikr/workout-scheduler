@@ -1,9 +1,9 @@
+import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system";
-import * as SQLite from "expo-sqlite/next";
+import * as SQLite from "expo-sqlite";
+import { SQLiteDatabase } from "expo-sqlite";
 
-const defaultDatabase = "next-sqlite.db";
-
-async function doesLocalDbExist(dbFileName: string = defaultDatabase) {
+async function doesLocalDbExist(dbFileName: string) {
   const dbExists = (
     await FileSystem.getInfoAsync(
       FileSystem.documentDirectory + "SQLite/" + dbFileName
@@ -20,7 +20,7 @@ async function doesLocalDbExist(dbFileName: string = defaultDatabase) {
  * the sql init script. Also, understand that this function should
  * ONLY be used in development mode, NOT for release builds!
  */
-async function deleteDB(dbFileName: string = defaultDatabase) {
+async function deleteDB(dbFileName: string) {
   const dbExists = await doesLocalDbExist(dbFileName);
   if (!dbExists) {
     console.log("db doesn't exist, quitting deletion");
@@ -33,4 +33,32 @@ async function deleteDB(dbFileName: string = defaultDatabase) {
   console.log(`${dbFileName} successfully deleted`);
 }
 
-export { deleteDB };
+async function initDb(db: SQLiteDatabase) {
+  const tableInfo = await db.getFirstAsync<{ table_count: number }>(
+    "SELECT COUNT(name) as table_count FROM sqlite_master WHERE type=?",
+    ["table"]
+  );
+
+  const tableCount = tableInfo?.table_count ?? 0;
+
+  if (tableCount > 0) {
+    return;
+  }
+
+  const sqlFile = await Asset.fromModule(
+    require("./wo-scheduler-v3.sql")
+  ).downloadAsync();
+
+  if (!sqlFile.localUri) {
+    console.log("wo-scheduler-v3.sql asset was not correctly downloaded");
+    return;
+  }
+  const sqlScript = await FileSystem.readAsStringAsync(sqlFile.localUri);
+  await db.execAsync(sqlScript);
+  console.log(
+    "%s successfully created and initialized w/ wo-scheduler-v3 schema",
+    db.databaseName
+  );
+}
+
+export { deleteDB, initDb };
