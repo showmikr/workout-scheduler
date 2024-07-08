@@ -7,7 +7,7 @@ import {
 import { useFonts } from "expo-font";
 import { Slot, SplashScreen } from "expo-router";
 import { useEffect } from "react";
-import { useColorScheme } from "nativewind";
+import { useColorScheme } from "react-native";
 import { SessionProvider } from "../ctx";
 import "../global.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -33,7 +33,7 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-  const { colorScheme } = useColorScheme();
+  const colorScheme = useColorScheme();
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {

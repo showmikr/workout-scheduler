@@ -1,8 +1,13 @@
-import { Pressable, StyleSheet, ScrollView } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  ScrollView,
+  useColorScheme,
+  Appearance,
+} from "react-native";
 import EditScreenInfo from "../../../components/EditScreenInfo";
 import { deleteDB } from "../../../db-utils";
 import { Text, View } from "../../../components/Themed";
-import { useColorScheme } from "nativewind";
 import { useSession } from "../../../ctx";
 import { useState } from "react";
 import { AppUser } from "../../../sqlite-types";
@@ -22,7 +27,7 @@ export default function TabOneScreen() {
     console.log(results);
   };
 
-  const { colorScheme, setColorScheme } = useColorScheme();
+  const colorScheme = useColorScheme();
   const { signOut, session } = useSession();
   const [userData, setUserData] = useState<Partial<AppUser> | null>(null);
   const db = useSQLiteContext();
@@ -92,7 +97,7 @@ export default function TabOneScreen() {
       </Link>
       <Pressable
         onPress={() =>
-          setColorScheme(colorScheme === "dark" ? "light" : "dark")
+          Appearance.setColorScheme(colorScheme === "dark" ? "light" : "dark")
         }
       >
         <Text className="text-center text-xl">
