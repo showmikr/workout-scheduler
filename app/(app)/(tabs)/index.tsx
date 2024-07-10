@@ -714,11 +714,12 @@ function Goals({
       <Text style={[stats.viewTitle]}>Goals</Text>
 
       {/* Calorie Goal */}
-      <View className="flex flex-row" style={stats.viewRows}>
+      <View style={stats.viewRows}>
         <Text style={stats.rowText}>Calories</Text>
         <View
-          className="flex flex-row"
           style={{
+            flex: 1,
+            flexDirection: "row",
             width: 120,
             backgroundColor: "#0D0D0D",
           }}
@@ -760,11 +761,12 @@ function Goals({
       </View>
 
       {/* Body Weight Goal */}
-      <View className="flex flex-row" style={stats.viewRows}>
+      <View style={stats.viewRows}>
         <Text style={stats.rowText}>Body Weight</Text>
         <View
-          className="flex flex-row"
           style={{
+            flex: 1,
+            flexDirection: "row",
             width: 120,
             backgroundColor: "#0D0D0D",
           }}
@@ -843,10 +845,7 @@ function Summary({
             case "calorie":
               return (
                 <>
-                  <View
-                    className="flex flex-row"
-                    style={[stats.viewRows, { marginTop: 0 }]}
-                  >
+                  <View style={[stats.viewRows, { marginTop: 0 }]}>
                     <Text style={[stats.rowText, { color: "grey" }]}></Text>
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       Total
@@ -855,14 +854,14 @@ function Summary({
                       Average
                     </Text>
                   </View>
-                  <View className="flex flex-row" style={stats.viewRows}>
+                  <View style={stats.viewRows}>
                     <Text style={stats.rowText}>Workouts</Text>
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       {rawInputLength}
                     </Text>
                     <Text style={stats.rowText}></Text>
                   </View>
-                  <View className="flex flex-row" style={stats.viewRows}>
+                  <View style={stats.viewRows}>
                     <Text style={stats.rowText}>Time</Text>
                     <Text style={[stats.rowText, { color: "#AD760A" }]}>
                       {("00" + Math.floor(rawInputTime / 3600)).slice(-2)}:
@@ -903,7 +902,7 @@ function Summary({
                       }
                     </Text>
                   </View>
-                  <View className="flex flex-row" style={stats.viewRows}>
+                  <View style={stats.viewRows}>
                     <Text style={stats.rowText}>Calories</Text>
                     <Text style={[stats.rowText, { color: "#A53535" }]}>
                       {rawInputValue.toLocaleString()} cal
@@ -918,10 +917,7 @@ function Summary({
             case "body weight":
               return (
                 <>
-                  <View
-                    className="flex flex-row"
-                    style={[stats.viewRows, { marginTop: 0 }]}
-                  >
+                  <View style={[stats.viewRows, { marginTop: 0 }]}>
                     <Text style={[stats.rowText, { color: "grey" }]}></Text>
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       Trend
@@ -930,7 +926,7 @@ function Summary({
                       Current
                     </Text>
                   </View>
-                  <View className="flex flex-row " style={stats.viewRows}>
+                  <View style={stats.viewRows}>
                     <Text style={stats.rowText}>B.M.I</Text>
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       {(
@@ -962,7 +958,7 @@ function Summary({
                       ).toFixed(2)}
                     </Text>
                   </View>
-                  <View className="flex flex-row " style={stats.viewRows}>
+                  <View style={stats.viewRows}>
                     <Text style={stats.rowText}>Goal</Text>
                     <Text style={[stats.rowText, { color: "#AD760A" }]}>
                       {userProfileData.bodyWeightGoal ?
@@ -979,7 +975,7 @@ function Summary({
                       {" kg"}
                     </Text>
                   </View>
-                  <View className="flex flex-row " style={stats.viewRows}>
+                  <View style={stats.viewRows}>
                     <Text style={stats.rowText}>Weight</Text>
                     <Text style={[stats.rowText, { color: "#A53535" }]}>
                       {(rawInputLastIdx - rawInputFirstIdx > 0 ? "+" : "") +
@@ -996,10 +992,7 @@ function Summary({
             case "personal record":
               return (
                 <>
-                  <View
-                    className="flex flex-row"
-                    style={[stats.viewRows, { marginTop: 0 }]}
-                  >
+                  <View style={[stats.viewRows, { marginTop: 0 }]}>
                     <Text style={[stats.rowText, { color: "grey" }]}></Text>
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       Trend
@@ -1008,7 +1001,7 @@ function Summary({
                       Current
                     </Text>
                   </View>
-                  <View className="flex flex-row " style={stats.viewRows}>
+                  <View style={stats.viewRows}>
                     <Text style={stats.rowText}>Resistance</Text>
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       {
@@ -1027,7 +1020,7 @@ function Summary({
                       {" kg"}
                     </Text>
                   </View>
-                  <View className="flex flex-row " style={stats.viewRows}>
+                  <View style={stats.viewRows}>
                     <Text style={stats.rowText}>Body %</Text>
                     <Text style={[stats.rowText, { color: "#AD760A" }]}>
                       {(
@@ -1082,7 +1075,7 @@ function Summary({
                       {"%"}
                     </Text>
                   </View>
-                  <View className="flex flex-row " style={stats.viewRows}>
+                  <View style={stats.viewRows}>
                     <Text style={stats.rowText}>
                       {
                         "" /* vs Average [hidden until futher implementation and discussion]*/
@@ -1353,8 +1346,9 @@ function Graph({
         {/* chart range buttons */}
         {graphDataType === "personal record" ?
           <View
-            className="flex flex-row"
             style={{
+              flex: 1,
+              flexDirection: "row",
               backgroundColor: "#0D0D0D",
               justifyContent: "space-evenly",
               marginTop: 10,
@@ -1395,8 +1389,9 @@ function Graph({
             })}
           </View>
         : <View
-            className="flex flex-row"
             style={{
+              flex: 1,
+              flexDirection: "row",
               backgroundColor: "#0D0D0D",
               justifyContent: "space-evenly",
               marginTop: 10,
@@ -1438,8 +1433,9 @@ function Graph({
 
         {/* data type buttons*/}
         <View
-          className="flex flex-row"
           style={{
+            flex: 1,
+            flexDirection: "row",
             backgroundColor: "#0D0D0D",
             justifyContent: "space-evenly",
             marginTop: 10,
@@ -1537,6 +1533,8 @@ const graphStyle = StyleSheet.create({
 
 const stats = StyleSheet.create({
   viewRows: {
+    flex: 1,
+    flexDirection: "row",
     justifyContent: "space-evenly",
     backgroundColor: "#0D0D0D",
     marginTop: 10,
