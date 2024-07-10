@@ -1,14 +1,21 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View, StyleSheet, useColorScheme } from "react-native";
 import { useSession } from "../../ctx";
 import { Redirect } from "expo-router";
 import { TokenResponse } from "expo-auth-session";
+import { Text } from "../../components/Themed";
 
 export default function SignIn() {
   const { signIn, session } = useSession();
+  const colorScheme = useColorScheme();
 
   return !session ?
-      <View className="flex-1 items-center justify-center dark:bg-black">
-        <Text className="text-3xl dark:text-white">
+      <View
+        style={[
+          styles.outerView,
+          { backgroundColor: colorScheme === "dark" ? "black" : "white" },
+        ]}
+      >
+        <Text style={styles.textStyle}>
           Session:{" "}
           {session ? (JSON.parse(session) as TokenResponse).idToken : "null"}
         </Text>
@@ -21,8 +28,20 @@ export default function SignIn() {
             //router.replace("/"); // Not really working, read the readme
           }}
         >
-          <Text className="text-3xl dark:text-white">Sign In</Text>
+          <Text style={styles.textStyle}>Sign In</Text>
         </Pressable>
       </View>
     : <Redirect href="/" />;
 }
+
+const styles = StyleSheet.create({
+  outerView: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  textStyle: {
+    fontSize: 1.875 * 14,
+    lineHeight: 2.25 * 14,
+  },
+});

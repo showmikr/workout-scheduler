@@ -2,10 +2,10 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
-  Text,
   View,
   TextInput,
 } from "react-native";
+import { Text } from "../../../../components/Themed";
 import { useLocalSearchParams } from "expo-router";
 import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
@@ -132,7 +132,13 @@ export default function () {
       <SafeAreaView
         style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
       >
-        <Text className="text-center text-3xl text-black dark:text-white">
+        <Text
+          style={{
+            textAlign: "center",
+            fontSize: 1.875 * 14,
+            lineHeight: 2.25 * 14,
+          }}
+        >
           Loading...
         </Text>
       </SafeAreaView>
@@ -142,10 +148,10 @@ export default function () {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#0D0D0D" }}>
       <ScrollView>
-        <Text className="text-3xl text-black dark:text-white">
+        <Text style={{ fontSize: 1.875 * 14, lineHeight: 2.25 * 14 }}>
           Hello, I'm an exercise page placeholder
         </Text>
-        <Text className="text-3xl text-black dark:text-white">
+        <Text style={{ fontSize: 1.875 * 14, lineHeight: 2.25 * 14 }}>
           Exercise ID: {exerciseId}
         </Text>
         {exerciseSection.data.map((item) => {

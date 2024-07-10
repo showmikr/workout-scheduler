@@ -1,7 +1,13 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
-import { Text, SafeAreaView, View, Pressable, FlatList } from "react-native";
+import {
+  SafeAreaView,
+  View,
+  Pressable,
+  FlatList,
+  StyleSheet,
+} from "react-native";
 import { twColors } from "../../../../constants/Colors";
 import {
   ExerciseCard,
@@ -13,6 +19,7 @@ import {
   UnifiedResistanceSet,
   exerciseEnums,
 } from "../../../../utils/exercise-types";
+import { Text } from "../../../../components/Themed";
 
 const AddExerciseBtn = ({
   workoutId,
@@ -38,11 +45,13 @@ const AddExerciseBtn = ({
       }}
     >
       <FontAwesome
-        className="mr-1 self-center"
+        style={{ marginRight: 0.25 * 14, alignSelf: "center" }}
         name="plus"
         color={twColors.neutral500}
       />
-      <Text className="text-2xl text-black dark:text-white">Add Exercise</Text>
+      <Text style={{ fontSize: 1.5 * 14, lineHeight: 2 * 14 }}>
+        Add Exercise
+      </Text>
     </Pressable>
   );
 };
@@ -70,15 +79,14 @@ export default function WorkoutDetails() {
 
   if (exercises.length === 0) {
     return (
-      <SafeAreaView
-        style={{
-          flex: 1,
-          rowGap: 24,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text className="text-3xl text-neutral-500 dark:text-neutral-500">
+      <SafeAreaView style={styles.emptyView}>
+        <Text
+          style={{
+            fontSize: 1.875 * 14,
+            lineHeight: 2.25 * 14,
+            color: twColors.neutral500,
+          }}
+        >
           Wow, much empty...
         </Text>
         <AddExerciseBtn workoutId={workoutId} workoutTitle={workoutTitle} />
@@ -132,21 +140,28 @@ export default function WorkoutDetails() {
   });
 
   return (
-    <SafeAreaView className="flex-1 justify-center">
+    <SafeAreaView style={styles.safeAreaView}>
       <FlatList
         ListHeaderComponent={() => {
           return (
-            <View className="items-center border pb-6 pt-6">
-              <Text className="text-3xl font-bold text-black dark:text-white">
+            <View
+              style={{
+                alignItems: "center",
+                borderWidth: 1,
+                paddingBottom: 1.5 * 14,
+                paddingTop: 1.5 * 14,
+              }}
+            >
+              <Text style={{ fontSize: 1.875 * 14, lineHeight: 2.25 * 14 }}>
                 {workoutTitle}
               </Text>
               <View
-                className="justify-end"
                 style={{
                   marginTop: 16,
                   width: "90%",
                   borderBottomWidth: 1,
                   borderColor: twColors.neutral700,
+                  justifyContent: "flex-end",
                 }}
               />
             </View>
@@ -182,3 +197,16 @@ export default function WorkoutDetails() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeAreaView: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  emptyView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    rowGap: 24,
+  },
+});

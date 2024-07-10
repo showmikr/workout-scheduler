@@ -1,10 +1,11 @@
-import { View, Text, Pressable } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 import React from "react";
+import { Text, View } from "../../../components/Themed";
 
 function HelloChild() {
   return (
     <>
-      <Text className="text-4xl dark:text-white">Hello There</Text>
+      <Text style={styles.text4xl}>Hello There</Text>
       <Pressable
         style={({ pressed }) => ({
           margin: 10,
@@ -14,7 +15,7 @@ function HelloChild() {
           padding: 10,
         })}
       >
-        <Text className="text-lg/10 dark:color-white">Do Nothing</Text>
+        <Text style={styles.textlg10}>Do Nothing</Text>
       </Pressable>
     </>
   );
@@ -39,10 +40,26 @@ export default function HelloParent() {
     return () => clearTimeout(timeoutId);
   });
   return (
-    <View className="flex-1 items-center justify-center dark:bg-black">
+    <View style={styles.viewBox}>
       {isLoading ?
-        <Text className="text-4xl dark:text-white">...Loading</Text>
+        <Text style={styles.text4xl}>...Loading</Text>
       : <HelloChild />}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  viewBox: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  text4xl: {
+    fontSize: 2.25 * 14,
+    lineHeight: 2.5 * 14,
+  },
+  textlg10: {
+    fontSize: 1.125 * 14,
+    lineHeight: 2.5 * 14,
+  },
+});

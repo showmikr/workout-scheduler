@@ -1,6 +1,7 @@
 import { Link } from "expo-router";
-import { Pressable, Text } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 import { Workout } from "../context/query-workouts";
+import { Text } from "./Themed";
 
 type WorkoutCardProps = { workout: Workout; tags: string[] };
 
@@ -15,12 +16,25 @@ export default function WorkoutCard(props: WorkoutCardProps) {
       }}
       asChild
     >
-      <Pressable className="h-32 w-full justify-center pl-8">
-        <Text className="text-2xl dark:text-white">Title: {title}</Text>
-        <Text className="text-2xl dark:text-white">
+      <Pressable style={styles.exerciseBtn}>
+        <Text style={styles.text2xl}>Title: {title}</Text>
+        <Text style={styles.text2xl}>
           Tags: {tags.length > 0 ? tags.join(", ") : "None"}
         </Text>
       </Pressable>
     </Link>
   );
 }
+
+const styles = StyleSheet.create({
+  text2xl: {
+    fontSize: 1.5 * 14,
+    lineHeight: 2 * 14,
+  },
+  exerciseBtn: {
+    height: 8 * 14,
+    width: "100%",
+    justifyContent: "center",
+    paddingLeft: 2 * 14,
+  },
+});

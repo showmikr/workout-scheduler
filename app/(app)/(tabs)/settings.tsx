@@ -13,6 +13,7 @@ import { useState } from "react";
 import { AppUser } from "../../../sqlite-types";
 import { Link } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
+import { twColors } from "../../../constants/Colors";
 
 export default function TabOneScreen() {
   const readDb = () => {
@@ -51,32 +52,30 @@ export default function TabOneScreen() {
   }
 
   return (
-    <ScrollView contentContainerClassName="pt-4 pb-8 items-stretch justify-center">
+    <ScrollView contentContainerStyle={styles.safeAreaView}>
       <Text style={styles.title}>Database</Text>
       <Pressable
-        className="center justify-content-center m-10 border-2 border-solid border-slate-400 bg-slate-600 p-1"
+        style={styles.btnStyle}
         onPress={() => {
           const subject = session.subjectClaim;
           signOut();
           deleteDB(`${subject}.db`).then();
         }}
       >
-        <Text className="text-center text-lg/10">Reinitialize Database</Text>
+        <Text style={styles.btnTitle}>Reinitialize Database</Text>
       </Pressable>
-      <Pressable
-        className="m-10 border-2 border-solid border-slate-400  bg-slate-600 p-1"
-        onPress={() => readDb()}
-      >
-        <Text className="text-center text-lg/10">Read From DB</Text>
+      <Pressable style={styles.btnStyle} onPress={() => readDb()}>
+        <Text style={styles.btnTitle}>Read From DB</Text>
       </Pressable>
       <Text style={styles.title}>Experimental</Text>
-      <Text className="p-1 text-center text-xl">User Info:</Text>
+      <Text
+        style={[{ padding: 0.25 * 14, textAlign: "center" }, styles.textxl]}
+      >
+        User Info:
+      </Text>
       {userData &&
         Object.entries(userData).map(([key, value]) => (
-          <Text
-            className="border border-solid border-slate-400 p-1 text-center text-xl"
-            key={key}
-          >
+          <Text style={styles.userTableText} key={key}>
             {key}:{" "}
             {key === "creation_date" ?
               new Date(value as string).toDateString()
@@ -84,15 +83,14 @@ export default function TabOneScreen() {
           </Text>
         ))}
       <View
-        className="my-8 h-px w-4/5 self-center" // Replaces styles.separator native styling
-        //style={styles.separator}
+        style={styles.separator}
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
       <EditScreenInfo path="app/(app)/(tabs)/" />
       <Link href="/hello" asChild>
-        <Pressable className="m-10 items-center border-2 border-solid border-slate-400 bg-slate-600 p-1">
-          <Text className="text-xl">Go to Hello</Text>
+        <Pressable style={styles.btnStyle}>
+          <Text style={styles.textxl}>Go to Hello</Text>
         </Pressable>
       </Link>
       <Pressable
@@ -100,25 +98,59 @@ export default function TabOneScreen() {
           Appearance.setColorScheme(colorScheme === "dark" ? "light" : "dark")
         }
       >
-        <Text className="text-center text-xl">
+        <Text style={[{ textAlign: "center" }, styles.textxl]}>
           {"Toggle Color Scheme: " + colorScheme}
         </Text>
       </Pressable>
       <Text />
       <View
-        className="my-8 h-px w-4/5 self-center" // Replaces styles.separator native styling
-        //style={styles.separator}
+        style={styles.separator}
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
       <Pressable onPress={signOut}>
-        <Text className="text-center text-3xl">Sign Me Out!</Text>
+        <Text style={[{ textAlign: "center" }, styles.text3xl]}>
+          Sign Me Out!
+        </Text>
       </Pressable>
     </ScrollView>
   );
 }
-
 const styles = StyleSheet.create({
+  text3xl: {
+    fontSize: 1.875 * 14,
+    lineHeight: 2.25 * 14,
+  },
+  textxl: {
+    fontSize: 1.25 * 14,
+    lineHeight: 1.75 * 14,
+  },
+  userTableText: {
+    borderWidth: 1,
+    borderColor: twColors.neutral400,
+    textAlign: "center",
+    fontSize: 1.25 * 14,
+    lineHeight: 1.75 * 14,
+  },
+  btnStyle: {
+    margin: 2.5 * 14,
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: twColors.neutral400,
+    backgroundColor: twColors.neutral600,
+    padding: 0.25 * 14,
+  },
+  btnTitle: {
+    fontSize: 1.125 * 14,
+    lineHeight: 2.5 * 14,
+    textAlign: "center",
+  },
+  safeAreaView: {
+    paddingTop: 14,
+    paddingBottom: 2 * 14,
+    alignItems: "stretch",
+    justifyContent: "center",
+  },
   container: {
     flex: 1,
     alignItems: "center",

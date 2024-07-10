@@ -1,10 +1,4 @@
-import {
-  Pressable,
-  PressableProps,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, PressableProps, StyleSheet, View } from "react-native";
 import { twColors } from "../constants/Colors";
 import {
   ExerciseEnums,
@@ -13,12 +7,13 @@ import {
   exerciseEnums,
 } from "../utils/exercise-types";
 import { Ref, forwardRef } from "react";
+import { Text } from "./Themed";
 
 const CardioSetList = ({ sets }: { sets: UnifiedCardioSet[] }) => {
   return (
     <>
       {sets.map((set) => (
-        <Text className="text-xl dark:text-white">
+        <Text style={styles.textxl}>
           Reps: {set.reps}
           {"    "}
           Rest: {set.rest_time}s{"    "}
@@ -36,7 +31,7 @@ const ResistanceSetList = ({ sets }: { sets: UnifiedResistanceSet[] }) => {
   return (
     <>
       {sets.map((set) => (
-        <Text key={set.exercise_set_id} className="text-xl dark:text-white">
+        <Text key={set.exercise_set_id} style={styles.textxl}>
           Reps: {set.reps}
           {"    "}
           Rest: {set.rest_time}s{"    "}
@@ -64,9 +59,7 @@ const ExerciseCard = forwardRef(
   ) => {
     return (
       <Pressable ref={ref} {...pressableProps}>
-        <Text className="text-2xl font-bold text-black dark:text-white">
-          {exercise.title}
-        </Text>
+        <Text style={styles.exerciseTitle}>{exercise.title}</Text>
         {exercise.exerciseType === exerciseEnums.RESISTANCE_ENUM ?
           <ResistanceSetList sets={exercise.sets as UnifiedResistanceSet[]} />
         : <CardioSetList sets={exercise.sets as UnifiedCardioSet[]} />}
@@ -75,7 +68,16 @@ const ExerciseCard = forwardRef(
   }
 );
 
-const exerciseStyles = StyleSheet.create({
+const styles = StyleSheet.create({
+  textxl: {
+    fontSize: 1.25 * 14,
+    lineHeight: 1.75 * 14,
+  },
+  exerciseTitle: {
+    fontSize: 1.5 * 14,
+    lineHeight: 2 * 14,
+    fontWeight: "bold",
+  },
   exerciseCard: {
     borderBottomWidth: 1,
     borderBottomColor: twColors.neutral700,
@@ -83,4 +85,4 @@ const exerciseStyles = StyleSheet.create({
   },
 });
 
-export { ExerciseCard, exerciseStyles };
+export { ExerciseCard, styles as exerciseStyles };

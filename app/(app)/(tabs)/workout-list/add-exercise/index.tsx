@@ -1,7 +1,7 @@
 import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite/next";
 import { ExerciseEnums } from "../../../../../utils/exercise-types";
 import { useState } from "react";
-import { SafeAreaView, Text } from "react-native";
+import { SafeAreaView, StyleSheet, Text, useColorScheme } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
 
 type ExerciseClassParams = {
@@ -29,6 +29,7 @@ function useExerciseClasses(db: SQLiteDatabase) {
 }
 
 export default function AddExerciseIndex() {
+  const colorScheme = useColorScheme();
   // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
   const searchParams = useLocalSearchParams<{
     workoutId: string;
@@ -68,7 +69,10 @@ export default function AddExerciseIndex() {
               params: { workoutId: workoutId, workoutTitle: workoutTitle },
             }}
             key={exerciseClass.id}
-            className="pb-2 pl-4 pt-2 text-3xl text-black dark:text-white"
+            style={[
+              styles.exerciseLink,
+              { color: colorScheme === "dark" ? "white" : "black" },
+            ]}
             onPress={() => {
               handleAddExercise(exerciseClass);
             }}
@@ -76,7 +80,29 @@ export default function AddExerciseIndex() {
             {exerciseClass.title}
           </Link>
         ))
-      : <Text className="text-3xl text-black dark:text-white">Loading...</Text>}
+      : <Text
+          style={[
+            styles.loadingText,
+            { color: colorScheme === "dark" ? "white" : "black" },
+          ]}
+        >
+          Loading...
+        </Text>
+      }
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  exerciseLink: {
+    paddingBottom: 0.5 * 14,
+    paddingTop: 0.5 * 14,
+    paddingLeft: 14,
+    fontSize: 1.875 * 14,
+    lineHeight: 2.25 * 14,
+  },
+  loadingText: {
+    fontSize: 1.875 * 14,
+    lineHeight: 2.25 * 14,
+  },
+});

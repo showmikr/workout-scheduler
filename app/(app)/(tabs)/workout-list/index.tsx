@@ -35,7 +35,7 @@ export default function TabTwoScreen() {
 
   if (!(workouts && tagMap && workoutTagMap)) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center">
+      <SafeAreaView style={styles.safeAreaContainer}>
         <Text style={{ color: "#BDBDBD", fontWeight: "bold", fontSize: 22 }}>
           Loading...
         </Text>
@@ -44,9 +44,9 @@ export default function TabTwoScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 items-center justify-center">
+    <SafeAreaView style={styles.safeAreaContainer}>
       <FlatList
-        className="w-full flex-1"
+        style={styles.listView}
         data={workouts}
         renderItem={({ item }) => (
           <WorkoutCard
@@ -80,5 +80,14 @@ const styles = StyleSheet.create({
     marginVertical: 30,
     height: 1,
     width: "80%",
+  },
+  safeAreaContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  listView: {
+    flex: 1,
+    width: "100%",
   },
 });
