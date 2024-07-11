@@ -1,4 +1,3 @@
-import { FontAwesome } from "@expo/vector-icons";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import {
@@ -20,6 +19,7 @@ import {
   exerciseEnums,
 } from "../../../../utils/exercise-types";
 import { Text } from "../../../../components/Themed";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const AddExerciseBtn = ({
   workoutId,
@@ -32,10 +32,18 @@ const AddExerciseBtn = ({
     <Pressable
       style={({ pressed }) => ({
         flexDirection: "row",
-        marginLeft: 14,
-        marginBottom: 17.5,
+        position: "absolute",
+        right: 3 * 14,
+        bottom: 2 * 14,
+        alignItems: "center",
+        justifyContent: "center",
+        height: 4 * 14,
+        width: 4 * 14,
+        borderRadius: 3 * 14 * 0.8,
         borderWidth: 1,
+        borderColor: twColors.neutral800,
         opacity: pressed ? 0.7 : 1,
+        backgroundColor: twColors.neutral400,
       })}
       onPress={() => {
         router.push({
@@ -44,14 +52,11 @@ const AddExerciseBtn = ({
         });
       }}
     >
-      <FontAwesome
-        style={{ marginRight: 0.25 * 14, alignSelf: "center" }}
-        name="plus"
-        color={twColors.neutral500}
+      <MaterialIcons
+        style={{ fontSize: 3 * 14 }}
+        color={twColors.neutral700}
+        name="add"
       />
-      <Text style={{ fontSize: 1.5 * 14, lineHeight: 2 * 14 }}>
-        Add Exercise
-      </Text>
     </Pressable>
   );
 };
@@ -142,6 +147,9 @@ export default function WorkoutDetails() {
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <FlatList
+        ListFooterComponent={
+          <View style={{ marginTop: 4 * 14, marginBottom: 4 * 14 }}></View>
+        }
         ListHeaderComponent={() => {
           return (
             <View
