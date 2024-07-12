@@ -11,6 +11,7 @@ import { useColorScheme } from "react-native";
 import { SessionProvider } from "../ctx";
 import "../global.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -54,7 +55,9 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <QueryClientProvider client={queryClient}>
         <SessionProvider>
-          <Slot />
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Slot />
+          </GestureHandlerRootView>
         </SessionProvider>
       </QueryClientProvider>
     </ThemeProvider>

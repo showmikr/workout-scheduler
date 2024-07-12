@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import {
@@ -20,6 +21,30 @@ import {
 } from "../../../../utils/exercise-types";
 import { Text } from "../../../../components/Themed";
 import { MaterialIcons } from "@expo/vector-icons";
+import SwipeableItem, {
+  useSwipeableItemParams,
+} from "react-native-swipeable-item";
+
+const UnderlayLeft = () => {
+  const swipeableItemParams = useSwipeableItemParams();
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "flex-end",
+        backgroundColor: "red",
+      }}
+    >
+      <Text
+        style={{ color: "white", paddingRight: 20 }}
+        onPress={() => console.log("TODO: make a delete event handler")}
+      >
+        Delete
+      </Text>
+    </View>
+  );
+};
 
 const AddExerciseBtn = ({
   workoutId,
@@ -70,6 +95,42 @@ export default function WorkoutDetails() {
   const workoutId = searchParams.workoutId!;
   const workoutTitle = searchParams.workoutTitle!;
   const db = useSQLiteContext();
+
+  const swipeableListItem = useCallback(
+    ({ item }: { item: (typeof sectionData)[number] }) => {
+      return (
+        <SwipeableItem
+          key={item.key}
+          item={item}
+          renderUnderlayLeft={() => <UnderlayLeft />}
+          snapPointsLeft={[150]}
+        >
+          <Link
+            asChild
+            style={[exerciseStyles.exerciseCard, { backgroundColor: "black" }]}
+            href={{
+              pathname: "/(app)/(tabs)/workout-list/[exerciseId]",
+              params: {
+                exerciseId: item.exercise.exercise_id,
+                workoutId: workoutId,
+              },
+            }}
+          >
+            <ExerciseCard
+              workoutId={parseInt(workoutId)}
+              exercise={{
+                exerciseType: item.exerciseType,
+                exerciseId: item.exercise.exercise_id,
+                title: item.exercise.title,
+                sets: item.data,
+              }}
+            />
+          </Link>
+        </SwipeableItem>
+      );
+    },
+    []
+  );
 
   const exercises = db.getAllSync<ExerciseParams>(
     `
@@ -177,29 +238,7 @@ export default function WorkoutDetails() {
         }}
         data={sectionData}
         keyExtractor={(item) => item.exercise.exercise_id.toString()}
-        renderItem={({ item }) => (
-          <Link
-            asChild
-            style={exerciseStyles.exerciseCard}
-            href={{
-              pathname: "/(app)/(tabs)/workout-list/[exerciseId]",
-              params: {
-                exerciseId: item.exercise.exercise_id,
-                workoutId: workoutId,
-              },
-            }}
-          >
-            <ExerciseCard
-              workoutId={parseInt(workoutId)}
-              exercise={{
-                exerciseType: item.exerciseType,
-                exerciseId: item.exercise.exercise_id,
-                title: item.exercise.title,
-                sets: item.data,
-              }}
-            />
-          </Link>
-        )}
+        renderItem={swipeableListItem}
       />
       <AddExerciseBtn workoutId={workoutId} workoutTitle={workoutTitle} />
     </SafeAreaView>
