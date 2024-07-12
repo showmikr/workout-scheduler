@@ -1,5 +1,5 @@
-import { useCallback } from "react";
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import {
   SafeAreaView,
@@ -7,6 +7,7 @@ import {
   Pressable,
   FlatList,
   StyleSheet,
+  TouchableOpacity,
 } from "react-native";
 import { twColors } from "../../../../constants/Colors";
 import {
@@ -15,36 +16,25 @@ import {
 } from "../../../../components/ExerciseCard";
 import {
   ExerciseParams,
+  ExerciseSection,
   UnifiedCardioSet,
   UnifiedResistanceSet,
   exerciseEnums,
 } from "../../../../utils/exercise-types";
 import { Text } from "../../../../components/Themed";
 import { MaterialIcons } from "@expo/vector-icons";
-import SwipeableItem, {
-  useSwipeableItemParams,
-} from "react-native-swipeable-item";
+import SwipeableItem, { useOverlayParams } from "react-native-swipeable-item";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+  interpolateColor,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 
-const UnderlayLeft = () => {
-  const swipeableItemParams = useSwipeableItemParams();
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "flex-end",
-        backgroundColor: "red",
-      }}
-    >
-      <Text
-        style={{ color: "white", paddingRight: 20 }}
-        onPress={() => console.log("TODO: make a delete event handler")}
-      >
-        Delete
-      </Text>
-    </View>
-  );
-};
+type WorkoutItem = ExerciseSection & { key: string };
 
 const AddExerciseBtn = ({
   workoutId,
@@ -86,6 +76,86 @@ const AddExerciseBtn = ({
   );
 };
 
+function UnderlayLeft({ onPress }: { onPress?: () => void }) {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={onPress}
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "flex-end",
+        backgroundColor: "red",
+      }}
+    >
+      <Text style={{ color: "white", paddingRight: 20 }}>Delete</Text>
+    </TouchableOpacity>
+  );
+}
+
+function OverlayItem({ workoutId }: { workoutId: string }) {
+  const { item, openDirection, close } = useOverlayParams<WorkoutItem>();
+  const animatedOpacity = useSharedValue(1);
+  const colorTransitionProgress = useSharedValue(0);
+  const animStyles = useAnimatedStyle(() => {
+    return {
+      opacity: animatedOpacity.value,
+      backgroundColor: interpolateColor(
+        colorTransitionProgress.value,
+        [0, 1],
+        ["black", "rgb(32, 32, 32)"]
+      ),
+    };
+  });
+  const onPressHandler = () => {
+    if (openDirection !== "none") {
+      close();
+      return;
+    } else {
+      router.push({
+        pathname: "/(app)/(tabs)/workout-list/[exerciseId]",
+        params: {
+          exerciseId: item.exercise.exercise_id,
+          workoutId: workoutId,
+        },
+      });
+    }
+  };
+  const gesture = Gesture.Tap()
+    .maxDeltaX(10)
+    .onStart(() => {
+      if (openDirection !== "none") {
+        return;
+      }
+      animatedOpacity.value = withSequence(
+        withTiming(0.7, { duration: 75 }),
+        withTiming(1, { duration: 125 })
+      );
+      colorTransitionProgress.value = withSequence(
+        withTiming(1, { duration: 75 }),
+        withTiming(0, { duration: 125 })
+      );
+    })
+    .onEnd(() => {
+      runOnJS(onPressHandler)();
+    });
+  return (
+    <GestureDetector gesture={gesture}>
+      <Animated.View style={[animStyles, exerciseStyles.exerciseCard]}>
+        <ExerciseCard
+          workoutId={parseInt(workoutId)}
+          exercise={{
+            exerciseType: item.exerciseType,
+            exerciseId: item.exercise.exercise_id,
+            title: item.exercise.title,
+            sets: item.data,
+          }}
+        />
+      </Animated.View>
+    </GestureDetector>
+  );
+}
+
 export default function WorkoutDetails() {
   // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
   const searchParams = useLocalSearchParams<{
@@ -97,56 +167,75 @@ export default function WorkoutDetails() {
   if (!workoutId || !workoutTitle) {
     throw new Error("Workout ID or title not provided. This should not happen");
   }
+
+  const [sectionData, setSectionData] = useState<WorkoutItem[]>([]);
   const db = useSQLiteContext();
-
-  const swipeableListItem = useCallback(
-    ({ item }: { item: (typeof sectionData)[number] }) => {
-      return (
-        <SwipeableItem
-          key={item.key}
-          item={item}
-          renderUnderlayLeft={() => <UnderlayLeft />}
-          snapPointsLeft={[150]}
-        >
-          <Link
-            asChild
-            style={[exerciseStyles.exerciseCard, { backgroundColor: "black" }]}
-            href={{
-              pathname: "/(app)/(tabs)/workout-list/[exerciseId]",
-              params: {
-                exerciseId: item.exercise.exercise_id,
-                workoutId: workoutId,
-              },
-            }}
-          >
-            <ExerciseCard
-              workoutId={parseInt(workoutId)}
-              exercise={{
-                exerciseType: item.exerciseType,
-                exerciseId: item.exercise.exercise_id,
-                title: item.exercise.title,
-                sets: item.data,
-              }}
-            />
-          </Link>
-        </SwipeableItem>
+  useEffect(() => {
+    const fetchData = () => {
+      const fetchedExercises = db.getAllSync<ExerciseParams>(
+        `
+        SELECT ex.id AS exercise_id, ex_class.title, ex_class.exercise_type_id
+        FROM exercise AS ex
+          INNER JOIN
+          exercise_class AS ex_class ON ex.exercise_class_id = ex_class.id
+        WHERE ex.workout_id = ?;
+        `,
+        workoutId
       );
-    },
-    []
-  );
 
-  const exercises = db.getAllSync<ExerciseParams>(
-    `
-    SELECT ex.id AS exercise_id, ex_class.title, ex_class.exercise_type_id
-    FROM exercise AS ex
-      INNER JOIN
-      exercise_class AS ex_class ON ex.exercise_class_id = ex_class.id
-    WHERE ex.workout_id = ?;
-    `,
-    workoutId
-  );
+      if (fetchedExercises.length > 0) {
+        const newSectionData = fetchedExercises.map((ex) => {
+          if (ex.exercise_type_id === exerciseEnums.RESISTANCE_ENUM) {
+            return {
+              exerciseType: ex.exercise_type_id,
+              exercise: ex,
+              data: db.getAllSync<UnifiedResistanceSet>(
+                `SELECT 
+                exercise_set.id AS exercise_set_id,
+                exercise_set.list_order,
+                exercise_set.reps,
+                exercise_set.rest_time,
+                exercise_set.title,
+                resistance_set.id AS resistance_set_id,
+                resistance_set.total_weight
+                FROM exercise_set 
+                INNER JOIN resistance_set ON exercise_set.id = resistance_set.exercise_set_id 
+                WHERE exercise_set.exercise_id = ?`,
+                ex.exercise_id
+              ),
+              key: ex.exercise_id.toString(),
+            };
+          } else {
+            return {
+              exerciseType: ex.exercise_type_id,
+              exercise: ex,
+              data: db.getAllSync<UnifiedCardioSet>(
+                `SELECT
+                exercise_set.id AS exercise_set_id,
+                exercise_set.list_order,
+                exercise_set.reps,
+                exercise_set.rest_time,
+                exercise_set.title,
+                cardio_set.id AS cardio_set_id,
+                cardio_set.target_distance,
+                cardio_set.target_time
+                FROM exercise_set 
+                INNER JOIN cardio_set ON exercise_set.id = cardio_set.exercise_set_id 
+                WHERE exercise_set.exercise_id = ?`,
+                ex.exercise_id
+              ),
+              key: ex.exercise_id.toString(),
+            };
+          }
+        });
+        setSectionData(newSectionData);
+      }
+    };
 
-  if (exercises.length === 0) {
+    fetchData();
+  }, []);
+
+  if (sectionData.length === 0) {
     return (
       <SafeAreaView style={styles.emptyView}>
         <Text
@@ -162,51 +251,6 @@ export default function WorkoutDetails() {
       </SafeAreaView>
     );
   }
-
-  const sectionData = exercises.map((ex) => {
-    if (ex.exercise_type_id === exerciseEnums.RESISTANCE_ENUM) {
-      return {
-        exerciseType: ex.exercise_type_id,
-        exercise: ex,
-        data: db.getAllSync<UnifiedResistanceSet>(
-          `SELECT 
-            exercise_set.id AS exercise_set_id,
-            exercise_set.list_order,
-            exercise_set.reps,
-            exercise_set.rest_time,
-            exercise_set.title,
-            resistance_set.id AS resistance_set_id,
-            resistance_set.total_weight
-            FROM exercise_set 
-            INNER JOIN resistance_set ON exercise_set.id = resistance_set.exercise_set_id 
-            WHERE exercise_set.exercise_id = ?`,
-          ex.exercise_id
-        ),
-        key: ex.exercise_id.toString(),
-      };
-    } else {
-      return {
-        exerciseType: ex.exercise_type_id,
-        exercise: ex,
-        data: db.getAllSync<UnifiedCardioSet>(
-          `SELECT
-            exercise_set.id AS exercise_set_id,
-            exercise_set.list_order,
-            exercise_set.reps,
-            exercise_set.rest_time,
-            exercise_set.title,
-            cardio_set.id AS cardio_set_id,
-            cardio_set.target_distance,
-            cardio_set.target_time
-            FROM exercise_set 
-            INNER JOIN cardio_set ON exercise_set.id = cardio_set.exercise_set_id 
-            WHERE exercise_set.exercise_id = ?`,
-          ex.exercise_id
-        ),
-        key: ex.exercise_id.toString(),
-      };
-    }
-  });
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
@@ -241,7 +285,22 @@ export default function WorkoutDetails() {
         }}
         data={sectionData}
         keyExtractor={(item) => item.exercise.exercise_id.toString()}
-        renderItem={swipeableListItem}
+        renderItem={({ item }) => (
+          <SwipeableItem
+            key={item.key}
+            item={item}
+            renderUnderlayLeft={() => (
+              <UnderlayLeft
+                onPress={() => {
+                  console.log("TODO: Delete exercise");
+                }}
+              />
+            )}
+            renderOverlay={() => <OverlayItem workoutId={workoutId} />}
+            snapPointsLeft={[80]}
+            overSwipe={300}
+          />
+        )}
       />
       <AddExerciseBtn workoutId={workoutId} workoutTitle={workoutTitle} />
     </SafeAreaView>

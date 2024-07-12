@@ -6,7 +6,6 @@ import {
   UnifiedResistanceSet,
   exerciseEnums,
 } from "../utils/exercise-types";
-import { Ref, forwardRef } from "react";
 import { Text } from "./Themed";
 
 const CardioSetList = ({ sets }: { sets: UnifiedCardioSet[] }) => {
@@ -52,21 +51,19 @@ type ExerciseCardProps = {
   };
 } & PressableProps;
 
-const ExerciseCard = forwardRef(
-  (
-    { workoutId, exercise, ...pressableProps }: ExerciseCardProps,
-    ref: Ref<View>
-  ) => {
-    return (
-      <Pressable ref={ref} {...pressableProps}>
-        <Text style={styles.exerciseTitle}>{exercise.title}</Text>
-        {exercise.exerciseType === exerciseEnums.RESISTANCE_ENUM ?
-          <ResistanceSetList sets={exercise.sets as UnifiedResistanceSet[]} />
-        : <CardioSetList sets={exercise.sets as UnifiedCardioSet[]} />}
-      </Pressable>
-    );
-  }
-);
+const ExerciseCard = ({
+  workoutId,
+  exercise,
+}: Omit<ExerciseCardProps, "PressableProps">) => {
+  return (
+    <>
+      <Text style={styles.exerciseTitle}>{exercise.title}</Text>
+      {exercise.exerciseType === exerciseEnums.RESISTANCE_ENUM ?
+        <ResistanceSetList sets={exercise.sets as UnifiedResistanceSet[]} />
+      : <CardioSetList sets={exercise.sets as UnifiedCardioSet[]} />}
+    </>
+  );
+};
 
 const styles = StyleSheet.create({
   textxl: {
@@ -79,7 +76,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   exerciseCard: {
-    borderBottomWidth: 1,
+    // borderBottomWidth: 1,
     borderBottomColor: twColors.neutral700,
     padding: 16,
   },
