@@ -94,6 +94,9 @@ export default function WorkoutDetails() {
   }>();
   const workoutId = searchParams.workoutId!;
   const workoutTitle = searchParams.workoutTitle!;
+  if (!workoutId || !workoutTitle) {
+    throw new Error("Workout ID or title not provided. This should not happen");
+  }
   const db = useSQLiteContext();
 
   const swipeableListItem = useCallback(

@@ -288,6 +288,9 @@ export default function BuildExerciseComponent() {
   const exerciseClassIdParam = parseInt(localSearchParams.exercise_class_id!);
   const exerciseTypeIdParam = parseInt(localSearchParams.exercise_type_id!);
   const exerciseTitleParam = localSearchParams.exercise_title!;
+  if (!exerciseClassIdParam || !exerciseTypeIdParam || !exerciseTitleParam) {
+    throw new Error("Missing required route params");
+  }
 
   const db = useSQLiteContext();
 

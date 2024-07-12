@@ -25,6 +25,9 @@ function useExerciseData() {
   // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
   const searchParams = useLocalSearchParams<{ exerciseId: string }>();
   const exerciseId = searchParams.exerciseId!;
+  if (!exerciseId) {
+    throw new Error(`exerciseId is undefined. This should never happen`);
+  }
 
   const db = useSQLiteContext();
   const [exerciseSection, setExerciseSection] = useState<ExerciseSection>();
@@ -123,7 +126,11 @@ function useExerciseData() {
 export default function () {
   // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
   const searchParams = useLocalSearchParams<{ exerciseId: string }>();
-  const exerciseId = searchParams.exerciseId!;
+
+  const exerciseId = searchParams.exerciseId;
+  if (!exerciseId) {
+    throw new Error(`exerciseId is undefined. This should never happen`);
+  }
 
   const exerciseSection = useExerciseData();
   // If all the exercise set data isn't fully loaded, display a loading screen

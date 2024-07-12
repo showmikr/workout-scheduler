@@ -26,6 +26,11 @@ export default function AddWorkoutComponent() {
     newWorkoutIdString: string;
   }>();
   const emptyWorkoutId = parseInt(newWorkoutIdString!);
+  if (isNaN(emptyWorkoutId)) {
+    throw new Error(
+      "newWorkoutIdString is not a number. This should never happen."
+    );
+  }
   console.log("Empty Workout Id:", emptyWorkoutId);
 
   const getExercises = () => {

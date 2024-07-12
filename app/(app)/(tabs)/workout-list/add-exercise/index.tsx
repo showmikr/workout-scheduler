@@ -35,8 +35,14 @@ export default function AddExerciseIndex() {
     workoutId: string;
     workoutTitle: string;
   }>();
-  const workoutId = searchParams.workoutId!;
-  const workoutTitle = searchParams.workoutTitle!;
+  const workoutId = searchParams.workoutId;
+  const workoutTitle = searchParams.workoutTitle;
+  if (!workoutId) {
+    throw new Error(
+      `workoutId or workoutTitle is undefined. This should never happen. \
+      workoutId: ${workoutId}, workoutTitle: ${workoutTitle}`
+    );
+  }
 
   const db = useSQLiteContext();
   const availableExercises = useExerciseClasses(db);
