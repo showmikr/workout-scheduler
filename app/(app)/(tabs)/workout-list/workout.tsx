@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import {
@@ -7,7 +7,8 @@ import {
   Pressable,
   FlatList,
   StyleSheet,
-  TouchableOpacity,
+  Animated,
+  I18nManager,
 } from "react-native";
 import { twColors } from "../../../../constants/Colors";
 import {
@@ -23,16 +24,14 @@ import {
 } from "../../../../utils/exercise-types";
 import { Text } from "../../../../components/Themed";
 import { MaterialIcons } from "@expo/vector-icons";
-import SwipeableItem, { useOverlayParams } from "react-native-swipeable-item";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, {
-  interpolateColor,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withTiming,
-} from "react-native-reanimated";
+import { useOverlayParams } from "react-native-swipeable-item";
+import {
+  Swipeable,
+  RectButton,
+  SwipeableProps,
+} from "react-native-gesture-handler";
+import { useSharedValue } from "react-native-reanimated";
+import AppleStyleSwipeableRow from "../../../../components/AppleStyleSwipeableRow";
 
 type WorkoutItem = ExerciseSection & { key: string };
 
@@ -95,18 +94,7 @@ function UnderlayLeft({ onPress }: { onPress?: () => void }) {
 
 function OverlayItem({ workoutId }: { workoutId: string }) {
   const { item, openDirection, close } = useOverlayParams<WorkoutItem>();
-  const animatedOpacity = useSharedValue(1);
-  const colorTransitionProgress = useSharedValue(0);
-  const animStyles = useAnimatedStyle(() => {
-    return {
-      opacity: animatedOpacity.value,
-      backgroundColor: interpolateColor(
-        colorTransitionProgress.value,
-        [0, 1],
-        ["black", "rgb(32, 32, 32)"]
-      ),
-    };
-  });
+  const highlighted = useSharedValue(false);
   const onPressHandler = () => {
     if (openDirection !== "none") {
       close();
@@ -121,27 +109,14 @@ function OverlayItem({ workoutId }: { workoutId: string }) {
       });
     }
   };
-  const gesture = Gesture.Tap()
-    .maxDeltaX(10)
-    .onStart(() => {
-      if (openDirection !== "none") {
-        return;
-      }
-      animatedOpacity.value = withSequence(
-        withTiming(0.7, { duration: 75 }),
-        withTiming(1, { duration: 125 })
-      );
-      colorTransitionProgress.value = withSequence(
-        withTiming(1, { duration: 75 }),
-        withTiming(0, { duration: 125 })
-      );
-    })
-    .onEnd(() => {
-      runOnJS(onPressHandler)();
-    });
+
   return (
-    <GestureDetector gesture={gesture}>
-      <Animated.View style={[animStyles, exerciseStyles.exerciseCard]}>
+    <RectButton
+      onPress={() => console.log("Hello")}
+      underlayColor={twColors.neutral200}
+      style={{ backgroundColor: "black" }}
+    >
+      <Animated.View style={[exerciseStyles.exerciseCard]}>
         <ExerciseCard
           workoutId={parseInt(workoutId)}
           exercise={{
@@ -152,7 +127,7 @@ function OverlayItem({ workoutId }: { workoutId: string }) {
           }}
         />
       </Animated.View>
-    </GestureDetector>
+    </RectButton>
   );
 }
 
@@ -170,6 +145,8 @@ export default function WorkoutDetails() {
 
   const [sectionData, setSectionData] = useState<WorkoutItem[]>([]);
   const db = useSQLiteContext();
+  const swipeableRowRefs = useRef<Map<string, Swipeable | null>>(new Map());
+
   useEffect(() => {
     const fetchData = () => {
       const fetchedExercises = db.getAllSync<ExerciseParams>(
@@ -235,6 +212,45 @@ export default function WorkoutDetails() {
     fetchData();
   }, []);
 
+  const renderRightAction = (
+    text: string,
+    color: string,
+    x: number,
+    progress: Animated.AnimatedInterpolation<number>,
+    onPress?: () => void
+  ) => {
+    const trans = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [x, 0],
+      extrapolate: "clamp",
+    });
+    return (
+      <Animated.View style={{ flex: 1, transform: [{ translateX: trans }] }}>
+        <RectButton
+          style={[styles.rightAction, { backgroundColor: color }]}
+          onPress={onPress}
+        >
+          <Text style={styles.actionText}>{text}</Text>
+        </RectButton>
+      </Animated.View>
+    );
+  };
+
+  const renderRightActions: SwipeableProps["renderRightActions"] = (
+    progress: Animated.AnimatedInterpolation<number>,
+    _dragAnimatedValue: Animated.AnimatedInterpolation<number>,
+    _swipeable: Swipeable
+  ) => (
+    <View
+      style={{
+        width: "25%",
+        flexDirection: I18nManager.isRTL ? "row-reverse" : "row",
+      }}
+    >
+      {renderRightAction("Delete", "#dd2c00", 64, progress)}
+    </View>
+  );
+
   if (sectionData.length === 0) {
     return (
       <SafeAreaView style={styles.emptyView}>
@@ -255,6 +271,17 @@ export default function WorkoutDetails() {
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <FlatList
+        ItemSeparatorComponent={() => (
+          <View
+            style={{
+              borderTopColor: twColors.neutral700,
+              borderTopWidth: StyleSheet.hairlineWidth,
+              width: "90%",
+              alignSelf: "center",
+              backgroundColor: twColors.neutral700,
+            }}
+          />
+        )}
         ListFooterComponent={
           <View style={{ marginTop: 4 * 14, marginBottom: 4 * 14 }}></View>
         }
@@ -286,20 +313,77 @@ export default function WorkoutDetails() {
         data={sectionData}
         keyExtractor={(item) => item.exercise.exercise_id.toString()}
         renderItem={({ item }) => (
-          <SwipeableItem
-            key={item.key}
-            item={item}
-            renderUnderlayLeft={() => (
-              <UnderlayLeft
-                onPress={() => {
-                  console.log("TODO: Delete exercise");
+          <Swipeable
+            ref={(ref) => {
+              swipeableRowRefs.current.set(item.key, ref);
+            }}
+            friction={1.5}
+            enableTrackpadTwoFingerGesture
+            dragOffsetFromLeftEdge={30}
+            leftThreshold={30}
+            rightThreshold={30}
+            renderRightActions={renderRightActions}
+            renderLeftActions={(_progress, dragX) => {
+              const trans = dragX.interpolate({
+                inputRange: [0, 50, 100, 101],
+                outputRange: [-50, 0, 0, 1],
+                extrapolate: "clamp",
+              });
+              return (
+                <RectButton
+                  style={styles.leftAction}
+                  onPress={() =>
+                    swipeableRowRefs.current?.get(item.key)?.close()
+                  }
+                >
+                  <Animated.Text
+                    style={[
+                      styles.actionText,
+                      {
+                        transform: [{ translateX: trans }],
+                      },
+                    ]}
+                  >
+                    Archive
+                  </Animated.Text>
+                </RectButton>
+              );
+            }}
+            onSwipeableOpen={(direction) => {
+              console.log(`Opening swipeable from the ${direction}`);
+            }}
+            onSwipeableClose={(direction) => {
+              console.log(`Closing swipeable to the ${direction}`);
+            }}
+          >
+            <Pressable
+              onPress={() => {
+                router.push({
+                  pathname: "/(app)/(tabs)/workout-list/[exerciseId]",
+                  params: {
+                    exerciseId: item.exercise.exercise_id,
+                    workoutId: workoutId,
+                  },
+                });
+              }}
+              style={[
+                exerciseStyles.exerciseCard,
+                {
+                  backgroundColor: "black",
+                },
+              ]}
+            >
+              <ExerciseCard
+                workoutId={parseInt(workoutId)}
+                exercise={{
+                  exerciseType: item.exerciseType,
+                  exerciseId: item.exercise.exercise_id,
+                  title: item.exercise.title,
+                  sets: item.data,
                 }}
               />
-            )}
-            renderOverlay={() => <OverlayItem workoutId={workoutId} />}
-            snapPointsLeft={[80]}
-            overSwipe={300}
-          />
+            </Pressable>
+          </Swipeable>
         )}
       />
       <AddExerciseBtn workoutId={workoutId} workoutTitle={workoutTitle} />
@@ -308,6 +392,23 @@ export default function WorkoutDetails() {
 }
 
 const styles = StyleSheet.create({
+  leftAction: {
+    width: 192,
+    // flex: 1,
+    backgroundColor: "#497AFC",
+    justifyContent: "center",
+  },
+  rightAction: {
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+  },
+  actionText: {
+    color: "white",
+    fontSize: 16,
+    backgroundColor: "transparent",
+    padding: 10,
+  },
   safeAreaView: {
     flex: 1,
     justifyContent: "center",
