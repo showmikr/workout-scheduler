@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import { useSQLiteContext } from "expo-sqlite/next";
+import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
 import {
   SafeAreaView,
   View,
   Pressable,
   FlatList,
   StyleSheet,
+  ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
 import { twColors } from "../../../../constants/Colors";
@@ -14,13 +14,7 @@ import {
   ExerciseCard,
   exerciseStyles,
 } from "../../../../components/ExerciseCard";
-import {
-  ExerciseParams,
-  ExerciseSection,
-  UnifiedCardioSet,
-  UnifiedResistanceSet,
-  exerciseEnums,
-} from "../../../../utils/exercise-types";
+import { ExerciseSection } from "../../../../utils/exercise-types";
 import { Text } from "../../../../components/Themed";
 import { MaterialIcons } from "@expo/vector-icons";
 import SwipeableItem, { useOverlayParams } from "react-native-swipeable-item";
@@ -33,6 +27,11 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  deleteExercise,
+  getExerciseSections,
+} from "../../../../utils/query-exercises";
 import WorkoutHeader from "../../../../components/WorkoutHeader";
 
 type WorkoutItem = ExerciseSection & { key: string };
@@ -169,72 +168,39 @@ export default function WorkoutDetails() {
     throw new Error("Workout ID or title not provided. This should not happen");
   }
 
-  const [sectionData, setSectionData] = useState<WorkoutItem[]>([]);
   const db = useSQLiteContext();
-  useEffect(() => {
-    const fetchData = () => {
-      const fetchedExercises = db.getAllSync<ExerciseParams>(
-        `
-        SELECT ex.id AS exercise_id, ex_class.title, ex_class.exercise_type_id
-        FROM exercise AS ex
-          INNER JOIN
-          exercise_class AS ex_class ON ex.exercise_class_id = ex_class.id
-        WHERE ex.workout_id = ?;
-        `,
-        workoutId
-      );
+  const queryClient = useQueryClient();
 
-      if (fetchedExercises.length > 0) {
-        const newSectionData = fetchedExercises.map((ex) => {
-          if (ex.exercise_type_id === exerciseEnums.RESISTANCE_ENUM) {
-            return {
-              exerciseType: ex.exercise_type_id,
-              exercise: ex,
-              data: db.getAllSync<UnifiedResistanceSet>(
-                `SELECT 
-                exercise_set.id AS exercise_set_id,
-                exercise_set.list_order,
-                exercise_set.reps,
-                exercise_set.rest_time,
-                exercise_set.title,
-                resistance_set.id AS resistance_set_id,
-                resistance_set.total_weight
-                FROM exercise_set 
-                INNER JOIN resistance_set ON exercise_set.id = resistance_set.exercise_set_id 
-                WHERE exercise_set.exercise_id = ?`,
-                ex.exercise_id
-              ),
-              key: ex.exercise_id.toString(),
-            };
-          } else {
-            return {
-              exerciseType: ex.exercise_type_id,
-              exercise: ex,
-              data: db.getAllSync<UnifiedCardioSet>(
-                `SELECT
-                exercise_set.id AS exercise_set_id,
-                exercise_set.list_order,
-                exercise_set.reps,
-                exercise_set.rest_time,
-                exercise_set.title,
-                cardio_set.id AS cardio_set_id,
-                cardio_set.target_distance,
-                cardio_set.target_time
-                FROM exercise_set 
-                INNER JOIN cardio_set ON exercise_set.id = cardio_set.exercise_set_id 
-                WHERE exercise_set.exercise_id = ?`,
-                ex.exercise_id
-              ),
-              key: ex.exercise_id.toString(),
-            };
-          }
-        });
-        setSectionData(newSectionData);
-      }
-    };
+  const { data: sectionData } = useQuery({
+    queryKey: ["exercise-sections", workoutId],
+    queryFn: () => getExerciseSections(db, workoutId),
+  });
 
-    fetchData();
-  }, []);
+  const deleteMutation = useMutation({
+    mutationFn: ({
+      db,
+      exerciseId,
+    }: {
+      db: SQLiteDatabase;
+      exerciseId: number;
+    }) => deleteExercise(db, exerciseId),
+    onError: (error) => {
+      console.error(error);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["exercise-sections", workoutId],
+      });
+    },
+  });
+
+  if (!sectionData) {
+    return (
+      <SafeAreaView style={[styles.safeAreaView, { alignItems: "center" }]}>
+        <ActivityIndicator color={twColors.neutral500} />
+      </SafeAreaView>
+    );
+  }
 
   if (sectionData.length === 0) {
     return (
@@ -280,7 +246,10 @@ export default function WorkoutDetails() {
             renderUnderlayLeft={() => (
               <UnderlayLeft
                 onPress={() => {
-                  console.log("TODO: Delete exercise");
+                  deleteMutation.mutate({
+                    db,
+                    exerciseId: item.exercise.exercise_id,
+                  });
                 }}
               />
             )}
