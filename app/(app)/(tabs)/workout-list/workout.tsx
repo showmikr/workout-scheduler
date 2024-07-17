@@ -162,8 +162,8 @@ export default function WorkoutDetails() {
     workoutId: string;
     workoutTitle: string;
   }>();
-  const workoutId = searchParams.workoutId!;
-  const workoutTitle = searchParams.workoutTitle!;
+  const workoutId = searchParams.workoutId;
+  const workoutTitle = searchParams.workoutTitle;
   if (!workoutId || !workoutTitle) {
     throw new Error("Workout ID or title not provided. This should not happen");
   }
