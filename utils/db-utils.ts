@@ -46,7 +46,7 @@ async function initDb(db: SQLiteDatabase) {
   }
 
   const sqlFile = await Asset.fromModule(
-    require("./wo-scheduler-v3.sql")
+    require("../wo-scheduler-v3.sql")
   ).downloadAsync();
 
   if (!sqlFile.localUri) {

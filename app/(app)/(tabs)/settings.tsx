@@ -6,7 +6,7 @@ import {
   Appearance,
 } from "react-native";
 import EditScreenInfo from "../../../components/EditScreenInfo";
-import { deleteDB } from "../../../db-utils";
+import { deleteDB } from "../../../utils/db-utils";
 import { Text, View } from "../../../components/Themed";
 import { useSession } from "../../../ctx";
 import { useState } from "react";
