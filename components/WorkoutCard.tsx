@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import { Pressable, StyleSheet } from "react-native";
-import { Workout } from "../context/query-workouts";
+import { Workout } from "../utils/query-workouts";
 import { Text } from "./Themed";
 
 type WorkoutCardProps = { workout: Workout; tags: string[] };

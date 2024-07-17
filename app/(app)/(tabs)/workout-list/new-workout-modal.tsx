@@ -17,7 +17,7 @@ import {
   AddNewWorkoutArgsObj,
   addNewWorkout,
   getWorkoutCount,
-} from "../../../../context/query-workouts";
+} from "../../../../utils/query-workouts";
 
 export default function NewWorkoutModal() {
   const db = useSQLiteContext();

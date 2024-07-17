@@ -7,7 +7,7 @@ import {
   getWorkoutCount,
   getWorkoutsAsync,
   getWorkoutTagsAsync,
-} from "../../../../context/query-workouts";
+} from "../../../../utils/query-workouts";
 
 export type TaggedWorkout = { id: number; title: string; tags: string[] };
 

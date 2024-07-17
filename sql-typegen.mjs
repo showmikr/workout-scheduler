@@ -11,7 +11,7 @@ const sqliteThree = sqlite3.verbose(); // Allow for longer stack traces on sql e
 const dbFilePath = "file:temp.db"; // Not sure why but a file named 'file' is produced after closing connection
 
 const db = new sqliteThree.Database(dbFilePath);
-const sqlScript = readFileSync("wo-scheduler-v3.sql").toString();
+const sqlScript = readFileSync("./assets/wo-scheduler-v3.sql").toString();
 
 // Use regular expression to grab all CREATE TABLE queries from sql script
 const queryStrings = sqlScript.match(/CREATE TABLE.+?\);/gs);
