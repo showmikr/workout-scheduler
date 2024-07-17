@@ -255,6 +255,17 @@ export default function WorkoutDetails() {
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <FlatList
+        ItemSeparatorComponent={() => (
+          <View
+            style={{
+              borderTopColor: twColors.neutral700,
+              borderTopWidth: StyleSheet.hairlineWidth,
+              width: "90%",
+              alignSelf: "center",
+              backgroundColor: twColors.neutral700,
+            }}
+          />
+        )}
         ListFooterComponent={
           <View style={{ marginTop: 4 * 14, marginBottom: 4 * 14 }}></View>
         }
