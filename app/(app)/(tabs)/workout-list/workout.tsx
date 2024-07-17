@@ -33,6 +33,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
+import WorkoutHeader from "../../../../components/WorkoutHeader";
 
 type WorkoutItem = ExerciseSection & { key: string };
 
@@ -269,31 +270,7 @@ export default function WorkoutDetails() {
         ListFooterComponent={
           <View style={{ marginTop: 4 * 14, marginBottom: 4 * 14 }}></View>
         }
-        ListHeaderComponent={() => {
-          return (
-            <View
-              style={{
-                alignItems: "center",
-                borderWidth: 1,
-                paddingBottom: 1.5 * 14,
-                paddingTop: 1.5 * 14,
-              }}
-            >
-              <Text style={{ fontSize: 1.875 * 14, lineHeight: 2.25 * 14 }}>
-                {workoutTitle}
-              </Text>
-              <View
-                style={{
-                  marginTop: 16,
-                  width: "90%",
-                  borderBottomWidth: 1,
-                  borderColor: twColors.neutral700,
-                  justifyContent: "flex-end",
-                }}
-              />
-            </View>
-          );
-        }}
+        ListHeaderComponent={<WorkoutHeader title={workoutTitle} />}
         data={sectionData}
         keyExtractor={(item) => item.exercise.exercise_id.toString()}
         renderItem={({ item }) => (
