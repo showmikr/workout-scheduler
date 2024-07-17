@@ -5,6 +5,50 @@ import {
   UnifiedCardioSet,
   UnifiedResistanceSet,
 } from "./exercise-types";
+import { ExerciseClass } from "../sqlite-types";
+import { Mandatory } from "./utility-types";
+
+export type AddExerciseCardParams = Pick<
+  Mandatory<ExerciseClass>,
+  "id" | "exercise_type_id" | "title"
+>;
+
+const getExerciseClasses = async (db: SQLiteDatabase) => {
+  return await db.getAllAsync<AddExerciseCardParams>(
+    `
+    SELECT id, exercise_type_id, title 
+    FROM exercise_class 
+    WHERE app_user_id = 1 AND is_archived = ?
+    `,
+    false
+  );
+};
+
+const addExercise = async (
+  db: SQLiteDatabase,
+  workoutId: string,
+  exerciseClass: AddExerciseCardParams
+) => {
+  const { exercise_count } = (await db.getFirstAsync<{
+    exercise_count: number;
+  }>(
+    `
+    SELECT COUNT(id) as exercise_count 
+    FROM exercise 
+    WHERE workout_id = ?;
+    `,
+    workoutId
+  )) ?? { exercise_count: 0 };
+
+  const runResult = await db.runAsync(
+    `
+    INSERT INTO exercise (exercise_class_id, workout_id, list_order)
+    VALUES (?, ?, ?);
+    `,
+    [exerciseClass.id, workoutId, exercise_count + 1]
+  );
+  return runResult;
+};
 
 const getExerciseSections = async (db: SQLiteDatabase, workoutId: string) => {
   const fetchedExercises = await db.getAllAsync<ExerciseParams>(
@@ -82,4 +126,4 @@ const deleteExercise = async (db: SQLiteDatabase, exerciseId: number) => {
   );
 };
 
-export { getExerciseSections, deleteExercise };
+export { getExerciseSections, getExerciseClasses, addExercise, deleteExercise };

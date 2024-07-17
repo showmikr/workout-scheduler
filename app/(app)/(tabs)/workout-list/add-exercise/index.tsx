@@ -1,32 +1,18 @@
-import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite/next";
-import { ExerciseEnums } from "../../../../../utils/exercise-types";
-import { useState } from "react";
-import { SafeAreaView, StyleSheet, Text, useColorScheme } from "react-native";
+import { useSQLiteContext } from "expo-sqlite/next";
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  StyleSheet,
+  useColorScheme,
+} from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
-
-type ExerciseClassParams = {
-  id: number;
-  exercise_type_id: ExerciseEnums[keyof ExerciseEnums];
-  title: string;
-};
-
-// custom hook to asynchronously load in exercise class list from db
-function useExerciseClasses(db: SQLiteDatabase) {
-  const [exerciseClasses, setExerciseClasses] = useState<ExerciseClassParams[]>(
-    []
-  );
-  if (exerciseClasses.length > 0) {
-    return exerciseClasses;
-  }
-  // Otherwise...
-  db.getAllAsync<ExerciseClassParams>(
-    `SELECT id, exercise_type_id, title FROM exercise_class WHERE app_user_id = 1 AND is_archived = ?`,
-    false
-  ).then((availableExercises) => {
-    setExerciseClasses(availableExercises);
-  });
-  return exerciseClasses;
-}
+import {
+  addExercise,
+  AddExerciseCardParams,
+  getExerciseClasses,
+} from "../../../../../utils/query-exercises";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { View, Text } from "../../../../../components/Themed";
 
 export default function AddExerciseIndex() {
   const colorScheme = useColorScheme();
@@ -45,30 +31,46 @@ export default function AddExerciseIndex() {
   }
 
   const db = useSQLiteContext();
-  const availableExercises = useExerciseClasses(db);
+  const queryClient = useQueryClient();
+  // TODO: handle when query errors out
+  const { data: exerciseClasses, isLoading } = useQuery({
+    queryKey: ["add-exercise-list", workoutId],
+    queryFn: () => getExerciseClasses(db),
+  });
 
-  const handleAddExercise = (exClass: ExerciseClassParams) => {
-    const { exercise_count } = db.getFirstSync<{ exercise_count: number }>(
-      `
-      SELECT COUNT(id) as exercise_count 
-      FROM exercise 
-      WHERE workout_id = ?;
-      `,
-      workoutId
-    ) ?? { exercise_count: 0 };
-    db.runSync(
-      `
-      INSERT INTO exercise (exercise_class_id, workout_id, list_order)
-      VALUES (?, ?, ?);
-      `,
-      [exClass.id, workoutId, exercise_count + 1]
+  const addExerciseMutation = useMutation({
+    mutationFn: ({
+      exerciseClass,
+    }: {
+      exerciseClass: AddExerciseCardParams;
+    }) => {
+      return addExercise(db, workoutId, exerciseClass);
+    },
+    onError: (error) => {
+      console.error(error);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["exercise-sections", workoutId],
+      });
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.loadingView}>
+        <View style={[styles.loadingView, { flexDirection: "row" }]}>
+          <ActivityIndicator style={styles.loadingSpinner} />
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </SafeAreaView>
     );
-  };
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      {availableExercises.length > 0 ?
-        availableExercises.map((exerciseClass) => (
+      {exerciseClasses && exerciseClasses.length > 0 ?
+        exerciseClasses.map((exerciseClass) => (
           <Link
             href={{
               pathname: "/workout-list/workout",
@@ -80,7 +82,7 @@ export default function AddExerciseIndex() {
               { color: colorScheme === "dark" ? "white" : "black" },
             ]}
             onPress={() => {
-              handleAddExercise(exerciseClass);
+              addExerciseMutation.mutate({ exerciseClass });
             }}
           >
             {exerciseClass.title}
@@ -111,4 +113,10 @@ const styles = StyleSheet.create({
     fontSize: 1.875 * 14,
     lineHeight: 2.25 * 14,
   },
+  loadingView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingSpinner: { paddingRight: 14, height: 2.25 * 14 },
 });
