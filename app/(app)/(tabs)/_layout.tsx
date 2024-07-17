@@ -3,7 +3,7 @@ import { Link, Redirect, Tabs } from "expo-router";
 import { Pressable, useColorScheme } from "react-native";
 
 import Colors from "../../../constants/Colors";
-import { useSession } from "../../../ctx";
+import { useSession } from "../../../context/session-provider";
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/

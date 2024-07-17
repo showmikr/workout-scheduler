@@ -1,5 +1,5 @@
 import { Pressable, View, StyleSheet, useColorScheme } from "react-native";
-import { useSession } from "../../ctx";
+import { useSession } from "../../context/session-provider";
 import { Redirect } from "expo-router";
 import { TokenResponse } from "expo-auth-session";
 import { Text } from "../../components/Themed";

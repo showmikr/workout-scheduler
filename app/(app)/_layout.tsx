@@ -1,6 +1,6 @@
 import { Redirect, Stack } from "expo-router";
 import { SQLiteProvider } from "expo-sqlite";
-import { useSession } from "../../ctx";
+import { useSession } from "../../context/session-provider";
 import { initDb } from "../../utils/db-utils";
 
 export default function AppLayout() {

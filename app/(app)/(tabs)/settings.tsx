@@ -8,7 +8,7 @@ import {
 import EditScreenInfo from "../../../components/EditScreenInfo";
 import { deleteDB } from "../../../utils/db-utils";
 import { Text, View } from "../../../components/Themed";
-import { useSession } from "../../../ctx";
+import { useSession } from "../../../context/session-provider";
 import { useState } from "react";
 import { AppUser } from "../../../sqlite-types";
 import { Link } from "expo-router";
