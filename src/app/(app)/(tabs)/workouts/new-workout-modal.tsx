@@ -43,7 +43,7 @@ const AddWorkoutCard = (props: { workoutCount: number }) => {
   const db = useSQLiteContext();
   const colorScheme = useColorScheme();
   const queryClient = useQueryClient();
-  const defaultTitle = `New Workout #${props.workoutCount}`;
+  const defaultTitle = `New Workout #${props.workoutCount + 1}`;
   const [title, setTitle] = useState(defaultTitle);
   const newWorkoutMutation = useMutation({
     mutationFn: (argsObject: AddNewWorkoutArgsObj) => addNewWorkout(argsObject),
@@ -58,7 +58,7 @@ const AddWorkoutCard = (props: { workoutCount: number }) => {
         newWorkout.title
       );
       router.replace({
-        pathname: "/workout-list/workout",
+        pathname: "/workouts/[workoutId]",
         params: { workoutId: newWorkout.id, workoutTitle: newWorkout.title },
       });
     },

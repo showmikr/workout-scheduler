@@ -11,7 +11,7 @@ export default function WorkoutCard(props: WorkoutCardProps) {
   return (
     <Link
       href={{
-        pathname: "/(app)/(tabs)/workout-list/workout",
+        pathname: "/workouts/[workoutId]",
         params: { workoutId: id, workoutTitle: title },
       }}
       asChild

@@ -1,5 +1,8 @@
 import { Link, Stack } from "expo-router";
 
+type RouteParams = {
+  title: string;
+};
 export default function TabTwoLayout() {
   return (
     <Stack>
@@ -15,7 +18,7 @@ export default function TabTwoLayout() {
                   fontSize: 18,
                   padding: 8,
                 }}
-                href="/workout-list/new-workout-modal"
+                href="/workouts/new-workout-modal"
               >
                 New Workout
               </Link>

@@ -25,21 +25,18 @@ export type CardioSetParams = {
 export type UnifiedResistanceSet = ExerciseSetParams & ResistanceSetParams;
 export type UnifiedCardioSet = ExerciseSetParams & CardioSetParams;
 
-// Represent generic exercise with unknown type (i.e unknown if Resistance of Cardio)
-export type ExerciseParams = {
-  exercise_type_id: ExerciseEnums[keyof ExerciseEnums];
+export type ResistanceSection = {
+  exercise_type_id: ExerciseEnums["RESISTANCE_ENUM"];
+  exercise_class_id: number;
   exercise_id: number;
   title: string;
+  sets: UnifiedResistanceSet[];
 };
 
-export type ResistanceSection = {
-  exerciseType: ExerciseEnums["RESISTANCE_ENUM"];
-  exercise: ExerciseParams;
-  data: UnifiedResistanceSet[];
-};
 export type CardioSection = {
-  exerciseType: ExerciseEnums["CARDIO_ENUM"];
-  exercise: ExerciseParams;
-  data: UnifiedCardioSet[];
+  exercise_type_id: ExerciseEnums["CARDIO_ENUM"];
+  exercise_class_id: number;
+  exercise_id: number;
+  title: string;
+  sets: UnifiedCardioSet[];
 };
-export type ExerciseSection = ResistanceSection | CardioSection;

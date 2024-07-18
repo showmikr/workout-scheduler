@@ -1,10 +1,9 @@
-import { Pressable, PressableProps, StyleSheet, View } from "react-native";
+import { PressableProps, StyleSheet } from "react-native";
 import { twColors } from "@/constants/Colors";
 import {
-  ExerciseEnums,
+  ResistanceSection,
   UnifiedCardioSet,
   UnifiedResistanceSet,
-  exerciseEnums,
 } from "@/utils/exercise-types";
 import { Text } from "@/components/Themed";
 
@@ -43,12 +42,7 @@ const ResistanceSetList = ({ sets }: { sets: UnifiedResistanceSet[] }) => {
 
 type ExerciseCardProps = {
   workoutId: number;
-  exercise: {
-    exerciseType: ExerciseEnums[keyof ExerciseEnums];
-    exerciseId: number;
-    sets: UnifiedResistanceSet[] | UnifiedCardioSet[];
-    title: string;
-  };
+  exercise: ResistanceSection;
 } & PressableProps;
 
 const ExerciseCard = ({
@@ -58,9 +52,7 @@ const ExerciseCard = ({
   return (
     <>
       <Text style={styles.exerciseTitle}>{exercise.title}</Text>
-      {exercise.exerciseType === exerciseEnums.RESISTANCE_ENUM ?
-        <ResistanceSetList sets={exercise.sets as UnifiedResistanceSet[]} />
-      : <CardioSetList sets={exercise.sets as UnifiedCardioSet[]} />}
+      <ResistanceSetList sets={exercise.sets} />
     </>
   );
 };

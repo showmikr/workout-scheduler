@@ -42,7 +42,7 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="workout-list"
+        name="workouts"
         options={{
           title: "Workouts",
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,

@@ -73,7 +73,7 @@ export default function AddExerciseIndex() {
         exerciseClasses.map((exerciseClass) => (
           <Link
             href={{
-              pathname: "/workout-list/workout",
+              pathname: "/workouts/[workoutId]",
               params: { workoutId: workoutId, workoutTitle: workoutTitle },
             }}
             key={exerciseClass.id}

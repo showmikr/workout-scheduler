@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { twColors } from "@/constants/Colors";
 import { ExerciseCard, exerciseStyles } from "@/components/ExerciseCard";
-import { ExerciseSection } from "@/utils/exercise-types";
 import { Text, View } from "@/components/Themed";
 import SwipeableItem, { useOverlayParams } from "react-native-swipeable-item";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -22,11 +21,10 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteExercise, getExerciseSections } from "@/utils/query-exercises";
+import { deleteExercise, getResistanceSections } from "@/utils/query-exercises";
 import WorkoutHeader from "@/components/WorkoutHeader";
 import FloatingAddButton from "@/components/FloatingAddButton";
-
-type WorkoutItem = ExerciseSection & { key: string };
+import { ResistanceSection } from "@/utils/exercise-types";
 
 function UnderlayLeft({ onPress }: { onPress?: () => void }) {
   return (
@@ -45,8 +43,14 @@ function UnderlayLeft({ onPress }: { onPress?: () => void }) {
   );
 }
 
-function OverlayItem({ workoutId }: { workoutId: string }) {
-  const { item, openDirection, close } = useOverlayParams<WorkoutItem>();
+function OverlayItem({
+  exercise,
+  workoutId,
+}: {
+  exercise: ResistanceSection;
+  workoutId: string;
+}) {
+  const { openDirection, close } = useOverlayParams<ResistanceSection>();
   const animatedOpacity = useSharedValue(1);
   const colorTransitionProgress = useSharedValue(0);
   const animStyles = useAnimatedStyle(() => {
@@ -66,10 +70,11 @@ function OverlayItem({ workoutId }: { workoutId: string }) {
       return;
     } else {
       router.push({
-        pathname: "/(app)/(tabs)/workout-list/[exerciseId]",
+        pathname: "workouts/[workoutId]/[exerciseId]",
         params: {
-          exerciseId: item.exercise.exercise_id,
           workoutId: workoutId,
+          exerciseId: exercise.exercise_id,
+          title: exercise.title,
         },
       });
     }
@@ -95,15 +100,7 @@ function OverlayItem({ workoutId }: { workoutId: string }) {
   return (
     <GestureDetector gesture={gesture}>
       <Animated.View style={[animStyles, exerciseStyles.exerciseCard]}>
-        <ExerciseCard
-          workoutId={parseInt(workoutId)}
-          exercise={{
-            exerciseType: item.exerciseType,
-            exerciseId: item.exercise.exercise_id,
-            title: item.exercise.title,
-            sets: item.data,
-          }}
-        />
+        <ExerciseCard workoutId={parseInt(workoutId)} exercise={exercise} />
       </Animated.View>
     </GestureDetector>
   );
@@ -126,7 +123,8 @@ export default function WorkoutDetails() {
 
   const { data: sectionData } = useQuery({
     queryKey: ["exercise-sections", workoutId],
-    queryFn: () => getExerciseSections(db, workoutId),
+    queryFn: () => getResistanceSections(db, workoutId),
+    refetchInterval: 3000,
   });
 
   const deleteMutation = useMutation({
@@ -149,7 +147,7 @@ export default function WorkoutDetails() {
 
   const onPresFloatingAddBtn = () => {
     router.push({
-      pathname: "/(app)/(tabs)/workout-list/add-exercise/",
+      pathname: "/workouts/add-exercise",
       params: { workoutId: workoutId, workoutTitle: workoutTitle },
     });
   };
@@ -201,24 +199,25 @@ export default function WorkoutDetails() {
           ListFooterComponent={
             <View style={{ marginTop: 4 * 14, marginBottom: 4 * 14 }}></View>
           }
-          ListHeaderComponent={<WorkoutHeader title={workoutTitle} />}
+          ListHeaderComponent={() => <WorkoutHeader title={workoutTitle} />}
           data={sectionData}
-          keyExtractor={(item) => item.exercise.exercise_id.toString()}
+          keyExtractor={(item) => item.exercise_id.toString()}
           renderItem={({ item }) => (
             <SwipeableItem
-              key={item.key}
               item={item}
               renderUnderlayLeft={() => (
                 <UnderlayLeft
                   onPress={() => {
                     deleteMutation.mutate({
                       db,
-                      exerciseId: item.exercise.exercise_id,
+                      exerciseId: item.exercise_id,
                     });
                   }}
                 />
               )}
-              renderOverlay={() => <OverlayItem workoutId={workoutId} />}
+              renderOverlay={() => (
+                <OverlayItem exercise={item} workoutId={workoutId} />
+              )}
               snapPointsLeft={[80]}
               overSwipe={300}
             />
@@ -237,6 +236,10 @@ const styles = StyleSheet.create({
   safeAreaView: {
     flex: 1,
     justifyContent: "center",
+  },
+  textxl: {
+    fontSize: 1.25 * 14,
+    lineHeight: 1.75 * 14,
   },
   emptyView: {
     flex: 1,
