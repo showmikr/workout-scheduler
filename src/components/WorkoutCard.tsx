@@ -1,7 +1,7 @@
 import { Link } from "expo-router";
 import { Pressable, StyleSheet } from "react-native";
 import { Workout } from "@/utils/query-workouts";
-import { Text } from "@/components/Themed";
+import { ThemedText } from "@/components/Themed";
 
 type WorkoutCardProps = { workout: Workout; tags: string[] };
 
@@ -17,10 +17,10 @@ export default function WorkoutCard(props: WorkoutCardProps) {
       asChild
     >
       <Pressable style={styles.exerciseBtn}>
-        <Text style={styles.text2xl}>Title: {title}</Text>
-        <Text style={styles.text2xl}>
+        <ThemedText style={styles.text2xl}>Title: {title}</ThemedText>
+        <ThemedText style={styles.text2xl}>
           Tags: {tags.length > 0 ? tags.join(", ") : "None"}
-        </Text>
+        </ThemedText>
       </Pressable>
     </Link>
   );

@@ -6,10 +6,11 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
+  View,
 } from "react-native";
 import { twColors } from "@/constants/Colors";
 import { ExerciseCard, exerciseStyles } from "@/components/ExerciseCard";
-import { Text, View } from "@/components/Themed";
+import { ThemedText, ThemedView } from "@/components/Themed";
 import SwipeableItem, { useOverlayParams } from "react-native-swipeable-item";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -38,7 +39,9 @@ function UnderlayLeft({ onPress }: { onPress?: () => void }) {
         backgroundColor: "red",
       }}
     >
-      <Text style={{ color: "white", paddingRight: 20 }}>Delete</Text>
+      <ThemedText style={{ color: "white", paddingRight: 20 }}>
+        Delete
+      </ThemedText>
     </TouchableOpacity>
   );
 }
@@ -154,19 +157,19 @@ export default function WorkoutDetails() {
 
   if (!sectionData) {
     return (
-      <View style={styles.rootView}>
+      <ThemedView style={styles.rootView}>
         <SafeAreaView style={[styles.safeAreaView, { alignItems: "center" }]}>
           <ActivityIndicator color={twColors.neutral500} />
         </SafeAreaView>
-      </View>
+      </ThemedView>
     );
   }
 
   if (sectionData.length === 0) {
     return (
-      <View style={styles.rootView}>
+      <ThemedView style={styles.rootView}>
         <SafeAreaView style={styles.emptyView}>
-          <Text
+          <ThemedText
             style={{
               fontSize: 1.875 * 14,
               lineHeight: 2.25 * 14,
@@ -174,15 +177,15 @@ export default function WorkoutDetails() {
             }}
           >
             Wow, much empty...
-          </Text>
+          </ThemedText>
           <FloatingAddButton onPress={onPresFloatingAddBtn} />
         </SafeAreaView>
-      </View>
+      </ThemedView>
     );
   }
 
   return (
-    <View style={styles.rootView}>
+    <ThemedView style={styles.rootView}>
       <SafeAreaView style={styles.safeAreaView}>
         <FlatList
           ItemSeparatorComponent={() => (
@@ -197,7 +200,7 @@ export default function WorkoutDetails() {
             />
           )}
           ListFooterComponent={
-            <View style={{ marginTop: 4 * 14, marginBottom: 4 * 14 }}></View>
+            <ThemedView style={{ marginTop: 8 * 14 }}></ThemedView>
           }
           ListHeaderComponent={() => <WorkoutHeader title={workoutTitle} />}
           data={sectionData}
@@ -225,7 +228,7 @@ export default function WorkoutDetails() {
         />
         <FloatingAddButton onPress={onPresFloatingAddBtn} />
       </SafeAreaView>
-    </View>
+    </ThemedView>
   );
 }
 

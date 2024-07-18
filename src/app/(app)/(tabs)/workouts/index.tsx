@@ -8,7 +8,7 @@ import {
   getWorkoutsAsync,
   getWorkoutTagsAsync,
 } from "@/utils/query-workouts";
-import { View, Text } from "@/components/Themed";
+import { ThemedView, ThemedText } from "@/components/Themed";
 import { twColors } from "@/constants/Colors";
 
 export type TaggedWorkout = { id: number; title: string; tags: string[] };
@@ -37,9 +37,11 @@ export default function TabTwoScreen() {
 
   if (!(workouts && tagMap && workoutTagMap)) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={{ fontWeight: "bold", fontSize: 22 }}>Loading...</Text>
-      </View>
+      <ThemedView style={styles.loadingContainer}>
+        <ThemedText style={{ fontWeight: "bold", fontSize: 22 }}>
+          Loading...
+        </ThemedText>
+      </ThemedView>
     );
   }
 

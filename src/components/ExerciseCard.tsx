@@ -5,13 +5,13 @@ import {
   UnifiedCardioSet,
   UnifiedResistanceSet,
 } from "@/utils/exercise-types";
-import { Text } from "@/components/Themed";
+import { ThemedText, ThemedView } from "@/components/Themed";
 
 const CardioSetList = ({ sets }: { sets: UnifiedCardioSet[] }) => {
   return (
     <>
       {sets.map((set) => (
-        <Text style={styles.textxl}>
+        <ThemedText style={styles.textxl}>
           Reps: {set.reps}
           {"    "}
           Rest: {set.rest_time}s{"    "}
@@ -19,7 +19,7 @@ const CardioSetList = ({ sets }: { sets: UnifiedCardioSet[] }) => {
           {set.target_distance ? set.target_distance + "m" : "null"}
           {"    "}
           Target Time: {set.target_time ? set.target_time + "s" : "null"}
-        </Text>
+        </ThemedText>
       ))}
     </>
   );
@@ -29,12 +29,12 @@ const ResistanceSetList = ({ sets }: { sets: UnifiedResistanceSet[] }) => {
   return (
     <>
       {sets.map((set) => (
-        <Text key={set.exercise_set_id} style={styles.textxl}>
+        <ThemedText key={set.exercise_set_id} style={styles.textxl}>
           Reps: {set.reps}
           {"    "}
           Rest: {set.rest_time}s{"    "}
           {set.total_weight}kg
-        </Text>
+        </ThemedText>
       ))}
     </>
   );
@@ -51,7 +51,7 @@ const ExerciseCard = ({
 }: Omit<ExerciseCardProps, "PressableProps">) => {
   return (
     <>
-      <Text style={styles.exerciseTitle}>{exercise.title}</Text>
+      <ThemedText style={styles.exerciseTitle}>{exercise.title}</ThemedText>
       <ResistanceSetList sets={exercise.sets} />
     </>
   );

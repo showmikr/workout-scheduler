@@ -1,5 +1,5 @@
 import { StyleSheet, SafeAreaView, ScrollView, TextInput } from "react-native";
-import { Text, View } from "@/components/Themed";
+import { ThemedText, ThemedView } from "@/components/Themed";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
@@ -49,7 +49,7 @@ export default function ExerciseDetails() {
     return (
       <SafeAreaView style={[styles.outerContainer, { alignItems: "center" }]}>
         <Stack.Screen options={{ title: title }} />
-        <Text
+        <ThemedText
           style={{
             textAlign: "center",
             fontSize: 1.875 * 14,
@@ -57,7 +57,7 @@ export default function ExerciseDetails() {
           }}
         >
           Loading...
-        </Text>
+        </ThemedText>
       </SafeAreaView>
     );
   }
@@ -66,12 +66,12 @@ export default function ExerciseDetails() {
     <SafeAreaView style={{ flex: 1, backgroundColor: "#0D0D0D" }}>
       <Stack.Screen options={{ title: title }} />
       <ScrollView>
-        <Text style={{ fontSize: 1.875 * 14, lineHeight: 2.25 * 14 }}>
+        <ThemedText style={{ fontSize: 1.875 * 14, lineHeight: 2.25 * 14 }}>
           Hello, I'm an exercise page placeholder
-        </Text>
-        <Text style={{ fontSize: 1.875 * 14, lineHeight: 2.25 * 14 }}>
+        </ThemedText>
+        <ThemedText style={{ fontSize: 1.875 * 14, lineHeight: 2.25 * 14 }}>
           Exercise ID: {exerciseId}
-        </Text>
+        </ThemedText>
         {resistanceSets.map((set, index) => {
           return (
             <ResistanceSet
@@ -124,7 +124,7 @@ const ResistanceSet = ({
     set.total_weight.toFixed(2).toString()
   );
   return (
-    <View
+    <ThemedView
       style={[
         styles.rowContainer,
         styles.inline,
@@ -136,18 +136,18 @@ const ResistanceSet = ({
         },
       ]}
     >
-      <View style={{ maxWidth: 100 }}>
-        <Text style={styles.inputLabel}>Reps</Text>
+      <ThemedView style={{ maxWidth: 100 }}>
+        <ThemedText style={styles.inputLabel}>Reps</ThemedText>
         <TextInput
           inputMode="numeric"
           value={set.reps.toString()}
           maxLength={5}
           style={[styles.textInput, styles.inertInputState]}
         />
-      </View>
-      <View style={{ maxWidth: 100 }}>
-        <Text style={styles.inputLabel}>Weight</Text>
-        <View style={styles.inline}>
+      </ThemedView>
+      <ThemedView style={{ maxWidth: 100 }}>
+        <ThemedText style={styles.inputLabel}>Weight</ThemedText>
+        <ThemedView style={styles.inline}>
           <TextInput
             inputMode="decimal"
             value={weightString}
@@ -162,21 +162,21 @@ const ResistanceSet = ({
               onWeightChange(Number(e.nativeEvent.text));
             }}
           />
-          <Text style={styles.unitsLabel}>kg</Text>
-        </View>
-      </View>
-      <View style={{ maxWidth: 100 }}>
-        <Text style={styles.inputLabel}>Rest</Text>
-        <View style={styles.inline}>
+          <ThemedText style={styles.unitsLabel}>kg</ThemedText>
+        </ThemedView>
+      </ThemedView>
+      <ThemedView style={{ maxWidth: 100 }}>
+        <ThemedText style={styles.inputLabel}>Rest</ThemedText>
+        <ThemedView style={styles.inline}>
           <TextInput
             inputMode="numeric"
             value={set.rest_time.toString()}
             style={[styles.textInput, styles.inertInputState]}
           />
-          <Text style={styles.unitsLabel}>s</Text>
-        </View>
-      </View>
-    </View>
+          <ThemedText style={styles.unitsLabel}>s</ThemedText>
+        </ThemedView>
+      </ThemedView>
+    </ThemedView>
   );
 };
 

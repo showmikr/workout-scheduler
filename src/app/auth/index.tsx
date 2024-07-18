@@ -2,7 +2,7 @@ import { Pressable, View, StyleSheet, useColorScheme } from "react-native";
 import { useSession } from "@/context/session-provider";
 import { Redirect } from "expo-router";
 import { TokenResponse } from "expo-auth-session";
-import { Text } from "@/components/Themed";
+import { ThemedText } from "@/components/Themed";
 
 export default function SignIn() {
   const { signIn, session } = useSession();
@@ -15,11 +15,11 @@ export default function SignIn() {
           { backgroundColor: colorScheme === "dark" ? "black" : "white" },
         ]}
       >
-        <Text style={styles.textStyle}>
+        <ThemedText style={styles.textStyle}>
           Session:{" "}
           {session ? (JSON.parse(session) as TokenResponse).idToken : "null"}
-        </Text>
-        <Text />
+        </ThemedText>
+        <ThemedText />
         <Pressable
           onPress={() => {
             signIn();
@@ -28,7 +28,7 @@ export default function SignIn() {
             //router.replace("/"); // Not really working, read the readme
           }}
         >
-          <Text style={styles.textStyle}>Sign In</Text>
+          <ThemedText style={styles.textStyle}>Sign In</ThemedText>
         </Pressable>
       </View>
     : <Redirect href="/" />;

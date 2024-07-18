@@ -1,19 +1,19 @@
 import { twColors } from "@/constants/Colors";
-import { View, Text } from "@/components/Themed";
+import { ThemedView, ThemedText } from "@/components/Themed";
 
 function WorkoutHeader({ title }: { title: string }) {
   return (
-    <View
+    <ThemedView
       style={{
         alignItems: "center",
         paddingBottom: 1.5 * 14,
         paddingTop: 1.5 * 14,
       }}
     >
-      <Text style={{ fontSize: 1.875 * 14, lineHeight: 2.25 * 14 }}>
+      <ThemedText style={{ fontSize: 1.875 * 14, lineHeight: 2.25 * 14 }}>
         {title}
-      </Text>
-      <View
+      </ThemedText>
+      <ThemedView
         style={{
           marginTop: 16,
           width: "90%",
@@ -22,7 +22,7 @@ function WorkoutHeader({ title }: { title: string }) {
           justifyContent: "flex-end",
         }}
       />
-    </View>
+    </ThemedView>
   );
 }
 

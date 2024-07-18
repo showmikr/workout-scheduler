@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import EditScreenInfo from "@/components/EditScreenInfo";
 import { deleteDB } from "@/utils/db-utils";
-import { Text, View } from "@/components/Themed";
+import { ThemedText, ThemedView } from "@/components/Themed";
 import { useSession } from "@/context/session-provider";
 import { useState } from "react";
 import { AppUser } from "../../../../sqlite-types";
@@ -56,7 +56,7 @@ export default function TabOneScreen() {
       style={{ backgroundColor: twColors.neutral950 }}
       contentContainerStyle={styles.safeAreaView}
     >
-      <Text style={styles.title}>Database</Text>
+      <ThemedText style={styles.title}>Database</ThemedText>
       <Pressable
         style={styles.btnStyle}
         onPress={() => {
@@ -65,27 +65,27 @@ export default function TabOneScreen() {
           deleteDB(`${subject}.db`).then();
         }}
       >
-        <Text style={styles.btnTitle}>Reinitialize Database</Text>
+        <ThemedText style={styles.btnTitle}>Reinitialize Database</ThemedText>
       </Pressable>
       <Pressable style={styles.btnStyle} onPress={() => readDb()}>
-        <Text style={styles.btnTitle}>Read From DB</Text>
+        <ThemedText style={styles.btnTitle}>Read From DB</ThemedText>
       </Pressable>
-      <Text style={styles.title}>Experimental</Text>
-      <Text
+      <ThemedText style={styles.title}>Experimental</ThemedText>
+      <ThemedText
         style={[{ padding: 0.25 * 14, textAlign: "center" }, styles.textxl]}
       >
         User Info:
-      </Text>
+      </ThemedText>
       {userData &&
         Object.entries(userData).map(([key, value]) => (
-          <Text style={styles.userTableText} key={key}>
+          <ThemedText style={styles.userTableText} key={key}>
             {key}:{" "}
             {key === "creation_date" ?
               new Date(value as string).toDateString()
             : value}
-          </Text>
+          </ThemedText>
         ))}
-      <View
+      <ThemedView
         style={styles.separator}
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
@@ -93,7 +93,7 @@ export default function TabOneScreen() {
       <EditScreenInfo path="app/(app)/(tabs)/" />
       <Link href="/hello" asChild>
         <Pressable style={styles.btnStyle}>
-          <Text style={styles.textxl}>Go to Hello</Text>
+          <ThemedText style={styles.textxl}>Go to Hello</ThemedText>
         </Pressable>
       </Link>
       <Pressable
@@ -101,20 +101,20 @@ export default function TabOneScreen() {
           Appearance.setColorScheme(colorScheme === "dark" ? "light" : "dark")
         }
       >
-        <Text style={[{ textAlign: "center" }, styles.textxl]}>
+        <ThemedText style={[{ textAlign: "center" }, styles.textxl]}>
           {"Toggle Color Scheme: " + colorScheme}
-        </Text>
+        </ThemedText>
       </Pressable>
-      <Text />
-      <View
+      <ThemedText />
+      <ThemedView
         style={styles.separator}
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
       <Pressable onPress={signOut}>
-        <Text style={[{ textAlign: "center" }, styles.text3xl]}>
+        <ThemedText style={[{ textAlign: "center" }, styles.text3xl]}>
           Sign Me Out!
-        </Text>
+        </ThemedText>
       </Pressable>
     </ScrollView>
   );

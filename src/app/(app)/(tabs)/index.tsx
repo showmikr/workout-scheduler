@@ -1,5 +1,5 @@
 import { BarChart, LineChart, yAxisSides } from "react-native-gifted-charts";
-import { View } from "@/components/Themed";
+import { ThemedView } from "@/components/Themed";
 import {
   Text,
   Pressable,
@@ -244,9 +244,11 @@ export default function SummaryPage() {
   // If all the graph data isn't fully loaded, display a loading screen
   if (!graphData) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <ThemedView
+        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+      >
         <Text style={stats.viewTitle}>Loading...</Text>
-      </View>
+      </ThemedView>
     );
   }
 
@@ -663,9 +665,9 @@ export default function SummaryPage() {
         />
       )}
       renderSectionHeader={({ section: { title } }) => (
-        <View style={stats.viewStyle}>
+        <ThemedView style={stats.viewStyle}>
           <Text style={stats.viewTitle}>{title}</Text>
-        </View>
+        </ThemedView>
       )}
       keyExtractor={(item) => item.sessionId.toString()}
       ListHeaderComponent={
@@ -710,13 +712,13 @@ function Goals({
   const [weight, setWeight] = useState(weightGoal);
 
   return (
-    <View style={[stats.viewStyle]}>
+    <ThemedView style={[stats.viewStyle]}>
       <Text style={[stats.viewTitle]}>Goals</Text>
 
       {/* Calorie Goal */}
-      <View style={stats.viewRows}>
+      <ThemedView style={stats.viewRows}>
         <Text style={stats.rowText}>Calories</Text>
-        <View
+        <ThemedView
           style={{
             flex: 1,
             flexDirection: "row",
@@ -755,15 +757,15 @@ function Goals({
           >
             {/* Placeholder in case we place label here */}
           </Text>
-        </View>
+        </ThemedView>
 
         <Text style={stats.rowText}></Text>
-      </View>
+      </ThemedView>
 
       {/* Body Weight Goal */}
-      <View style={stats.viewRows}>
+      <ThemedView style={stats.viewRows}>
         <Text style={stats.rowText}>Body Weight</Text>
-        <View
+        <ThemedView
           style={{
             flex: 1,
             flexDirection: "row",
@@ -802,10 +804,10 @@ function Goals({
           >
             kg
           </Text>
-        </View>
+        </ThemedView>
         <Text style={stats.rowText}></Text>
-      </View>
-    </View>
+      </ThemedView>
+    </ThemedView>
   );
 }
 
@@ -835,7 +837,7 @@ function Summary({
   bodyWeightData: UserBodyWeight[];
 }) {
   return (
-    <View style={[stats.viewStyle]}>
+    <ThemedView style={[stats.viewStyle]}>
       <Text style={[stats.viewTitle]}>Summary</Text>
 
       {
@@ -845,7 +847,7 @@ function Summary({
             case "calorie":
               return (
                 <>
-                  <View style={[stats.viewRows, { marginTop: 0 }]}>
+                  <ThemedView style={[stats.viewRows, { marginTop: 0 }]}>
                     <Text style={[stats.rowText, { color: "grey" }]}></Text>
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       Total
@@ -853,15 +855,15 @@ function Summary({
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       Average
                     </Text>
-                  </View>
-                  <View style={stats.viewRows}>
+                  </ThemedView>
+                  <ThemedView style={stats.viewRows}>
                     <Text style={stats.rowText}>Workouts</Text>
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       {rawInputLength}
                     </Text>
                     <Text style={stats.rowText}></Text>
-                  </View>
-                  <View style={stats.viewRows}>
+                  </ThemedView>
+                  <ThemedView style={stats.viewRows}>
                     <Text style={stats.rowText}>Time</Text>
                     <Text style={[stats.rowText, { color: "#AD760A" }]}>
                       {("00" + Math.floor(rawInputTime / 3600)).slice(-2)}:
@@ -901,8 +903,8 @@ function Summary({
                         ).slice(-2)
                       }
                     </Text>
-                  </View>
-                  <View style={stats.viewRows}>
+                  </ThemedView>
+                  <ThemedView style={stats.viewRows}>
                     <Text style={stats.rowText}>Calories</Text>
                     <Text style={[stats.rowText, { color: "#A53535" }]}>
                       {rawInputValue.toLocaleString()} cal
@@ -910,14 +912,14 @@ function Summary({
                     <Text style={[stats.rowText, { color: "#A53535" }]}>
                       {Math.round(rawInputValue / rawInputLength)} cal
                     </Text>
-                  </View>
+                  </ThemedView>
                 </>
               );
               break;
             case "body weight":
               return (
                 <>
-                  <View style={[stats.viewRows, { marginTop: 0 }]}>
+                  <ThemedView style={[stats.viewRows, { marginTop: 0 }]}>
                     <Text style={[stats.rowText, { color: "grey" }]}></Text>
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       Trend
@@ -925,8 +927,8 @@ function Summary({
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       Current
                     </Text>
-                  </View>
-                  <View style={stats.viewRows}>
+                  </ThemedView>
+                  <ThemedView style={stats.viewRows}>
                     <Text style={stats.rowText}>B.M.I</Text>
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       {(
@@ -957,8 +959,8 @@ function Summary({
                         Math.pow(userProfileData.userHeight ?? 0, 2)
                       ).toFixed(2)}
                     </Text>
-                  </View>
-                  <View style={stats.viewRows}>
+                  </ThemedView>
+                  <ThemedView style={stats.viewRows}>
                     <Text style={stats.rowText}>Goal</Text>
                     <Text style={[stats.rowText, { color: "#AD760A" }]}>
                       {userProfileData.bodyWeightGoal ?
@@ -974,8 +976,8 @@ function Summary({
                       : 0}{" "}
                       {" kg"}
                     </Text>
-                  </View>
-                  <View style={stats.viewRows}>
+                  </ThemedView>
+                  <ThemedView style={stats.viewRows}>
                     <Text style={stats.rowText}>Weight</Text>
                     <Text style={[stats.rowText, { color: "#A53535" }]}>
                       {(rawInputLastIdx - rawInputFirstIdx > 0 ? "+" : "") +
@@ -985,14 +987,14 @@ function Summary({
                     <Text style={[stats.rowText, { color: "#A53535" }]}>
                       {rawInputLastIdx.toFixed(2) + " kg"}
                     </Text>
-                  </View>
+                  </ThemedView>
                 </>
               );
               break;
             case "personal record":
               return (
                 <>
-                  <View style={[stats.viewRows, { marginTop: 0 }]}>
+                  <ThemedView style={[stats.viewRows, { marginTop: 0 }]}>
                     <Text style={[stats.rowText, { color: "grey" }]}></Text>
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       Trend
@@ -1000,8 +1002,8 @@ function Summary({
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       Current
                     </Text>
-                  </View>
-                  <View style={stats.viewRows}>
+                  </ThemedView>
+                  <ThemedView style={stats.viewRows}>
                     <Text style={stats.rowText}>Resistance</Text>
                     <Text style={[stats.rowText, { color: "grey" }]}>
                       {
@@ -1019,8 +1021,8 @@ function Summary({
                       {PrLastVal.toFixed(2)}
                       {" kg"}
                     </Text>
-                  </View>
-                  <View style={stats.viewRows}>
+                  </ThemedView>
+                  <ThemedView style={stats.viewRows}>
                     <Text style={stats.rowText}>Body %</Text>
                     <Text style={[stats.rowText, { color: "#AD760A" }]}>
                       {(
@@ -1074,8 +1076,8 @@ function Summary({
                       ).toFixed(1)}
                       {"%"}
                     </Text>
-                  </View>
-                  <View style={stats.viewRows}>
+                  </ThemedView>
+                  <ThemedView style={stats.viewRows}>
                     <Text style={stats.rowText}>
                       {
                         "" /* vs Average [hidden until futher implementation and discussion]*/
@@ -1083,13 +1085,13 @@ function Summary({
                     </Text>
                     <Text style={[stats.rowText, { color: "#A53535" }]}></Text>
                     <Text style={[stats.rowText, { color: "#A53535" }]}></Text>
-                  </View>
+                  </ThemedView>
                 </>
               );
           }
         })()
       }
-    </View>
+    </ThemedView>
   );
 }
 
@@ -1145,9 +1147,9 @@ function Graph({
   const graphRangeButtons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
 
   return (
-    <View>
+    <ThemedView>
       {/* graph type button */}
-      <View
+      <ThemedView
         style={{
           paddingVertical: 10,
           paddingEnd: 10,
@@ -1182,8 +1184,8 @@ function Graph({
             {graphType ? "BarChart" : "LineChart"}
           </Text>
         </Pressable>
-      </View>
-      <View
+      </ThemedView>
+      <ThemedView
         style={{
           flex: 1,
           justifyContent: "center",
@@ -1267,7 +1269,7 @@ function Graph({
                 }[]
               ) => {
                 return (
-                  <View
+                  <ThemedView
                     style={{
                       position: "absolute",
                       width: 110,
@@ -1300,7 +1302,7 @@ function Graph({
                           .substring(4, items[0].date.toDateString().length)
                       }
                     </Text>
-                    <View
+                    <ThemedView
                       style={{
                         paddingHorizontal: 14,
                         borderRadius: 16,
@@ -1317,8 +1319,8 @@ function Graph({
                         {Math.round(items[0].value) +
                           (graphDataType === "calorie" ? " cal" : " kg")}
                       </Text>
-                    </View>
-                  </View>
+                    </ThemedView>
+                  </ThemedView>
                 );
               },
             }}
@@ -1345,7 +1347,7 @@ function Graph({
 
         {/* chart range buttons */}
         {graphDataType === "personal record" ?
-          <View
+          <ThemedView
             style={{
               flex: 1,
               flexDirection: "row",
@@ -1387,8 +1389,8 @@ function Graph({
                 </Pressable>
               );
             })}
-          </View>
-        : <View
+          </ThemedView>
+        : <ThemedView
             style={{
               flex: 1,
               flexDirection: "row",
@@ -1428,11 +1430,11 @@ function Graph({
                 </Pressable>
               );
             })}
-          </View>
+          </ThemedView>
         }
 
         {/* data type buttons*/}
-        <View
+        <ThemedView
           style={{
             flex: 1,
             flexDirection: "row",
@@ -1472,7 +1474,7 @@ function Graph({
               </Pressable>
             );
           })}
-        </View>
+        </ThemedView>
 
         <Summary
           graphDataType={graphDataType}
@@ -1494,11 +1496,11 @@ function Graph({
         />
 
         {/* activity view */}
-        <View style={[stats.viewStyle]}>
+        <ThemedView style={[stats.viewStyle]}>
           <Text style={[stats.viewTitle]}>Activity</Text>
-        </View>
-      </View>
-    </View>
+        </ThemedView>
+      </ThemedView>
+    </ThemedView>
   );
 }
 

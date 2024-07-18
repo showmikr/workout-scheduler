@@ -1,11 +1,12 @@
 import { Pressable, StyleSheet } from "react-native";
 import React from "react";
-import { Text, View } from "@/components/Themed";
+import { ThemedText, ThemedView } from "@/components/Themed";
+import { twColors } from "@/constants/Colors";
 
 function HelloChild() {
   return (
     <>
-      <Text style={styles.text4xl}>Hello There</Text>
+      <ThemedText style={styles.text4xl}>Hello There</ThemedText>
       <Pressable
         style={({ pressed }) => ({
           margin: 10,
@@ -15,7 +16,7 @@ function HelloChild() {
           padding: 10,
         })}
       >
-        <Text style={styles.textlg10}>Do Nothing</Text>
+        <ThemedText style={styles.textlg10}>Do Nothing</ThemedText>
       </Pressable>
     </>
   );
@@ -40,15 +41,34 @@ export default function HelloParent() {
     return () => clearTimeout(timeoutId);
   });
   return (
-    <View style={styles.viewBox}>
+    <ThemedView style={styles.viewBox}>
       {isLoading ?
-        <Text style={styles.text4xl}>...Loading</Text>
+        <ThemedText style={styles.text4xl}>...Loading</ThemedText>
       : <HelloChild />}
-    </View>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
+  tableRow: {
+    flex: 1,
+    flexDirection: "row",
+    marginBottom: 0.5 * 14,
+  },
+  tableItem: {
+    width: 80,
+    fontWeight: "light",
+    backgroundColor: twColors.neutral600,
+    borderRadius: 10,
+    borderColor: twColors.neutral200,
+    borderWidth: 1,
+  },
+  tableItemWrapper: {
+    flex: 1,
+  },
+  textxl: {
+    fontSize: 1.25 * 14,
+  },
   viewBox: {
     flex: 1,
     alignItems: "center",

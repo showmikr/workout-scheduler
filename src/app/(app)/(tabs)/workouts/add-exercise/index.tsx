@@ -12,7 +12,7 @@ import {
   getExerciseClasses,
 } from "@/utils/query-exercises";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { View, Text } from "@/components/Themed";
+import { ThemedView, ThemedText } from "@/components/Themed";
 
 export default function AddExerciseIndex() {
   const colorScheme = useColorScheme();
@@ -59,10 +59,10 @@ export default function AddExerciseIndex() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.loadingView}>
-        <View style={[styles.loadingView, { flexDirection: "row" }]}>
+        <ThemedView style={[styles.loadingView, { flexDirection: "row" }]}>
           <ActivityIndicator style={styles.loadingSpinner} />
-          <Text style={styles.loadingText}>Loading...</Text>
-        </View>
+          <ThemedText style={styles.loadingText}>Loading...</ThemedText>
+        </ThemedView>
       </SafeAreaView>
     );
   }
@@ -88,14 +88,14 @@ export default function AddExerciseIndex() {
             {exerciseClass.title}
           </Link>
         ))
-      : <Text
+      : <ThemedText
           style={[
             styles.loadingText,
             { color: colorScheme === "dark" ? "white" : "black" },
           ]}
         >
           Loading...
-        </Text>
+        </ThemedText>
       }
     </SafeAreaView>
   );
