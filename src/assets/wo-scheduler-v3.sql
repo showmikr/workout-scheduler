@@ -910,3 +910,67 @@ INSERT INTO resistance_set_session (set_session_id, total_weight)
 INSERT INTO cardio_set_session (set_session_id, target_distance, target_time, actual_distance, actual_time)
     VALUES
     (15, 69, 69, 6969, 6969);
+
+-- Insert 200 workout sessions
+WITH RECURSIVE
+  dates(date) AS (
+    SELECT date('now', '-9 months')
+    UNION ALL
+    SELECT date(date, '+1 day')
+    FROM dates
+    WHERE date < date('now')
+  ),
+  numbered_dates AS (
+    SELECT date, ROW_NUMBER() OVER (ORDER BY date) AS row_num
+    FROM dates
+  )
+INSERT INTO workout_session (app_user_id, title, date, calories)
+SELECT 
+  1, 
+  CASE (ABS(RANDOM()) % 3)
+    WHEN 0 THEN 'Upper Body Workout'
+    WHEN 1 THEN 'Lower Body Workout'
+    ELSE 'Full Body Workout'
+  END,
+  date,
+  200 + (ABS(RANDOM()) % 300)
+FROM numbered_dates
+WHERE row_num <= 200
+ORDER BY date;
+
+-- Insert exercise sessions for each workout session
+INSERT INTO exercise_session (workout_session_id, pr_history_id, exercise_class_id, list_order, initial_weight, was_completed)
+SELECT 
+  ws.id,
+  NULL,
+  (ABS(RANDOM()) % 11) + 1, -- Random exercise class id between 1 and 11
+  (ROW_NUMBER() OVER (PARTITION BY ws.id ORDER BY RANDOM())) as list_order,
+  45 + (ABS(RANDOM()) % 100),
+  1
+FROM workout_session ws
+CROSS JOIN (SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) -- 4 exercises per workout
+ORDER BY ws.id, list_order;
+
+-- Insert set sessions for each exercise session
+INSERT INTO set_session (exercise_session_id, title, reps, list_order, elapsed_time, rest_time)
+SELECT 
+  es.id,
+  CASE (ABS(RANDOM()) % 3)
+    WHEN 0 THEN 'Warm-up'
+    WHEN 1 THEN 'Main set'
+    ELSE 'Cool-down'
+  END,
+  8 + (ABS(RANDOM()) % 8), -- Random reps between 8 and 15
+  ROW_NUMBER() OVER (PARTITION BY es.id ORDER BY RANDOM()),
+  30 + (ABS(RANDOM()) % 60), -- Random elapsed time between 30 and 89 seconds
+  60 + (ABS(RANDOM()) % 120) -- Random rest time between 60 and 179 seconds
+FROM exercise_session es
+CROSS JOIN (SELECT 1 UNION SELECT 2 UNION SELECT 3) -- 3 sets per exercise
+ORDER BY es.id, list_order;
+
+-- Insert resistance set sessions
+INSERT INTO resistance_set_session (set_session_id, total_weight)
+SELECT 
+  ss.id,
+  40 + (ABS(RANDOM()) % 160) -- Random weight between 40 and 199
+FROM set_session ss;
