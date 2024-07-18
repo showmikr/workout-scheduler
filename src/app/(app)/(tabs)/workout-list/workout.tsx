@@ -3,7 +3,6 @@ import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
 import {
   SafeAreaView,
   View,
-  Pressable,
   FlatList,
   StyleSheet,
   ActivityIndicator,
@@ -13,7 +12,6 @@ import { twColors } from "@/constants/Colors";
 import { ExerciseCard, exerciseStyles } from "@/components/ExerciseCard";
 import { ExerciseSection } from "@/utils/exercise-types";
 import { Text } from "@/components/Themed";
-import { MaterialIcons } from "@expo/vector-icons";
 import SwipeableItem, { useOverlayParams } from "react-native-swipeable-item";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -27,48 +25,9 @@ import Animated, {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { deleteExercise, getExerciseSections } from "@/utils/query-exercises";
 import WorkoutHeader from "@/components/WorkoutHeader";
+import FloatingAddButton from "@/components/FloatingAddButton";
 
 type WorkoutItem = ExerciseSection & { key: string };
-
-const AddExerciseBtn = ({
-  workoutId,
-  workoutTitle,
-}: {
-  workoutId: string;
-  workoutTitle: string;
-}) => {
-  return (
-    <Pressable
-      style={({ pressed }) => ({
-        flexDirection: "row",
-        position: "absolute",
-        right: 3 * 14,
-        bottom: 2 * 14,
-        alignItems: "center",
-        justifyContent: "center",
-        height: 4 * 14,
-        width: 4 * 14,
-        borderRadius: 3 * 14 * 0.8,
-        borderWidth: 1,
-        borderColor: twColors.neutral800,
-        opacity: pressed ? 0.7 : 1,
-        backgroundColor: twColors.neutral400,
-      })}
-      onPress={() => {
-        router.push({
-          pathname: "/(app)/(tabs)/workout-list/add-exercise/",
-          params: { workoutId: workoutId, workoutTitle: workoutTitle },
-        });
-      }}
-    >
-      <MaterialIcons
-        style={{ fontSize: 3 * 14 }}
-        color={twColors.neutral700}
-        name="add"
-      />
-    </Pressable>
-  );
-};
 
 function UnderlayLeft({ onPress }: { onPress?: () => void }) {
   return (
@@ -188,6 +147,13 @@ export default function WorkoutDetails() {
     },
   });
 
+  const onPresFloatingAddBtn = () => {
+    router.push({
+      pathname: "/(app)/(tabs)/workout-list/add-exercise/",
+      params: { workoutId: workoutId, workoutTitle: workoutTitle },
+    });
+  };
+
   if (!sectionData) {
     return (
       <SafeAreaView style={[styles.safeAreaView, { alignItems: "center" }]}>
@@ -208,7 +174,7 @@ export default function WorkoutDetails() {
         >
           Wow, much empty...
         </Text>
-        <AddExerciseBtn workoutId={workoutId} workoutTitle={workoutTitle} />
+        <FloatingAddButton onPress={onPresFloatingAddBtn} />
       </SafeAreaView>
     );
   }
@@ -253,7 +219,7 @@ export default function WorkoutDetails() {
           />
         )}
       />
-      <AddExerciseBtn workoutId={workoutId} workoutTitle={workoutTitle} />
+      <FloatingAddButton onPress={onPresFloatingAddBtn} />
     </SafeAreaView>
   );
 }
