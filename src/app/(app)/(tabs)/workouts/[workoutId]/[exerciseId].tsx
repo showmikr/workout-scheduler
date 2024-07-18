@@ -5,8 +5,11 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
+  ViewStyle,
+  TextStyle,
 } from "react-native";
-import { ThemedText, ThemedTextInput } from "@/components/Themed";
+import { ThemedText, ThemedTextInput, ThemedView } from "@/components/Themed";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import {
@@ -26,8 +29,11 @@ import FloatingAddButton, {
   floatingAddButtonStyles,
 } from "@/components/FloatingAddButton";
 import { MaterialIcons } from "@expo/vector-icons";
+import BottomMenu from "@/components/SetOptionsMenu";
+import { useRef } from "react";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 
-const REPS_ROW_FLEX = 9.5;
+const REPS_ROW_FLEX = 9;
 const WEIGHT_ROW_FLEX = 10;
 const REST_ROW_FLEX = 8;
 const ACTIONS_ROW_FLEX = 2;
@@ -46,12 +52,12 @@ const tableConfig: {
 const TableHeaders = ({ config }: { config: typeof tableConfig }) => {
   return (
     <TableRow style={{ marginBottom: 0.5 * 14 }}>
-      {tableConfig.map((config) => (
+      {config.map((item) => (
         <ThemedText
-          key={config.key}
-          style={[styles.columnHeader, { flex: config.flex }]}
+          key={item.key}
+          style={[styles.columnHeader, { flex: item.flex }]}
         >
-          {config.header}
+          {item.header}
         </ThemedText>
       ))}
     </TableRow>
@@ -85,9 +91,9 @@ export default function ExerciseDetails() {
     },
     onSuccess: (data) => {
       console.log(
-        data?.reps
-          ? "updatedReps: " + data.reps
-          : "No data returned from updateResistanceSetReps"
+        data?.reps ?
+          "updatedReps: " + data.reps
+        : "No data returned from updateResistanceSetReps"
       );
       queryClient.invalidateQueries({
         queryKey: ["exercise-sections", workoutId],
@@ -102,9 +108,9 @@ export default function ExerciseDetails() {
     },
     onSuccess: (data) => {
       console.log(
-        data?.total_weight
-          ? "updatedWeight " + data.total_weight
-          : "No data returned from updateResistanceSetWeight"
+        data?.total_weight ?
+          "updatedWeight " + data.total_weight
+        : "No data returned from updateResistanceSetWeight"
       );
       queryClient.invalidateQueries({
         queryKey: ["exercise-sections", workoutId],
@@ -119,9 +125,9 @@ export default function ExerciseDetails() {
     },
     onSuccess: (data) => {
       console.log(
-        data?.rest_time
-          ? "updatedRestTime " + data.rest_time
-          : "No data returned from updateResistanceSetRestTime"
+        data?.rest_time ?
+          "updatedRestTime " + data.rest_time
+        : "No data returned from updateResistanceSetRestTime"
       );
       queryClient.invalidateQueries({
         queryKey: ["exercise-sections", workoutId],
@@ -190,6 +196,7 @@ export default function ExerciseDetails() {
               return (
                 <ResistanceSet
                   set={set}
+                  workoutId={workoutId}
                   onRepsChange={(reps) =>
                     repsMutation.mutate({
                       db,
@@ -236,18 +243,22 @@ export default function ExerciseDetails() {
 
 const ResistanceSet = ({
   set,
+  workoutId,
   onRepsChange,
   onWeightChange,
   onRestTimeChange,
 }: {
   set: UnifiedResistanceSet;
+  workoutId: string;
   onRepsChange: (reps: number) => void;
   onWeightChange: (weight: number) => void;
   onRestTimeChange: (restTime: number) => void;
 }) => {
   const weightString = set.total_weight.toFixed(1);
+  const optionsSheet = useRef<BottomSheetModal>(null);
   return (
     <TableRow style={{ marginBottom: 2 * 14 }}>
+      <BottomMenu workoutId={workoutId} ref={optionsSheet} exerciseSet={set} />
       <View style={[styles.inline, { flex: REPS_ROW_FLEX }]}>
         <ThemedTextInput
           inputMode="numeric"
@@ -267,7 +278,7 @@ const ResistanceSet = ({
           inputMode="decimal"
           defaultValue={weightString}
           returnKeyType="done"
-          maxLength={5}
+          maxLength={4}
           style={[styles.textInput]}
           onEndEditing={(e) => {
             // if the changed input is the same as our initial state, don't update the db
@@ -291,23 +302,19 @@ const ResistanceSet = ({
         />
         <ThemedText style={styles.unitsLabel}>s</ThemedText>
       </View>
-      <View
-        style={[
-          styles.inline,
-          {
-            flexDirection: "column",
-            flex: ACTIONS_ROW_FLEX,
-            justifyContent: "center",
-            alignItems: "center",
-          },
-        ]}
+      <Pressable
+        onPress={() => {
+          optionsSheet.current?.present();
+        }}
+        hitSlop={8}
+        style={[styles.inline, { flex: ACTIONS_ROW_FLEX }]}
       >
         <MaterialIcons
           name="more-horiz"
-          size={20}
+          size={24}
           color={twColors.neutral500}
         />
-      </View>
+      </Pressable>
     </TableRow>
   );
 };

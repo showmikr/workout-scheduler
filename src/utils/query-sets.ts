@@ -1,5 +1,6 @@
-import { SQLiteDatabase } from "expo-sqlite";
+import { SQLiteDatabase, SQLiteRunResult } from "expo-sqlite";
 import { UnifiedCardioSet, UnifiedResistanceSet } from "./exercise-types";
+import { rem } from "nativewind";
 
 const getResistanceSets = async (
   db: SQLiteDatabase,
@@ -146,6 +147,47 @@ const addResistanceSet = async ({
   });
 };
 
+type DeleteSetResult = {
+  exerciseSetId: number;
+  positionsModified: number;
+};
+const deleteSet = async ({
+  db,
+  exerciseSetId,
+}: {
+  db: SQLiteDatabase;
+  exerciseSetId: number;
+}) => {
+  let result: DeleteSetResult | null = null;
+  await db.withTransactionAsync(async () => {
+    const removedSet = await db.getFirstAsync<{
+      exercise_id: number;
+      deleted_pos: number;
+    }>(
+      `
+      DELETE FROM exercise_set 
+      WHERE id = ?
+      RETURNING exercise_id, list_order AS deleted_pos; 
+      `,
+      [exerciseSetId]
+    );
+    if (!removedSet) {
+      throw new Error("Could not delete row from exercise_set table");
+    }
+    const updateResult = await db.runAsync(
+      `
+      UPDATE exercise_set
+      SET list_order = list_order - 1
+      WHERE exercise_id = ? 
+        AND list_order > ?;
+      `,
+      [removedSet.exercise_id, removedSet.deleted_pos]
+    );
+    result = { exerciseSetId, positionsModified: updateResult.changes };
+  });
+  return result as DeleteSetResult | null;
+};
+
 // Will remain unused until we have cardio exercises
 const getCardioSets = async (
   db: SQLiteDatabase,
@@ -176,4 +218,5 @@ export {
   updateExerciseSetReps,
   updateExerciseSetRestTime,
   addResistanceSet,
+  deleteSet,
 };

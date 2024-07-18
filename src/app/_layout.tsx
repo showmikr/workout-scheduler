@@ -12,6 +12,7 @@ import { SessionProvider } from "@/context/session-provider";
 import "../../global.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -56,7 +57,9 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <SessionProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <Slot />
+            <BottomSheetModalProvider>
+              <Slot />
+            </BottomSheetModalProvider>
           </GestureHandlerRootView>
         </SessionProvider>
       </QueryClientProvider>
