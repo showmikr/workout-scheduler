@@ -62,14 +62,13 @@ const getExerciseSections = async (db: SQLiteDatabase, workoutId: string) => {
     workoutId
   );
 
-  if (fetchedExercises.length > 0) {
-    const newSectionData = fetchedExercises.map((ex) => {
-      if (ex.exercise_type_id === exerciseEnums.RESISTANCE_ENUM) {
-        return {
-          exerciseType: ex.exercise_type_id,
-          exercise: ex,
-          data: db.getAllSync<UnifiedResistanceSet>(
-            `
+  const newSectionData = fetchedExercises.map((ex) => {
+    if (ex.exercise_type_id === exerciseEnums.RESISTANCE_ENUM) {
+      return {
+        exerciseType: ex.exercise_type_id,
+        exercise: ex,
+        data: db.getAllSync<UnifiedResistanceSet>(
+          `
             SELECT 
               exercise_set.id AS exercise_set_id,
               exercise_set.list_order,
@@ -82,16 +81,16 @@ const getExerciseSections = async (db: SQLiteDatabase, workoutId: string) => {
             INNER JOIN resistance_set ON exercise_set.id = resistance_set.exercise_set_id 
             WHERE exercise_set.exercise_id = ?
             `,
-            ex.exercise_id
-          ),
-          key: ex.exercise_id.toString(),
-        };
-      } else {
-        return {
-          exerciseType: ex.exercise_type_id,
-          exercise: ex,
-          data: db.getAllSync<UnifiedCardioSet>(
-            `SELECT
+          ex.exercise_id
+        ),
+        key: ex.exercise_id.toString(),
+      };
+    } else {
+      return {
+        exerciseType: ex.exercise_type_id,
+        exercise: ex,
+        data: db.getAllSync<UnifiedCardioSet>(
+          `SELECT
                 exercise_set.id AS exercise_set_id,
                 exercise_set.list_order,
                 exercise_set.reps,
@@ -103,14 +102,13 @@ const getExerciseSections = async (db: SQLiteDatabase, workoutId: string) => {
                 FROM exercise_set 
                 INNER JOIN cardio_set ON exercise_set.id = cardio_set.exercise_set_id 
                 WHERE exercise_set.exercise_id = ?`,
-            ex.exercise_id
-          ),
-          key: ex.exercise_id.toString(),
-        };
-      }
-    });
-    return newSectionData;
-  }
+          ex.exercise_id
+        ),
+        key: ex.exercise_id.toString(),
+      };
+    }
+  });
+  return newSectionData;
 };
 
 const deleteExercise = async (db: SQLiteDatabase, exerciseId: number) => {

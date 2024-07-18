@@ -59,7 +59,7 @@ const AddWorkoutCard = (props: { workoutCount: number }) => {
       );
       router.replace({
         pathname: "/workout-list/workout",
-        params: { workoutId: newWorkout.title },
+        params: { workoutId: newWorkout.id, workoutTitle: newWorkout.title },
       });
     },
     onError: (err) => {
