@@ -52,7 +52,10 @@ export default function TabOneScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.safeAreaView}>
+    <ScrollView
+      style={{ backgroundColor: twColors.neutral950 }}
+      contentContainerStyle={styles.safeAreaView}
+    >
       <Text style={styles.title}>Database</Text>
       <Pressable
         style={styles.btnStyle}
@@ -129,6 +132,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: twColors.neutral400,
     textAlign: "center",
+    width: "90%",
     fontSize: 1.25 * 14,
     lineHeight: 1.75 * 14,
   },
@@ -139,6 +143,7 @@ const styles = StyleSheet.create({
     borderColor: twColors.neutral400,
     backgroundColor: twColors.neutral600,
     padding: 0.25 * 14,
+    width: "75%",
   },
   btnTitle: {
     fontSize: 1.125 * 14,
@@ -148,8 +153,9 @@ const styles = StyleSheet.create({
   safeAreaView: {
     paddingTop: 14,
     paddingBottom: 2 * 14,
-    alignItems: "stretch",
+    alignItems: "center",
     justifyContent: "center",
+    backgroundColor: twColors.neutral950,
   },
   container: {
     flex: 1,

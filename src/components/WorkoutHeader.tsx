@@ -6,7 +6,6 @@ function WorkoutHeader({ title }: { title: string }) {
     <View
       style={{
         alignItems: "center",
-        borderWidth: 1,
         paddingBottom: 1.5 * 14,
         paddingTop: 1.5 * 14,
       }}

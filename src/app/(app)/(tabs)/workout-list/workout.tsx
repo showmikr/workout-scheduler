@@ -2,7 +2,6 @@ import { router, useLocalSearchParams } from "expo-router";
 import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
 import {
   SafeAreaView,
-  View,
   FlatList,
   StyleSheet,
   ActivityIndicator,
@@ -11,7 +10,7 @@ import {
 import { twColors } from "@/constants/Colors";
 import { ExerciseCard, exerciseStyles } from "@/components/ExerciseCard";
 import { ExerciseSection } from "@/utils/exercise-types";
-import { Text } from "@/components/Themed";
+import { Text, View } from "@/components/Themed";
 import SwipeableItem, { useOverlayParams } from "react-native-swipeable-item";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -56,7 +55,8 @@ function OverlayItem({ workoutId }: { workoutId: string }) {
       backgroundColor: interpolateColor(
         colorTransitionProgress.value,
         [0, 1],
-        ["black", "rgb(32, 32, 32)"]
+        // initial backgroundColor = twColors.neutral950
+        ["rgb(10, 10, 10)", "rgb(32, 32, 32)"]
       ),
     };
   });
@@ -156,81 +156,91 @@ export default function WorkoutDetails() {
 
   if (!sectionData) {
     return (
-      <SafeAreaView style={[styles.safeAreaView, { alignItems: "center" }]}>
-        <ActivityIndicator color={twColors.neutral500} />
-      </SafeAreaView>
+      <View style={styles.rootView}>
+        <SafeAreaView style={[styles.safeAreaView, { alignItems: "center" }]}>
+          <ActivityIndicator color={twColors.neutral500} />
+        </SafeAreaView>
+      </View>
     );
   }
 
   if (sectionData.length === 0) {
     return (
-      <SafeAreaView style={styles.emptyView}>
-        <Text
-          style={{
-            fontSize: 1.875 * 14,
-            lineHeight: 2.25 * 14,
-            color: twColors.neutral500,
-          }}
-        >
-          Wow, much empty...
-        </Text>
-        <FloatingAddButton onPress={onPresFloatingAddBtn} />
-      </SafeAreaView>
+      <View style={styles.rootView}>
+        <SafeAreaView style={styles.emptyView}>
+          <Text
+            style={{
+              fontSize: 1.875 * 14,
+              lineHeight: 2.25 * 14,
+              color: twColors.neutral500,
+            }}
+          >
+            Wow, much empty...
+          </Text>
+          <FloatingAddButton onPress={onPresFloatingAddBtn} />
+        </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeAreaView}>
-      <FlatList
-        ItemSeparatorComponent={() => (
-          <View
-            style={{
-              borderTopColor: twColors.neutral700,
-              borderTopWidth: StyleSheet.hairlineWidth,
-              width: "90%",
-              alignSelf: "center",
-              backgroundColor: twColors.neutral700,
-            }}
-          />
-        )}
-        ListFooterComponent={
-          <View style={{ marginTop: 4 * 14, marginBottom: 4 * 14 }}></View>
-        }
-        ListHeaderComponent={<WorkoutHeader title={workoutTitle} />}
-        data={sectionData}
-        keyExtractor={(item) => item.exercise.exercise_id.toString()}
-        renderItem={({ item }) => (
-          <SwipeableItem
-            key={item.key}
-            item={item}
-            renderUnderlayLeft={() => (
-              <UnderlayLeft
-                onPress={() => {
-                  deleteMutation.mutate({
-                    db,
-                    exerciseId: item.exercise.exercise_id,
-                  });
-                }}
-              />
-            )}
-            renderOverlay={() => <OverlayItem workoutId={workoutId} />}
-            snapPointsLeft={[80]}
-            overSwipe={300}
-          />
-        )}
-      />
-      <FloatingAddButton onPress={onPresFloatingAddBtn} />
-    </SafeAreaView>
+    <View style={styles.rootView}>
+      <SafeAreaView style={styles.safeAreaView}>
+        <FlatList
+          ItemSeparatorComponent={() => (
+            <View
+              style={{
+                borderTopColor: twColors.neutral700,
+                borderTopWidth: StyleSheet.hairlineWidth,
+                width: "90%",
+                alignSelf: "center",
+                backgroundColor: twColors.neutral700,
+              }}
+            />
+          )}
+          ListFooterComponent={
+            <View style={{ marginTop: 4 * 14, marginBottom: 4 * 14 }}></View>
+          }
+          ListHeaderComponent={<WorkoutHeader title={workoutTitle} />}
+          data={sectionData}
+          keyExtractor={(item) => item.exercise.exercise_id.toString()}
+          renderItem={({ item }) => (
+            <SwipeableItem
+              key={item.key}
+              item={item}
+              renderUnderlayLeft={() => (
+                <UnderlayLeft
+                  onPress={() => {
+                    deleteMutation.mutate({
+                      db,
+                      exerciseId: item.exercise.exercise_id,
+                    });
+                  }}
+                />
+              )}
+              renderOverlay={() => <OverlayItem workoutId={workoutId} />}
+              snapPointsLeft={[80]}
+              overSwipe={300}
+            />
+          )}
+        />
+        <FloatingAddButton onPress={onPresFloatingAddBtn} />
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  rootView: {
+    flex: 1,
+  },
   safeAreaView: {
     flex: 1,
     justifyContent: "center",
   },
   emptyView: {
     flex: 1,
+    backgroundColor: twColors.neutral950,
     justifyContent: "center",
     alignItems: "center",
     rowGap: 24,

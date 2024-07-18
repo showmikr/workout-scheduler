@@ -1,4 +1,4 @@
-import { StyleSheet, FlatList, Text, SafeAreaView } from "react-native";
+import { StyleSheet, FlatList } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import WorkoutCard from "@/components/WorkoutCard";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -8,6 +8,8 @@ import {
   getWorkoutsAsync,
   getWorkoutTagsAsync,
 } from "@/utils/query-workouts";
+import { View, Text } from "@/components/Themed";
+import { twColors } from "@/constants/Colors";
 
 export type TaggedWorkout = { id: number; title: string; tags: string[] };
 
@@ -35,34 +37,31 @@ export default function TabTwoScreen() {
 
   if (!(workouts && tagMap && workoutTagMap)) {
     return (
-      <SafeAreaView style={styles.safeAreaContainer}>
-        <Text style={{ color: "#BDBDBD", fontWeight: "bold", fontSize: 22 }}>
-          Loading...
-        </Text>
-      </SafeAreaView>
+      <View style={styles.loadingContainer}>
+        <Text style={{ fontWeight: "bold", fontSize: 22 }}>Loading...</Text>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeAreaContainer}>
-      <FlatList
-        style={styles.listView}
-        data={workouts}
-        renderItem={({ item }) => (
-          <WorkoutCard
-            workout={item}
-            tags={
-              tagMap && workoutTagMap ?
-                [...(workoutTagMap.get(item.id) ?? [])].map(
-                  (tagId) => tagMap.get(tagId)!
-                )
-              : []
-            }
-          />
-        )}
-        keyExtractor={(item) => item.id.toString()}
-      />
-    </SafeAreaView>
+    <FlatList
+      style={styles.listView}
+      contentContainerStyle={{ justifyContent: "center" }}
+      data={workouts}
+      renderItem={({ item }) => (
+        <WorkoutCard
+          workout={item}
+          tags={
+            tagMap && workoutTagMap ?
+              [...(workoutTagMap.get(item.id) ?? [])].map(
+                (tagId) => tagMap.get(tagId)!
+              )
+            : []
+          }
+        />
+      )}
+      keyExtractor={(item) => item.id.toString()}
+    />
   );
 }
 
@@ -81,7 +80,7 @@ const styles = StyleSheet.create({
     height: 1,
     width: "80%",
   },
-  safeAreaContainer: {
+  loadingContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -89,5 +88,6 @@ const styles = StyleSheet.create({
   listView: {
     flex: 1,
     width: "100%",
+    backgroundColor: twColors.neutral950,
   },
 });

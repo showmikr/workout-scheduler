@@ -210,6 +210,6 @@ const styles = StyleSheet.create({
   },
   selectedExerciseText: {
     fontWeight: "bold",
-    color: twColors.neutral900,
+    color: twColors.neutral950,
   },
 });

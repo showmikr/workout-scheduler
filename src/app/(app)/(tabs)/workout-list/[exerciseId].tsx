@@ -136,9 +136,7 @@ export default function () {
   // If all the exercise set data isn't fully loaded, display a loading screen
   if (!exerciseSection) {
     return (
-      <SafeAreaView
-        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-      >
+      <SafeAreaView style={[styles.outerContainer, { alignItems: "center" }]}>
         <Text
           style={{
             textAlign: "center",
@@ -219,8 +217,8 @@ const ResistanceSet = ({ set }: { set: UnifiedResistanceSet }) => {
   return (
     <View
       style={[
-        setStyles.rowContainer,
-        setStyles.inline,
+        styles.rowContainer,
+        styles.inline,
         {
           borderWidth: 1,
           borderColor: "red",
@@ -230,22 +228,22 @@ const ResistanceSet = ({ set }: { set: UnifiedResistanceSet }) => {
       ]}
     >
       <View style={{ maxWidth: 100 }}>
-        <Text style={setStyles.inputLabel}>Reps</Text>
+        <Text style={styles.inputLabel}>Reps</Text>
         <TextInput
           inputMode="numeric"
           value={set.reps.toString()}
           maxLength={5}
-          style={[setStyles.textInput, setStyles.inertInputState]}
+          style={[styles.textInput, styles.inertInputState]}
         />
       </View>
       <View style={{ maxWidth: 100 }}>
-        <Text style={setStyles.inputLabel}>Weight</Text>
-        <View style={setStyles.inline}>
+        <Text style={styles.inputLabel}>Weight</Text>
+        <View style={styles.inline}>
           <TextInput
             inputMode="decimal"
             value={weightString}
             maxLength={5}
-            style={[setStyles.textInput, setStyles.inertInputState]}
+            style={[styles.textInput, styles.inertInputState]}
             onChangeText={(text) => {
               setWeightString(text);
             }}
@@ -259,25 +257,29 @@ const ResistanceSet = ({ set }: { set: UnifiedResistanceSet }) => {
               });
             }}
           />
-          <Text style={setStyles.unitsLabel}>kg</Text>
+          <Text style={styles.unitsLabel}>kg</Text>
         </View>
       </View>
       <View style={{ maxWidth: 100 }}>
-        <Text style={setStyles.inputLabel}>Rest</Text>
-        <View style={setStyles.inline}>
+        <Text style={styles.inputLabel}>Rest</Text>
+        <View style={styles.inline}>
           <TextInput
             inputMode="numeric"
             value={set.rest_time.toString()}
-            style={[setStyles.textInput, setStyles.inertInputState]}
+            style={[styles.textInput, styles.inertInputState]}
           />
-          <Text style={setStyles.unitsLabel}>s</Text>
+          <Text style={styles.unitsLabel}>s</Text>
         </View>
       </View>
     </View>
   );
 };
 
-const setStyles = StyleSheet.create({
+const styles = StyleSheet.create({
+  outerContainer: {
+    flex: 1,
+    backgroundColor: twColors.neutral950,
+  },
   inputLabel: {
     fontSize: 18,
     color: "white",

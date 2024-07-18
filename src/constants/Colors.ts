@@ -18,14 +18,14 @@ const twColors = {
 export default {
   light: {
     text: "#000",
-    background: "#fff",
+    background: twColors.neutral300,
     tint: tintColorLight,
     tabIconDefault: "#ccc",
     tabIconSelected: tintColorLight,
   },
   dark: {
-    text: "#fff",
-    background: "#000",
+    text: "#ffffff",
+    background: twColors.neutral950,
     tint: tintColorDark,
     tabIconDefault: "#ccc",
     tabIconSelected: tintColorDark,
