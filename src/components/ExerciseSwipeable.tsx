@@ -1,41 +1,53 @@
-import { StyleSheet, Text, View, Animated } from "react-native";
+import { StyleSheet, View, Animated } from "react-native";
 import { RectButton } from "react-native-gesture-handler";
-import Swipeable from "react-native-gesture-handler/Swipeable";
 
-type ExerciseSwipeableProps = {
-  onDelete?: () => void;
-  children: React.ReactElement;
+type RightSideUnderlayProps = {
+  onPress: () => void;
+  progress?: Animated.AnimatedInterpolation<number>;
+  dragX: Animated.AnimatedInterpolation<number>;
 };
 
-const ExerciseSwipeable: React.FC<ExerciseSwipeableProps> = ({
-  onDelete,
-  children,
-}) => {
-  const renderRightActions = (
-    progress: Animated.AnimatedInterpolation<number>,
-    dragX: Animated.AnimatedInterpolation<number>
-  ) => {
-    const trans = dragX.interpolate({
-      inputRange: [-100, 0],
-      outputRange: [1, 0],
-      extrapolate: "clamp",
-    });
+const ExerciseCardUnderlay = ({
+  progress,
+  dragX,
+  onPress,
+}: RightSideUnderlayProps) => {
+  const textDrag = dragX.interpolate({
+    inputRange: [-88, 0],
+    outputRange: [0, 100],
+    extrapolate: "clamp",
+  });
 
-    return (
-      <View style={styles.rightActionsContainer}>
-        <Animated.View
-          style={[styles.deleteAction, { transform: [{ translateX: trans }] }]}
-        >
-          <RectButton style={styles.deleteButton} onPress={onDelete}>
-            <Text style={styles.deleteText}>Delete</Text>
-          </RectButton>
-        </Animated.View>
-      </View>
-    );
-  };
+  const underlayStretch = dragX.interpolate({
+    inputRange: [-88, 0],
+    outputRange: [1, 0],
+    extrapolate: "extend",
+  });
 
   return (
-    <Swipeable renderRightActions={renderRightActions}>{children}</Swipeable>
+    <View style={styles.rightActionsContainer}>
+      <Animated.View
+        style={[
+          styles.deleteAction,
+          {
+            transform: [{ translateX: textDrag }, { scaleX: underlayStretch }],
+          },
+        ]}
+      >
+        <RectButton
+          activeOpacity={0.4}
+          style={styles.deleteButton}
+          onPress={onPress}
+        ></RectButton>
+      </Animated.View>
+      <Animated.Text
+        style={[styles.deleteText, { transform: [{ translateX: textDrag }] }]}
+        // @ts-expect-error
+        pointerEvents="none" // pass through presess events to the swipeable
+      >
+        Delete
+      </Animated.Text>
+    </View>
   );
 };
 
@@ -51,7 +63,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   rightActionsContainer: {
-    width: 100,
+    maxWidth: 88,
+    justifyContent: "center",
+    flexGrow: 1,
+    flexBasis: 0,
     flexDirection: "row",
   },
   deleteAction: {
@@ -61,13 +76,13 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   deleteText: {
+    position: "absolute",
+    alignSelf: "center",
     color: "white",
     fontWeight: "600",
   },
 });
 
-export default ExerciseSwipeable;
+export { ExerciseCardUnderlay };

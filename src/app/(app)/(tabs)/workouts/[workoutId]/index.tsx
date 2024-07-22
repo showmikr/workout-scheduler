@@ -11,8 +11,11 @@ import {
 import { twColors } from "@/constants/Colors";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import { ThemedText, ThemedView } from "@/components/Themed";
-import SwipeableItem, { useOverlayParams } from "react-native-swipeable-item";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import {
+  Gesture,
+  GestureDetector,
+  Swipeable,
+} from "react-native-gesture-handler";
 import Animated, {
   interpolateColor,
   runOnJS,
@@ -26,7 +29,7 @@ import { deleteExercise, getResistanceSections } from "@/utils/query-exercises";
 import WorkoutHeader from "@/components/WorkoutHeader";
 import FloatingAddButton from "@/components/FloatingAddButton";
 import { ResistanceSection } from "@/utils/exercise-types";
-import ExerciseSwipeable from "@/components/ExerciseSwipeable";
+import { ExerciseCardUnderlay } from "@/components/ExerciseSwipeable";
 
 function UnderlayLeft({ onPress }: { onPress?: () => void }) {
   return (
@@ -193,13 +196,21 @@ export default function WorkoutDetails() {
           data={sectionData}
           keyExtractor={(item) => item.exercise_id.toString()}
           renderItem={({ item }) => (
-            <ExerciseSwipeable
-              onDelete={() =>
-                deleteMutation.mutate({ db, exerciseId: item.exercise_id })
-              }
+            <Swipeable
+              renderRightActions={(_progress, dragX) => (
+                <ExerciseCardUnderlay
+                  dragX={dragX}
+                  onPress={() =>
+                    deleteMutation.mutate({ db, exerciseId: item.exercise_id })
+                  }
+                />
+              )}
+              friction={1.8}
+              rightThreshold={20}
+              dragOffsetFromLeftEdge={30}
             >
               <OverlayItem exercise={item} workoutId={workoutId} />
-            </ExerciseSwipeable>
+            </Swipeable>
           )}
         />
         <FloatingAddButton onPress={onPresFloatingAddBtn} />
