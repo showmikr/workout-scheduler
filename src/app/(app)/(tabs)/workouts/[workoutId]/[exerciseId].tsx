@@ -1,8 +1,7 @@
 import { StyleSheet, SafeAreaView, ScrollView, View } from "react-native";
 import { ThemedText, ThemedTextInput } from "@/components/Themed";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite/next";
-import { useState } from "react";
+import { useSQLiteContext } from "expo-sqlite";
 import {
   ResistanceSection,
   UnifiedResistanceSet,
@@ -10,6 +9,10 @@ import {
 import { twColors } from "@/constants/Colors";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { TableRow } from "@/components/Table";
+import {
+  updateResistanceSetReps,
+  updateExerciseSetReps,
+} from "@/utils/query-sets";
 
 export default function ExerciseDetails() {
   // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
@@ -31,14 +34,34 @@ export default function ExerciseDetails() {
         ?.sets,
   });
 
+  const repsMutation = useMutation({
+    mutationFn: updateResistanceSetReps,
+    onError: (error) => {
+      console.error(error);
+    },
+    onSuccess: (data) => {
+      console.log(
+        data?.reps ?
+          "updatedReps: " + data.reps
+        : "No data returned from updateResistanceSetReps"
+      );
+      queryClient.invalidateQueries({
+        queryKey: ["exercise-sections", workoutId],
+      });
+    },
+  });
+
   const weightMutation = useMutation({
-    mutationFn: ({ setId, weight }: { setId: number; weight: number }) =>
-      updateResistanceSetWeight({ db, resistanceSetId: setId, weight }),
+    mutationFn: updateExerciseSetReps,
     onError: (error) => {
       console.log(error);
     },
-    onSuccess: () => {
-      console.log(workoutId);
+    onSuccess: (data) => {
+      console.log(
+        data?.total_weight ?
+          "updatedWeight " + data.total_weight
+        : "No data returned from updateResistanceSetWeight"
+      );
       queryClient.invalidateQueries({
         queryKey: ["exercise-sections", workoutId],
       });
@@ -88,10 +111,18 @@ export default function ExerciseDetails() {
             return (
               <ResistanceSet
                 set={set}
+                onRepsChange={(reps) =>
+                  repsMutation.mutate({
+                    db,
+                    reps,
+                    exerciseSetId: set.exercise_set_id,
+                  })
+                }
                 onWeightChange={(weight) =>
                   weightMutation.mutate({
+                    db,
                     weight,
-                    setId: set.exercise_set_id,
+                    exerciseSetId: set.exercise_set_id,
                   })
                 }
                 key={set.exercise_set_id}
@@ -104,48 +135,28 @@ export default function ExerciseDetails() {
   );
 }
 
-type SetWeightArgs = {
-  db: SQLiteDatabase;
-  resistanceSetId: number;
-  weight: number;
-};
-
-async function updateResistanceSetWeight({
-  db,
-  resistanceSetId,
-  weight,
-}: SetWeightArgs) {
-  const updatedWeight = await db.getFirstAsync<{ total_weight: number }>(
-    `
-    UPDATE resistance_set
-    SET total_weight = ?
-    WHERE exercise_set_id = ?
-    RETURNING resistance_set.total_weight;
-    `,
-    [weight, resistanceSetId]
-  );
-  //  Non-null assert is okay here b/c we can handle the error
-  //  in the onError() handler for the weightMutation
-  return updatedWeight!;
-}
-
 const ResistanceSet = ({
   set,
+  onRepsChange,
   onWeightChange,
 }: {
   set: UnifiedResistanceSet;
+  onRepsChange: (reps: number) => void;
   onWeightChange: (weight: number) => void;
 }) => {
-  const [weightString, setWeightString] = useState(
-    set.total_weight.toFixed(2).toString()
-  );
+  const weightString = set.total_weight.toFixed(1);
   return (
     <TableRow style={{ marginBottom: 1 * 14 }}>
       <View style={styles.inline}>
         <ThemedTextInput
           inputMode="numeric"
-          value={set.reps.toString()}
+          defaultValue={set.reps.toString()}
           returnKeyType="done"
+          onEndEditing={(e) => {
+            // if the changed input is the same as our initial state, don't update the db
+            if (Number(e.nativeEvent.text) === set.reps) return;
+            onRepsChange(Number(e.nativeEvent.text));
+          }}
           maxLength={3}
           style={[styles.textInput]}
         />
@@ -208,5 +219,3 @@ const styles = StyleSheet.create({
     fontWeight: "light",
   },
 });
-
-export { ResistanceSet };
