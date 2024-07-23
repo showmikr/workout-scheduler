@@ -1,5 +1,5 @@
-import { StyleSheet, SafeAreaView, ScrollView, TextInput } from "react-native";
-import { ThemedText, ThemedView } from "@/components/Themed";
+import { StyleSheet, SafeAreaView, ScrollView, View } from "react-native";
+import { ThemedText, ThemedTextInput } from "@/components/Themed";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
@@ -9,6 +9,7 @@ import {
 } from "@/utils/exercise-types";
 import { twColors } from "@/constants/Colors";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { TableRow } from "@/components/Table";
 
 export default function ExerciseDetails() {
   // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
@@ -63,26 +64,41 @@ export default function ExerciseDetails() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0D0D0D" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: twColors.neutral950 }}>
       <Stack.Screen options={{ title: title }} />
       <ScrollView>
-        <ThemedText style={{ fontSize: 1.875 * 14, lineHeight: 2.25 * 14 }}>
-          Hello, I'm an exercise page placeholder
-        </ThemedText>
-        <ThemedText style={{ fontSize: 1.875 * 14, lineHeight: 2.25 * 14 }}>
-          Exercise ID: {exerciseId}
-        </ThemedText>
-        {resistanceSets.map((set, index) => {
-          return (
-            <ResistanceSet
-              set={set}
-              onWeightChange={(weight) =>
-                weightMutation.mutate({ weight, setId: set.exercise_set_id })
-              }
-              key={set.exercise_set_id}
-            />
-          );
-        })}
+        <View style={{ marginHorizontal: 1.25 * 14 }}>
+          <ThemedText
+            style={{
+              fontSize: 1.875 * 14,
+              lineHeight: 2.25 * 14,
+              marginVertical: 1 * 14,
+            }}
+          >
+            {title}
+          </ThemedText>
+          <TableRow style={{ marginBottom: 0.5 * 14 }}>
+            {["Reps", "Weight", "Rest"].map((column) => (
+              <ThemedText key={column} style={styles.columnHeader}>
+                {column}
+              </ThemedText>
+            ))}
+          </TableRow>
+          {resistanceSets.map((set) => {
+            return (
+              <ResistanceSet
+                set={set}
+                onWeightChange={(weight) =>
+                  weightMutation.mutate({
+                    weight,
+                    setId: set.exercise_set_id,
+                  })
+                }
+                key={set.exercise_set_id}
+              />
+            );
+          })}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -124,59 +140,39 @@ const ResistanceSet = ({
     set.total_weight.toFixed(2).toString()
   );
   return (
-    <ThemedView
-      style={[
-        styles.rowContainer,
-        styles.inline,
-        {
-          borderWidth: 1,
-          borderColor: "red",
-          flex: 1,
-          justifyContent: "space-around",
-        },
-      ]}
-    >
-      <ThemedView style={{ maxWidth: 100 }}>
-        <ThemedText style={styles.inputLabel}>Reps</ThemedText>
-        <TextInput
+    <TableRow style={{ marginBottom: 1 * 14 }}>
+      <View style={styles.inline}>
+        <ThemedTextInput
           inputMode="numeric"
           value={set.reps.toString()}
-          maxLength={5}
-          style={[styles.textInput, styles.inertInputState]}
+          returnKeyType="done"
+          maxLength={3}
+          style={[styles.textInput]}
         />
-      </ThemedView>
-      <ThemedView style={{ maxWidth: 100 }}>
-        <ThemedText style={styles.inputLabel}>Weight</ThemedText>
-        <ThemedView style={styles.inline}>
-          <TextInput
-            inputMode="decimal"
-            value={weightString}
-            maxLength={5}
-            style={[styles.textInput, styles.inertInputState]}
-            onChangeText={(text) => {
-              setWeightString(text);
-            }}
-            onEndEditing={(e) => {
-              // if the changed input is the same as our initial state, don't update the db
-              if (Number(e.nativeEvent.text) === set.total_weight) return;
-              onWeightChange(Number(e.nativeEvent.text));
-            }}
-          />
-          <ThemedText style={styles.unitsLabel}>kg</ThemedText>
-        </ThemedView>
-      </ThemedView>
-      <ThemedView style={{ maxWidth: 100 }}>
-        <ThemedText style={styles.inputLabel}>Rest</ThemedText>
-        <ThemedView style={styles.inline}>
-          <TextInput
-            inputMode="numeric"
-            value={set.rest_time.toString()}
-            style={[styles.textInput, styles.inertInputState]}
-          />
-          <ThemedText style={styles.unitsLabel}>s</ThemedText>
-        </ThemedView>
-      </ThemedView>
-    </ThemedView>
+      </View>
+      <View style={styles.inline}>
+        <ThemedTextInput
+          inputMode="decimal"
+          defaultValue={weightString}
+          maxLength={5}
+          style={[styles.textInput]}
+          onEndEditing={(e) => {
+            // if the changed input is the same as our initial state, don't update the db
+            if (Number(e.nativeEvent.text) === set.total_weight) return;
+            onWeightChange(Number(e.nativeEvent.text));
+          }}
+        />
+        <ThemedText style={styles.unitsLabel}>kg</ThemedText>
+      </View>
+      <View style={styles.inline}>
+        <ThemedTextInput
+          inputMode="numeric"
+          value={set.rest_time.toString()}
+          style={[styles.textInput]}
+        />
+        <ThemedText style={styles.unitsLabel}>s</ThemedText>
+      </View>
+    </TableRow>
   );
 };
 
@@ -185,40 +181,31 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: twColors.neutral950,
   },
-  inputLabel: {
-    fontSize: 18,
-    color: "white",
-    textAlign: "left",
-    paddingBottom: 2,
-  },
-  unitsLabel: {
-    fontSize: 18,
-    color: "white",
-  },
   textInput: {
-    //width: 64,
-    fontSize: 20,
-    color: "white",
-    textAlign: "left",
+    fontSize: 1.5 * 14,
+    backgroundColor: twColors.neutral800,
+    borderRadius: 5,
+    minWidth: 60,
+    textAlign: "center",
+    paddingHorizontal: 5,
+    paddingVertical: 5,
+    marginRight: 0.25 * 14,
   },
   inline: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "baseline",
   },
-  rowContainer: {
-    paddingTop: 4,
-    paddingBottom: 4,
+  unitsLabel: {
+    fontSize: 1.5 * 14,
+    paddingBottom: 5,
+    fontWeight: "200",
   },
-  inertInputState: {
-    //backgroundColor: twColors.neutral800,
-    //minWidth: 32,
-    borderRadius: 5,
-    paddingLeft: 2,
-    paddingRight: 2,
-  },
-  activeInputState: {
-    backgroundColor: twColors.neutral100,
-    color: "black",
+  columnHeader: {
+    flex: 1,
+    fontSize: 1.5 * 14,
+    color: twColors.neutral500,
+    fontWeight: "light",
   },
 });
 

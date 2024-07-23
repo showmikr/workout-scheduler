@@ -3,7 +3,7 @@
  * https://docs.expo.io/guides/color-schemes/
  */
 
-import { Text, useColorScheme, View } from "react-native";
+import { Text, useColorScheme, View, TextInput } from "react-native";
 
 import Colors from "@/constants/Colors";
 
@@ -14,6 +14,7 @@ type ThemeProps = {
 
 export type ThemedTextProps = ThemeProps & Text["props"];
 export type ThemedViewProps = ThemeProps & View["props"];
+export type ThemedTextInputProps = ThemeProps & TextInput["props"];
 
 export function useThemeColor(
   props: { light?: string; dark?: string },
@@ -34,6 +35,12 @@ export function ThemedText(props: ThemedTextProps) {
   const color = useThemeColor({ light: lightColor, dark: darkColor }, "text");
 
   return <Text style={[{ color }, style]} {...otherProps} />;
+}
+
+export function ThemedTextInput(props: ThemedTextInputProps) {
+  const { style, lightColor, darkColor, ...otherProps } = props;
+  const color = useThemeColor({ light: lightColor, dark: darkColor }, "text");
+  return <TextInput style={[{ color }, style]} {...otherProps} />;
 }
 
 export function ThemedView(props: ThemedViewProps) {
