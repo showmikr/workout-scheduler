@@ -51,7 +51,7 @@ function UnderlayLeft({ onPress }: { onPress?: () => void }) {
 }
 
 function OverlaySeparator() {
-  return <ThemedView style={styles.overlaySeparator} />;
+  return <View style={styles.overlaySeparator} />;
 }
 
 function OverlayItem({
