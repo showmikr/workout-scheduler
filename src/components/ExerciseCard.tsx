@@ -2,6 +2,7 @@ import { PressableProps, StyleSheet, View } from "react-native";
 import { twColors } from "@/constants/Colors";
 import { ResistanceSection, UnifiedCardioSet } from "@/utils/exercise-types";
 import { ThemedText } from "@/components/Themed";
+import { TableRow } from "@/components/Table";
 
 const CardioSetList = ({ sets }: { sets: UnifiedCardioSet[] }) => {
   return (
@@ -39,69 +40,49 @@ const ExerciseCard = ({
       }}
     >
       <ThemedText style={styles.exerciseTitle}>{exercise.title}</ThemedText>
-      <View
-        style={{
-          flex: 1,
-          flexDirection: "row",
-          marginBottom: 0.75 * 14,
-        }}
-      >
-        <ThemedText style={styles.columnHeader}>Reps</ThemedText>
-        <ThemedText style={styles.columnHeader}>Weight</ThemedText>
-        <ThemedText style={styles.columnHeader}>Rest</ThemedText>
-      </View>
-      {exercise.sets.map((set) => (
-        <View style={styles.tableRow} key={set.exercise_set_id}>
-          <View style={styles.tableItemWrapper}>
-            <ThemedText style={styles.tableReadOnlyItem}>{set.reps}</ThemedText>
-          </View>
-          <View style={styles.tableItemWrapper}>
-            <ThemedText style={styles.tableReadOnlyItem}>
-              {set.total_weight.toFixed(1)} kg
+      <TableRow style={{ marginBottom: 0.5 * 14 }}>
+        {["Reps", "Weight", "Rest"].map((column) => (
+          <ThemedText key={column} style={styles.columnHeader}>
+            {column}
+          </ThemedText>
+        ))}
+      </TableRow>
+      {exercise.sets.map(
+        ({ reps, total_weight, rest_time, exercise_set_id }) => (
+          <TableRow key={exercise_set_id} style={{ marginBottom: 0.5 * 14 }}>
+            <ThemedText style={styles.dataText}>{reps}</ThemedText>
+            <ThemedText style={styles.dataText}>
+              {total_weight.toFixed(1)}
+              <ThemedText style={styles.unitLabel}>kg</ThemedText>
             </ThemedText>
-          </View>
-          <View style={styles.tableItemWrapper}>
-            <ThemedText style={styles.tableReadOnlyItem}>
-              {set.rest_time} s
+            <ThemedText style={styles.dataText}>
+              {rest_time ? Math.floor(rest_time / 60) : "--"}
+              <ThemedText style={styles.unitLabel}>m </ThemedText>
+              {rest_time ? rest_time % 60 : "--"}
+              <ThemedText style={styles.unitLabel}>s</ThemedText>
             </ThemedText>
-          </View>
-        </View>
-      ))}
+          </TableRow>
+        )
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  tableRow: {
-    flex: 1,
-    flexDirection: "row",
-    marginBottom: 0.5 * 14,
-  },
   columnHeader: {
     flex: 1,
-    textAlign: "left",
     fontSize: 14,
     color: twColors.neutral400,
     fontWeight: "light",
   },
-  tableInputItem: {
-    fontWeight: "normal",
+  dataText: {
     flex: 1,
-    alignSelf: "flex-start",
-    minWidth: 3 * 14,
-    backgroundColor: twColors.neutral600,
-    borderRadius: 0.5 * 14,
-    borderWidth: 0.2,
-    borderColor: twColors.neutral600,
-  },
-  tableReadOnlyItem: {
-    flex: 1,
-    textAlign: "left",
-    fontWeight: "normal",
     fontSize: 1.25 * 14,
   },
-  tableItemWrapper: {
-    flex: 1,
+  unitLabel: {
+    fontSize: 1.125 * 14,
+    fontWeight: "300",
+    color: twColors.neutral400,
   },
   textxl: {
     fontSize: 1.25 * 14,
@@ -110,9 +91,6 @@ const styles = StyleSheet.create({
     fontSize: 1.5 * 14,
     fontWeight: "bold",
     marginBottom: 0.75 * 14,
-  },
-  exerciseCard: {
-    paddingVertical: 16,
   },
 });
 
