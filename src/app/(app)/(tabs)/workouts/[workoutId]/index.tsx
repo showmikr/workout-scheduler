@@ -27,7 +27,9 @@ import Animated, {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { deleteExercise, getResistanceSections } from "@/utils/query-exercises";
 import WorkoutHeader from "@/components/WorkoutHeader";
-import FloatingAddButton from "@/components/FloatingAddButton";
+import FloatingAddButton, {
+  floatingAddButtonStyles,
+} from "@/components/FloatingAddButton";
 import { ResistanceSection } from "@/utils/exercise-types";
 import { ExerciseCardUnderlay } from "@/components/ExerciseSwipeable";
 
@@ -191,7 +193,9 @@ export default function WorkoutDetails() {
           ListHeaderComponent={() => <WorkoutHeader title={workoutTitle} />}
           ItemSeparatorComponent={OverlaySeparator}
           ListFooterComponent={
-            <ThemedView style={{ marginTop: 8 * 14 }}></ThemedView>
+            <ThemedView
+              style={floatingAddButtonStyles.blankSpaceMargin}
+            ></ThemedView>
           }
           data={sectionData}
           keyExtractor={(item) => item.exercise_id.toString()}

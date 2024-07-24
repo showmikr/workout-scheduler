@@ -1,6 +1,6 @@
 import { twColors } from "@/constants/Colors";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Pressable } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 
 const FloatingAddButton = ({ onPress }: { onPress: () => void }) => {
   return (
@@ -31,4 +31,11 @@ const FloatingAddButton = ({ onPress }: { onPress: () => void }) => {
   );
 };
 
+const styles = StyleSheet.create({
+  blankSpaceMargin: {
+    paddingBottom: 8 * 14,
+  },
+});
+
 export default FloatingAddButton;
+export { styles as floatingAddButtonStyles };

@@ -22,7 +22,9 @@ import {
   updateExerciseSetRestTime,
   addResistanceSet,
 } from "@/utils/query-sets";
-import FloatingAddButton from "@/components/FloatingAddButton";
+import FloatingAddButton, {
+  floatingAddButtonStyles,
+} from "@/components/FloatingAddButton";
 
 export default function ExerciseDetails() {
   // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
@@ -138,7 +140,9 @@ export default function ExerciseDetails() {
         }}
       />
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ paddingBottom: 200 }}>
+        <ScrollView
+          contentContainerStyle={floatingAddButtonStyles.blankSpaceMargin}
+        >
           <View style={{ marginHorizontal: 1.25 * 14 }}>
             <ThemedText
               style={{
