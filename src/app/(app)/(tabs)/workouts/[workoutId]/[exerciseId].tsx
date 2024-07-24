@@ -13,7 +13,9 @@ import {
   updateResistanceSetReps,
   updateExerciseSetReps,
   updateExerciseSetRestTime,
+  addResistanceSet,
 } from "@/utils/query-sets";
+import FloatingAddButton from "@/components/FloatingAddButton";
 
 export default function ExerciseDetails() {
   // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
@@ -80,6 +82,18 @@ export default function ExerciseDetails() {
           "updatedRestTime " + data.rest_time
         : "No data returned from updateResistanceSetRestTime"
       );
+      queryClient.invalidateQueries({
+        queryKey: ["exercise-sections", workoutId],
+      });
+    },
+  });
+
+  const addSetMutation = useMutation({
+    mutationFn: addResistanceSet,
+    onError: (error) => {
+      console.error(error);
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["exercise-sections", workoutId],
       });
@@ -156,6 +170,18 @@ export default function ExerciseDetails() {
           })}
         </View>
       </ScrollView>
+      <FloatingAddButton
+        onPress={() => {
+          const idNumber = parseInt(exerciseId);
+          if (isNaN(idNumber)) {
+            console.error(
+              "Could not parse exerciseId as number for adding set"
+            );
+            return;
+          }
+          addSetMutation.mutate({ db, exerciseId: idNumber });
+        }}
+      />
     </SafeAreaView>
   );
 }

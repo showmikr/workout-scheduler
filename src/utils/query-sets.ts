@@ -101,6 +101,51 @@ const updateExerciseSetRestTime = async ({
   );
 };
 
+/**
+ * Adds a new resistance set to the database for the specified exercise.
+ *
+ * @param db - The SQLite database instance.
+ * @param exerciseId - The ID of the exercise to add the resistance set to.
+ * @returns The inserted exercise set and resistance set IDs.
+ */
+const addResistanceSet = async ({
+  db,
+  exerciseId,
+}: {
+  db: SQLiteDatabase;
+  exerciseId: number;
+}) => {
+  db.withTransactionAsync(async () => {
+    const setInsert = await db.getFirstAsync<{ exercise_set_id: number }>(
+      `
+      INSERT INTO exercise_set (exercise_id, list_order)
+      VALUES (?, (SELECT COUNT(*) FROM exercise_set WHERE exercise_id = ?) + 1)
+      RETURNING id AS exercise_set_id;
+      `,
+      [exerciseId, exerciseId]
+    );
+    const exerciseSetId = setInsert?.exercise_set_id;
+    if (!exerciseSetId) {
+      throw new Error("Could not insert row into exercise_set table");
+    }
+    const restistanceSetInsert = await db.getFirstAsync<{
+      exercise_set_id: number;
+      resistance_set_id: number;
+    }>(
+      `
+      INSERT INTO resistance_set (exercise_set_id, total_weight)
+      VALUES (?, 0)
+      RETURNING exercise_set_id, id AS resistance_set_id;
+      `,
+      [exerciseSetId]
+    );
+    if (!restistanceSetInsert) {
+      throw new Error("Could not insert row into exercise_set table");
+    }
+    console.log("set inserted", restistanceSetInsert);
+  });
+};
+
 // Will remain unused until we have cardio exercises
 const getCardioSets = async (
   db: SQLiteDatabase,
@@ -130,4 +175,5 @@ export {
   updateResistanceSetReps,
   updateExerciseSetReps,
   updateExerciseSetRestTime,
+  addResistanceSet,
 };
