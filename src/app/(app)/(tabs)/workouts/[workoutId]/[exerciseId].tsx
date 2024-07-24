@@ -25,6 +25,38 @@ import {
 import FloatingAddButton, {
   floatingAddButtonStyles,
 } from "@/components/FloatingAddButton";
+import { MaterialIcons } from "@expo/vector-icons";
+
+const REPS_ROW_FLEX = 9;
+const WEIGHT_ROW_FLEX = 10;
+const REST_ROW_FLEX = 8;
+const ACTIONS_ROW_FLEX = 2;
+
+const tableConfig: {
+  key: keyof UnifiedResistanceSet | "actions";
+  header: string;
+  flex: number;
+}[] = [
+  { key: "reps", header: "Reps", flex: REPS_ROW_FLEX },
+  { key: "total_weight", header: "Weight", flex: WEIGHT_ROW_FLEX },
+  { key: "rest_time", header: "Rest", flex: REST_ROW_FLEX },
+  { key: "actions", header: "", flex: ACTIONS_ROW_FLEX },
+];
+
+const TableHeaders = ({ config }: { config: typeof tableConfig }) => {
+  return (
+    <TableRow style={{ marginBottom: 0.5 * 14 }}>
+      {tableConfig.map((config) => (
+        <ThemedText
+          key={config.key}
+          style={[styles.columnHeader, { flex: config.flex }]}
+        >
+          {config.header}
+        </ThemedText>
+      ))}
+    </TableRow>
+  );
+};
 
 export default function ExerciseDetails() {
   // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
@@ -153,13 +185,7 @@ export default function ExerciseDetails() {
             >
               {title}
             </ThemedText>
-            <TableRow style={{ marginBottom: 0.5 * 14 }}>
-              {["Reps", "Weight", "Rest"].map((column) => (
-                <ThemedText key={column} style={styles.columnHeader}>
-                  {column}
-                </ThemedText>
-              ))}
-            </TableRow>
+            <TableHeaders config={tableConfig} />
             {resistanceSets.map((set) => {
               return (
                 <ResistanceSet
@@ -221,8 +247,8 @@ const ResistanceSet = ({
 }) => {
   const weightString = set.total_weight.toFixed(1);
   return (
-    <TableRow style={{ marginBottom: 1 * 14 }}>
-      <View style={styles.inline}>
+    <TableRow style={{ marginBottom: 2 * 14 }}>
+      <View style={[styles.inline, { flex: REPS_ROW_FLEX }]}>
         <ThemedTextInput
           inputMode="numeric"
           defaultValue={set.reps.toString()}
@@ -236,7 +262,7 @@ const ResistanceSet = ({
           style={[styles.textInput]}
         />
       </View>
-      <View style={styles.inline}>
+      <View style={[styles.inline, { flex: WEIGHT_ROW_FLEX }]}>
         <ThemedTextInput
           inputMode="decimal"
           defaultValue={weightString}
@@ -251,7 +277,7 @@ const ResistanceSet = ({
         />
         <ThemedText style={styles.unitsLabel}>kg</ThemedText>
       </View>
-      <View style={styles.inline}>
+      <View style={[styles.inline, { flex: REST_ROW_FLEX }]}>
         <ThemedTextInput
           inputMode="numeric"
           returnKeyType="done"
@@ -264,6 +290,23 @@ const ResistanceSet = ({
           style={[styles.textInput]}
         />
         <ThemedText style={styles.unitsLabel}>s</ThemedText>
+      </View>
+      <View
+        style={[
+          styles.inline,
+          {
+            flexDirection: "column",
+            flex: ACTIONS_ROW_FLEX,
+            justifyContent: "center",
+            alignItems: "center",
+          },
+        ]}
+      >
+        <MaterialIcons
+          name="more-horiz"
+          size={20}
+          color={twColors.neutral500}
+        />
       </View>
     </TableRow>
   );
@@ -285,7 +328,6 @@ const styles = StyleSheet.create({
     marginRight: 0.25 * 14,
   },
   inline: {
-    flex: 1,
     flexDirection: "row",
     alignItems: "baseline",
   },

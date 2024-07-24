@@ -33,6 +33,7 @@ const TableRow = ({
 const styles = StyleSheet.create({
   tableRow: {
     flex: 1,
+    alignItems: "baseline",
     flexDirection: "row",
   },
   tableItemWrapper: {
