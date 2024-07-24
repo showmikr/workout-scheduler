@@ -1,4 +1,11 @@
-import { StyleSheet, SafeAreaView, ScrollView, View } from "react-native";
+import {
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
+  View,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { ThemedText, ThemedTextInput } from "@/components/Themed";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
@@ -104,7 +111,7 @@ export default function ExerciseDetails() {
   if (!resistanceSets) {
     return (
       <SafeAreaView style={[styles.outerContainer, { alignItems: "center" }]}>
-        <Stack.Screen options={{ title: title }} />
+        <Stack.Screen options={{ title: title, headerTransparent: true }} />
         <ThemedText
           style={{
             textAlign: "center",
@@ -119,70 +126,81 @@ export default function ExerciseDetails() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: twColors.neutral950 }}>
-      <Stack.Screen options={{ title: title }} />
-      <ScrollView>
-        <View style={{ marginHorizontal: 1.25 * 14 }}>
-          <ThemedText
-            style={{
-              fontSize: 1.875 * 14,
-              lineHeight: 2.25 * 14,
-              marginVertical: 1 * 14,
-            }}
-          >
-            {title}
-          </ThemedText>
-          <TableRow style={{ marginBottom: 0.5 * 14 }}>
-            {["Reps", "Weight", "Rest"].map((column) => (
-              <ThemedText key={column} style={styles.columnHeader}>
-                {column}
-              </ThemedText>
-            ))}
-          </TableRow>
-          {resistanceSets.map((set) => {
-            return (
-              <ResistanceSet
-                set={set}
-                onRepsChange={(reps) =>
-                  repsMutation.mutate({
-                    db,
-                    reps,
-                    exerciseSetId: set.exercise_set_id,
-                  })
-                }
-                onWeightChange={(weight) =>
-                  weightMutation.mutate({
-                    db,
-                    weight,
-                    exerciseSetId: set.exercise_set_id,
-                  })
-                }
-                onRestTimeChange={(restTime) =>
-                  restTimeMutation.mutate({
-                    db,
-                    restTime,
-                    exerciseSetId: set.exercise_set_id,
-                  })
-                }
-                key={set.exercise_set_id}
-              />
-            );
-          })}
-        </View>
-      </ScrollView>
-      <FloatingAddButton
-        onPress={() => {
-          const idNumber = parseInt(exerciseId);
-          if (isNaN(idNumber)) {
-            console.error(
-              "Could not parse exerciseId as number for adding set"
-            );
-            return;
-          }
-          addSetMutation.mutate({ db, exerciseId: idNumber });
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: twColors.neutral950 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <Stack.Screen
+        options={{
+          title: title,
+          headerTransparent: true,
+          headerBackTitle: "Exercises",
         }}
       />
-    </SafeAreaView>
+      <SafeAreaView style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 200 }}>
+          <View style={{ marginHorizontal: 1.25 * 14 }}>
+            <ThemedText
+              style={{
+                fontSize: 1.875 * 14,
+                lineHeight: 2.25 * 14,
+                marginVertical: 1 * 14,
+              }}
+            >
+              {title}
+            </ThemedText>
+            <TableRow style={{ marginBottom: 0.5 * 14 }}>
+              {["Reps", "Weight", "Rest"].map((column) => (
+                <ThemedText key={column} style={styles.columnHeader}>
+                  {column}
+                </ThemedText>
+              ))}
+            </TableRow>
+            {resistanceSets.map((set) => {
+              return (
+                <ResistanceSet
+                  set={set}
+                  onRepsChange={(reps) =>
+                    repsMutation.mutate({
+                      db,
+                      reps,
+                      exerciseSetId: set.exercise_set_id,
+                    })
+                  }
+                  onWeightChange={(weight) =>
+                    weightMutation.mutate({
+                      db,
+                      weight,
+                      exerciseSetId: set.exercise_set_id,
+                    })
+                  }
+                  onRestTimeChange={(restTime) =>
+                    restTimeMutation.mutate({
+                      db,
+                      restTime,
+                      exerciseSetId: set.exercise_set_id,
+                    })
+                  }
+                  key={set.exercise_set_id}
+                />
+              );
+            })}
+          </View>
+        </ScrollView>
+        <FloatingAddButton
+          onPress={() => {
+            const idNumber = parseInt(exerciseId);
+            if (isNaN(idNumber)) {
+              console.error(
+                "Could not parse exerciseId as number for adding set"
+              );
+              return;
+            }
+            addSetMutation.mutate({ db, exerciseId: idNumber });
+          }}
+        />
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
