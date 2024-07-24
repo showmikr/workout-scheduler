@@ -218,6 +218,7 @@ const ResistanceSet = ({
         <ThemedTextInput
           inputMode="decimal"
           defaultValue={weightString}
+          returnKeyType="done"
           maxLength={5}
           style={[styles.textInput]}
           onEndEditing={(e) => {
