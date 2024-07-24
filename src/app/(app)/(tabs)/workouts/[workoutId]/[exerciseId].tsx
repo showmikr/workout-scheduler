@@ -12,6 +12,7 @@ import { TableRow } from "@/components/Table";
 import {
   updateResistanceSetReps,
   updateExerciseSetReps,
+  updateExerciseSetRestTime,
 } from "@/utils/query-sets";
 
 export default function ExerciseDetails() {
@@ -61,6 +62,23 @@ export default function ExerciseDetails() {
         data?.total_weight ?
           "updatedWeight " + data.total_weight
         : "No data returned from updateResistanceSetWeight"
+      );
+      queryClient.invalidateQueries({
+        queryKey: ["exercise-sections", workoutId],
+      });
+    },
+  });
+
+  const restTimeMutation = useMutation({
+    mutationFn: updateExerciseSetRestTime,
+    onError: (error) => {
+      console.error(error);
+    },
+    onSuccess: (data) => {
+      console.log(
+        data?.rest_time ?
+          "updatedRestTime " + data.rest_time
+        : "No data returned from updateResistanceSetRestTime"
       );
       queryClient.invalidateQueries({
         queryKey: ["exercise-sections", workoutId],
@@ -125,6 +143,13 @@ export default function ExerciseDetails() {
                     exerciseSetId: set.exercise_set_id,
                   })
                 }
+                onRestTimeChange={(restTime) =>
+                  restTimeMutation.mutate({
+                    db,
+                    restTime,
+                    exerciseSetId: set.exercise_set_id,
+                  })
+                }
                 key={set.exercise_set_id}
               />
             );
@@ -139,10 +164,12 @@ const ResistanceSet = ({
   set,
   onRepsChange,
   onWeightChange,
+  onRestTimeChange,
 }: {
   set: UnifiedResistanceSet;
   onRepsChange: (reps: number) => void;
   onWeightChange: (weight: number) => void;
+  onRestTimeChange: (restTime: number) => void;
 }) => {
   const weightString = set.total_weight.toFixed(1);
   return (
@@ -178,7 +205,13 @@ const ResistanceSet = ({
       <View style={styles.inline}>
         <ThemedTextInput
           inputMode="numeric"
-          value={set.rest_time.toString()}
+          returnKeyType="done"
+          defaultValue={set.rest_time.toString()}
+          onEndEditing={(e) => {
+            // if the changed input is the same as our initial state, don't update the db
+            if (Number(e.nativeEvent.text) === set.rest_time) return;
+            onRestTimeChange(Number(e.nativeEvent.text));
+          }}
           style={[styles.textInput]}
         />
         <ThemedText style={styles.unitsLabel}>s</ThemedText>

@@ -71,6 +71,36 @@ async function updateExerciseSetReps({
   return updatedWeight;
 }
 
+type SetRestTimeArgs = {
+  db: SQLiteDatabase;
+  exerciseSetId: number;
+  restTime: number;
+};
+
+/**
+ * Updates the rest time for an exercise set in the database.
+ *
+ * @param db - The SQLite database instance.
+ * @param exerciseSetId - The ID of the exercise set to update.
+ * @param restTime - The new rest time value to set for the exercise set (in seconds).
+ * @returns The updated rest time value for the exercise set.
+ */
+const updateExerciseSetRestTime = async ({
+  db,
+  exerciseSetId,
+  restTime,
+}: SetRestTimeArgs) => {
+  return db.getFirstAsync<{ rest_time: number }>(
+    `
+    UPDATE exercise_set
+    SET rest_time = ?
+    WHERE id = ?
+    RETURNING exercise_set.rest_time;
+    `,
+    [restTime, exerciseSetId]
+  );
+};
+
 // Will remain unused until we have cardio exercises
 const getCardioSets = async (
   db: SQLiteDatabase,
@@ -95,4 +125,9 @@ const getCardioSets = async (
   );
 };
 
-export { getResistanceSets, updateResistanceSetReps, updateExerciseSetReps };
+export {
+  getResistanceSets,
+  updateResistanceSetReps,
+  updateExerciseSetReps,
+  updateExerciseSetRestTime,
+};
