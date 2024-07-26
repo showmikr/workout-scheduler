@@ -27,7 +27,7 @@ import FloatingAddButton, {
 } from "@/components/FloatingAddButton";
 import { MaterialIcons } from "@expo/vector-icons";
 
-const REPS_ROW_FLEX = 9;
+const REPS_ROW_FLEX = 9.5;
 const WEIGHT_ROW_FLEX = 10;
 const REST_ROW_FLEX = 8;
 const ACTIONS_ROW_FLEX = 2;
@@ -85,9 +85,9 @@ export default function ExerciseDetails() {
     },
     onSuccess: (data) => {
       console.log(
-        data?.reps ?
-          "updatedReps: " + data.reps
-        : "No data returned from updateResistanceSetReps"
+        data?.reps
+          ? "updatedReps: " + data.reps
+          : "No data returned from updateResistanceSetReps"
       );
       queryClient.invalidateQueries({
         queryKey: ["exercise-sections", workoutId],
@@ -102,9 +102,9 @@ export default function ExerciseDetails() {
     },
     onSuccess: (data) => {
       console.log(
-        data?.total_weight ?
-          "updatedWeight " + data.total_weight
-        : "No data returned from updateResistanceSetWeight"
+        data?.total_weight
+          ? "updatedWeight " + data.total_weight
+          : "No data returned from updateResistanceSetWeight"
       );
       queryClient.invalidateQueries({
         queryKey: ["exercise-sections", workoutId],
@@ -119,9 +119,9 @@ export default function ExerciseDetails() {
     },
     onSuccess: (data) => {
       console.log(
-        data?.rest_time ?
-          "updatedRestTime " + data.rest_time
-        : "No data returned from updateResistanceSetRestTime"
+        data?.rest_time
+          ? "updatedRestTime " + data.rest_time
+          : "No data returned from updateResistanceSetRestTime"
       );
       queryClient.invalidateQueries({
         queryKey: ["exercise-sections", workoutId],

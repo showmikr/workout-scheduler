@@ -1,4 +1,10 @@
-import { PressableProps, StyleSheet, View } from "react-native";
+import {
+  PressableProps,
+  StyleSheet,
+  TextStyle,
+  View,
+  ViewStyle,
+} from "react-native";
 import { twColors } from "@/constants/Colors";
 import { ResistanceSection, UnifiedCardioSet } from "@/utils/exercise-types";
 import { ThemedText } from "@/components/Themed";
@@ -8,7 +14,7 @@ const CardioSetList = ({ sets }: { sets: UnifiedCardioSet[] }) => {
   return (
     <>
       {sets.map((set) => (
-        <ThemedText style={styles.textxl}>
+        <ThemedText style={{ fontSize: 1.25 * 14 }}>
           Reps: {set.reps}
           {"    "}
           Rest: {set.rest_time}s{"    "}
@@ -34,33 +40,53 @@ const ExerciseCard = ({
   return (
     <View
       style={{
-        flex: 1,
+        maxWidth: 360,
         paddingHorizontal: 1.25 * 14,
         marginVertical: 1.25 * 14,
       }}
     >
       <ThemedText style={styles.exerciseTitle}>{exercise.title}</ThemedText>
       <TableRow style={{ marginBottom: 0.5 * 14 }}>
-        {["Reps", "Weight", "Rest"].map((column) => (
-          <ThemedText key={column} style={styles.columnHeader}>
-            {column}
-          </ThemedText>
+        {[
+          { header: "Reps", style: styles.repsText },
+          { header: "Weight", style: styles.weightText },
+          { header: "Rest", style: styles.restText },
+        ].map((column) => (
+          <View key={column.header} style={styles.tableCell}>
+            <ThemedText style={[styles.columnHeader, column.style]}>
+              {column.header}
+            </ThemedText>
+          </View>
         ))}
       </TableRow>
       {exercise.sets.map(
         ({ reps, total_weight, rest_time, exercise_set_id }) => (
           <TableRow key={exercise_set_id} style={{ marginBottom: 0.5 * 14 }}>
-            <ThemedText style={styles.dataText}>{reps}</ThemedText>
-            <ThemedText style={styles.dataText}>
-              {total_weight.toFixed(1)}
-              <ThemedText style={styles.unitLabel}>kg</ThemedText>
-            </ThemedText>
-            <ThemedText style={styles.dataText}>
-              {rest_time ? Math.floor(rest_time / 60) : "--"}
-              <ThemedText style={styles.unitLabel}>m </ThemedText>
-              {rest_time ? rest_time % 60 : "--"}
-              <ThemedText style={styles.unitLabel}>s</ThemedText>
-            </ThemedText>
+            <View style={styles.tableCell}>
+              <ThemedText style={[styles.dataText, styles.repsText]}>
+                {reps}
+              </ThemedText>
+            </View>
+            <View style={styles.tableCell}>
+              <ThemedText style={[styles.dataText, styles.weightText]}>
+                {total_weight.toFixed(1)}
+                <ThemedText style={styles.unitLabel}>kg</ThemedText>
+              </ThemedText>
+            </View>
+            <View style={styles.tableCell}>
+              <ThemedText style={[styles.dataText, styles.restText]}>
+                {rest_time ?
+                  Math.floor(rest_time / 60)
+                    .toString()
+                    .padStart(2, "\u2002")
+                : "--"}
+                <ThemedText style={styles.unitLabel}>m </ThemedText>
+                {rest_time ?
+                  (rest_time % 60).toString().padStart(2, "\u2002")
+                : "--"}
+                <ThemedText style={styles.unitLabel}>s</ThemedText>
+              </ThemedText>
+            </View>
           </TableRow>
         )
       )}
@@ -68,24 +94,47 @@ const ExerciseCard = ({
   );
 };
 
+const columnConfig = {
+  reps: {
+    textStyle: {
+      minWidth: 32,
+      textAlign: "right",
+    } as TextStyle,
+  },
+  weight: {
+    textStyle: {
+      width: 64,
+    } as TextStyle,
+  },
+  rest: {
+    textStyle: {
+      width: 68,
+    } as TextStyle,
+  },
+};
+
 const styles = StyleSheet.create({
   columnHeader: {
-    flex: 1,
     fontSize: 14,
+    textAlign: "right",
     color: twColors.neutral400,
     fontWeight: "light",
   },
-  dataText: {
+  repsText: columnConfig.reps.textStyle,
+  weightText: columnConfig.weight.textStyle,
+  restText: columnConfig.rest.textStyle,
+  tableCell: {
     flex: 1,
+    flexDirection: "row",
+  },
+  dataText: {
+    textAlign: "right",
     fontSize: 1.25 * 14,
   },
   unitLabel: {
-    fontSize: 1.125 * 14,
+    fontSize: 1.25 * 14,
     fontWeight: "300",
     color: twColors.neutral400,
-  },
-  textxl: {
-    fontSize: 1.25 * 14,
   },
   exerciseTitle: {
     fontSize: 1.5 * 14,
