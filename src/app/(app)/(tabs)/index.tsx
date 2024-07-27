@@ -9,6 +9,7 @@ import {
   TextInput,
   FlatList,
   SectionList,
+  Button,
 } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
@@ -1496,8 +1497,38 @@ function Graph({
         />
 
         {/* activity view */}
-        <ThemedView style={[stats.viewStyle]}>
+        <ThemedView
+          style={[
+            stats.viewStyle,
+            { flexDirection: "row", justifyContent: "flex-start" },
+          ]}
+        >
           <Text style={[stats.viewTitle]}>Activity</Text>
+          <Pressable
+            style={{
+              width: 24,
+              height: 24,
+              borderRadius: 5,
+              backgroundColor: "#1C1C1C",
+              justifyContent: "center",
+              alignItems: "center",
+              marginLeft: 10,
+            }}
+            onPress={() => {
+              console.log("Hello");
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: "600",
+                color: "#A53535",
+                top: -3,
+              }}
+            >
+              +
+            </Text>
+          </Pressable>
         </ThemedView>
       </ThemedView>
     </ThemedView>
