@@ -5,15 +5,13 @@ import {
   Pressable,
   StyleSheet,
   TextStyle,
-  ScrollView,
   TextInput,
-  FlatList,
   SectionList,
-  Button,
 } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { ActivityCard } from "@/components/ActivityCard";
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 
 type WorkoutSession = {
   sessionId: number;
@@ -228,6 +226,13 @@ function groupActivityCards(list: WorkoutSession[]) {
 }
 
 export default function SummaryPage() {
+  // Modal initialization ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  const sheetRef = useRef<BottomSheet>(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const snapPoints = ["4%", "90%"];
+
+  // Graph initilization
   const graphData = useGraphData();
 
   const personalRecordOptions = ["Bench Press", "Squat", "Deadlift"]; // replace with dynamic type after querying (bench, squat, etc)
@@ -646,59 +651,76 @@ export default function SummaryPage() {
     goalLine = [];
   }
 
-  let previousCard: WorkoutSession | null = null;
-
   return (
-    <SectionList
-      style={{ backgroundColor: "#0D0D0D" }}
-      initialNumToRender={4}
-      sections={groupActivityCards(
-        workoutSessionData
-          .filter((obj) => obj.date >= selectedTimeRange)
-          .slice()
-          .reverse()
-      )}
-      renderItem={({ item }) => (
-        <ActivityCard
-          title={item.title}
-          calories={item.calories}
-          date={item.date}
-        />
-      )}
-      renderSectionHeader={({ section: { title } }) => (
-        <ThemedView style={stats.viewStyle}>
-          <Text style={stats.viewTitle}>{title}</Text>
-        </ThemedView>
-      )}
-      keyExtractor={(item) => item.sessionId.toString()}
-      ListHeaderComponent={
-        <Graph
-          graphType
-          graphInput={graphInput}
-          graphDataType={graphDataType}
-          setGraphType={setGraphType}
-          goalLine={goalLine}
-          maxGraphValue={maxGraphValue}
-          personalRecordOptions={personalRecordOptions}
-          personalRecordExercise={personalRecordExercise}
-          setPersonalRecordExercise={setPersonalRecordExercise}
-          graphDataTypeButtons={graphDataTypeButtons}
-          setGraphDataType={setGraphDataType}
-          rawInputLength={rawInputLength}
-          rawInputTime={rawInputTime}
-          rawInputTimeNum={rawInputTimeNum}
-          rawInputValue={rawInputValue}
-          rawInputLastIdx={rawInputLastIdx}
-          userProfileData={userProfileData}
-          rawInputFirstIdx={rawInputFirstIdx}
-          PrLastVal={PrLastVal}
-          PrFirstVal={PrFirstVal}
-          bodyWeightData={bodyWeightData}
-          graphRange={graphRange}
-          setGraphRange={setGraphRange}
-        />
-      }
-    />
+    <>
+      <SectionList
+        style={{ backgroundColor: "#0D0D0D" }}
+        initialNumToRender={4}
+        sections={groupActivityCards(
+          workoutSessionData
+            .filter((obj) => obj.date >= selectedTimeRange)
+            .slice()
+            .reverse()
+        )}
+        renderItem={({ item }) => (
+          <ActivityCard
+            title={item.title}
+            calories={item.calories}
+            date={item.date}
+          />
+        )}
+        renderSectionHeader={({ section: { title } }) => (
+          <ThemedView style={[stats.viewStyle, { marginTop: 0 }]}>
+            <Text style={stats.viewTitle}>{title}</Text>
+          </ThemedView>
+        )}
+        keyExtractor={(item) => item.sessionId.toString()}
+        ListHeaderComponent={
+          <Graph
+            graphType
+            graphInput={graphInput}
+            graphDataType={graphDataType}
+            setGraphType={setGraphType}
+            goalLine={goalLine}
+            maxGraphValue={maxGraphValue}
+            personalRecordOptions={personalRecordOptions}
+            personalRecordExercise={personalRecordExercise}
+            setPersonalRecordExercise={setPersonalRecordExercise}
+            graphDataTypeButtons={graphDataTypeButtons}
+            setGraphDataType={setGraphDataType}
+            rawInputLength={rawInputLength}
+            rawInputTime={rawInputTime}
+            rawInputTimeNum={rawInputTimeNum}
+            rawInputValue={rawInputValue}
+            rawInputLastIdx={rawInputLastIdx}
+            userProfileData={userProfileData}
+            rawInputFirstIdx={rawInputFirstIdx}
+            PrLastVal={PrLastVal}
+            PrFirstVal={PrFirstVal}
+            bodyWeightData={bodyWeightData}
+            graphRange={graphRange}
+            setGraphRange={setGraphRange}
+          />
+        }
+      />
+
+      {/* <BottomSheet
+        ref={sheetRef}
+        snapPoints={snapPoints}
+        enablePanDownToClose={true}
+        onClose={() => setIsOpen(false)}
+      >
+        <BottomSheetView>
+          <Text
+            style={{
+              backgroundColor: "white",
+            }}
+          >
+            Hello
+          </Text>
+        </BottomSheetView>
+      </BottomSheet> */}
+    </>
   );
 }
 
@@ -1503,7 +1525,7 @@ function Graph({
             { flexDirection: "row", justifyContent: "flex-start" },
           ]}
         >
-          <Text style={[stats.viewTitle]}>Activity</Text>
+          <Text style={[stats.viewTitle, { marginBottom: 25 }]}>Activity</Text>
           <Pressable
             style={{
               width: 24,
