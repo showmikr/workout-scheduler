@@ -704,7 +704,7 @@ export default function SummaryPage() {
         }
       />
 
-      {/* <BottomSheet
+      <BottomSheet
         ref={sheetRef}
         snapPoints={snapPoints}
         enablePanDownToClose={true}
@@ -719,7 +719,7 @@ export default function SummaryPage() {
             Hello
           </Text>
         </BottomSheetView>
-      </BottomSheet> */}
+      </BottomSheet>
     </>
   );
 }
