@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import ResistanceIcon from "@/assets/icons/resistance_icon_grey.svg";
 
 export function ActivityCard(props: {
@@ -7,7 +7,12 @@ export function ActivityCard(props: {
   date: Date;
 }) {
   return (
-    <View style={[activityStyles.outerView, { left: 10 }]}>
+    <Pressable
+      style={[activityStyles.outerView, { left: 10 }]}
+      onPress={() => {
+        console.log("ActivityCard");
+      }}
+    >
       <ResistanceIcon width={45} height={45} />
       <View style={activityStyles.titleView}>
         <Text
@@ -50,7 +55,7 @@ export function ActivityCard(props: {
           </Text>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -61,7 +66,8 @@ const activityStyles = StyleSheet.create({
     backgroundColor: "#1C1C1C",
     width: 370,
     borderRadius: 5,
-    marginTop: 10,
+    marginTop: 5,
+    marginBottom: 5,
     padding: 5,
   },
   titleView: {

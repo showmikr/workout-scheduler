@@ -9,7 +9,7 @@ import {
   SectionList,
 } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { ActivityCard } from "@/components/ActivityCard";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 
@@ -230,7 +230,12 @@ export default function SummaryPage() {
   const sheetRef = useRef<BottomSheet>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  const snapPoints = ["4%", "90%"];
+  const snapPoints = ["95%"];
+
+  const handleSnapPress = useCallback((index: number) => {
+    sheetRef.current?.snapToIndex(index);
+    setIsOpen(true);
+  }, []);
 
   // Graph initilization
   const graphData = useGraphData();
@@ -240,7 +245,7 @@ export default function SummaryPage() {
     personalRecordOptions[0]
   );
 
-  const [graphRange, setGraphRange] = useState("1M");
+  const [graphRange, setGraphRange] = useState("1Y");
 
   const [graphDataType, setGraphDataType] = useState("calorie");
   const graphDataTypeButtons = ["calorie", "body weight", "personal record"];
@@ -670,8 +675,23 @@ export default function SummaryPage() {
           />
         )}
         renderSectionHeader={({ section: { title } }) => (
-          <ThemedView style={[stats.viewStyle, { marginTop: 0 }]}>
-            <Text style={stats.viewTitle}>{title}</Text>
+          <ThemedView
+            style={[
+              stats.viewStyle,
+              { paddingTop: 10, paddingBottom: 5, marginTop: 0 },
+            ]}
+          >
+            <Text
+              style={[
+                stats.viewTitle,
+                {
+                  textAlign: "center",
+                  fontSize: 18,
+                },
+              ]}
+            >
+              {title}
+            </Text>
           </ThemedView>
         )}
         keyExtractor={(item) => item.sessionId.toString()}
@@ -700,6 +720,7 @@ export default function SummaryPage() {
             bodyWeightData={bodyWeightData}
             graphRange={graphRange}
             setGraphRange={setGraphRange}
+            handleSnapPress={handleSnapPress}
           />
         }
       />
@@ -1142,6 +1163,7 @@ function Graph({
   bodyWeightData,
   graphRange,
   setGraphRange,
+  handleSnapPress,
 }: {
   graphType: boolean;
   graphInput: any;
@@ -1166,6 +1188,7 @@ function Graph({
   bodyWeightData: UserBodyWeight[];
   graphRange: string;
   setGraphRange: React.Dispatch<string>;
+  handleSnapPress: (index: number) => void;
 }) {
   const graphRangeButtons = ["1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
 
@@ -1525,7 +1548,7 @@ function Graph({
             { flexDirection: "row", justifyContent: "flex-start" },
           ]}
         >
-          <Text style={[stats.viewTitle, { marginBottom: 25 }]}>Activity</Text>
+          <Text style={[stats.viewTitle, { marginBottom: 0 }]}>Activity</Text>
           <Pressable
             style={{
               width: 24,
@@ -1537,7 +1560,7 @@ function Graph({
               marginLeft: 10,
             }}
             onPress={() => {
-              console.log("Hello");
+              handleSnapPress(0);
             }}
           >
             <Text
