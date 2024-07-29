@@ -6,8 +6,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ViewStyle,
-  TextStyle,
 } from "react-native";
 import { ThemedText, ThemedTextInput, ThemedView } from "@/components/Themed";
 import { Stack, useLocalSearchParams } from "expo-router";
@@ -30,8 +28,9 @@ import FloatingAddButton, {
 } from "@/components/FloatingAddButton";
 import { MaterialIcons } from "@expo/vector-icons";
 import BottomMenu from "@/components/SetOptionsMenu";
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { immediateDebounce } from "@/utils/debounce-utils";
 
 const REPS_ROW_FLEX = 9;
 const WEIGHT_ROW_FLEX = 10;
@@ -147,6 +146,18 @@ export default function ExerciseDetails() {
     },
   });
 
+  // adds a slight delay to the addSetMutation to
+  // prevent sqlite transactions from overlapping.
+  // If transactions overlap, the sqlite db will throw an error
+  // and no mutation will occur. It is necessary to wrap this inside
+  // of a useCallback b/c the immediate debounce function has internal state
+  // that should not be refreshed on re-renders to ensure the time delay
+  // doesn't reset on each render
+  const debouncedAddSet = useCallback(
+    immediateDebounce(addSetMutation.mutate, 400),
+    [addSetMutation.mutate]
+  );
+
   // If all the exercise set data isn't fully loaded, display a loading screen
   if (!resistanceSets) {
     return (
@@ -233,7 +244,7 @@ export default function ExerciseDetails() {
               );
               return;
             }
-            addSetMutation.mutate({ db, exerciseId: idNumber });
+            debouncedAddSet({ db, exerciseId: idNumber });
           }}
         />
       </SafeAreaView>
