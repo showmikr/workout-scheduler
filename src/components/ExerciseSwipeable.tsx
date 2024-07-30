@@ -7,7 +7,7 @@ type RightSideUnderlayProps = {
   dragX: Animated.AnimatedInterpolation<number>;
 };
 
-const ExerciseCardUnderlay = ({
+const CardOptionsUnderlay = ({
   progress,
   dragX,
   onPress,
@@ -85,4 +85,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export { ExerciseCardUnderlay };
+export { CardOptionsUnderlay };

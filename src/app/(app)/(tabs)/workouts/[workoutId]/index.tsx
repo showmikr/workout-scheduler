@@ -31,7 +31,7 @@ import FloatingAddButton, {
   floatingAddButtonStyles,
 } from "@/components/FloatingAddButton";
 import { ResistanceSection } from "@/utils/exercise-types";
-import { ExerciseCardUnderlay } from "@/components/ExerciseSwipeable";
+import { CardOptionsUnderlay } from "@/components/ExerciseSwipeable";
 
 function UnderlayLeft({ onPress }: { onPress?: () => void }) {
   return (
@@ -201,7 +201,7 @@ export default function WorkoutDetails() {
           renderItem={({ item }) => (
             <Swipeable
               renderRightActions={(_progress, dragX) => (
-                <ExerciseCardUnderlay
+                <CardOptionsUnderlay
                   dragX={dragX}
                   onPress={() =>
                     deleteMutation.mutate({ db, exerciseId: item.exercise_id })
