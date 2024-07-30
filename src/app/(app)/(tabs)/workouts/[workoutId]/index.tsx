@@ -129,7 +129,6 @@ export default function WorkoutDetails() {
   const { data: sectionData } = useQuery({
     queryKey: ["exercise-sections", workoutId],
     queryFn: () => getResistanceSections(db, workoutId),
-    refetchInterval: 3000,
   });
 
   const deleteMutation = useMutation({
