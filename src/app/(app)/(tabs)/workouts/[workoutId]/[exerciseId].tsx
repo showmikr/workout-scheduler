@@ -64,7 +64,6 @@ const TableHeaders = ({ config }: { config: typeof tableConfig }) => {
 };
 
 export default function ExerciseDetails() {
-  // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
   const { exerciseId, workoutId, title } = useLocalSearchParams<{
     workoutId: string;
     exerciseId: string;
@@ -79,7 +78,7 @@ export default function ExerciseDetails() {
   const { data: resistanceSets } = useQuery({
     queryKey: ["exercise-sections", workoutId],
     select: (data: ResistanceSection[]) =>
-      data?.find((exercise) => exercise.exercise_id.toString() === exerciseId)
+      data.find((exercise) => exercise.exercise_id.toString() === exerciseId)
         ?.sets,
   });
 
