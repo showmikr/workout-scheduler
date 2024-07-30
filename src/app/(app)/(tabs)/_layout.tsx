@@ -4,6 +4,8 @@ import { Pressable, useColorScheme } from "react-native";
 
 import Colors from "@/constants/Colors";
 import { useSession } from "@/context/session-provider";
+import { useSQLiteContext } from "expo-sqlite";
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
@@ -18,6 +20,8 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { session } = useSession();
+  const db = useSQLiteContext();
+  useDrizzleStudio(db);
 
   // Only require authentication within the (app) group's layout as users
   // need to be able to access the (auth) group and sign in again.
