@@ -8,7 +8,7 @@ export function ActivityCard(props: {
 }) {
   return (
     <Pressable
-      style={[activityStyles.outerView, { left: 10 }]}
+      style={[activityStyles.outerView]}
       onPress={() => {
         console.log("ActivityCard");
       }}
@@ -18,7 +18,7 @@ export function ActivityCard(props: {
         <Text
           style={{
             color: "#BDBDBD",
-            fontSize: 16,
+            fontSize: 18,
           }}
         >
           {props.title}
@@ -65,7 +65,7 @@ const activityStyles = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: "#1C1C1C",
     width: 370,
-    borderRadius: 5,
+    borderRadius: 10,
     marginTop: 5,
     marginBottom: 5,
     padding: 5,
