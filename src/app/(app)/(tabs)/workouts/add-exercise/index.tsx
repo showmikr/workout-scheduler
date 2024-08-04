@@ -53,6 +53,9 @@ export default function AddExerciseIndex() {
       queryClient.invalidateQueries({
         queryKey: ["exercise-sections", workoutId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["workout-stats", workoutId],
+      });
     },
   });
 

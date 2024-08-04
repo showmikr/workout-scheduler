@@ -146,6 +146,9 @@ export default function WorkoutDetails() {
       queryClient.invalidateQueries({
         queryKey: ["exercise-sections", workoutId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["workout-stats", workoutId],
+      });
     },
   });
 

@@ -67,6 +67,30 @@ async function getWorkoutsAsync(db: SQLiteDatabase) {
   );
 }
 
+export type WorkoutStats = {
+  totalExercises: number;
+  totalSets: number;
+};
+
+async function getWorkoutStats(db: SQLiteDatabase, workoutId: number) {
+  return db.getFirstAsync<WorkoutStats>(
+    `
+    SELECT 
+      (SELECT COUNT(*) FROM exercise WHERE workout_id = w.id) AS totalExercises,
+      (SELECT COUNT(*) 
+        FROM exercise e 
+        JOIN exercise_set es ON e.id = es.exercise_id 
+        WHERE e.workout_id = w.id
+      ) AS totalSets
+    FROM 
+        workout w
+    WHERE 
+        w.id = ?;
+    `,
+    workoutId
+  );
+}
+
 export type AddNewWorkoutArgsObj = {
   db: SQLiteDatabase;
   title: string;
@@ -119,5 +143,6 @@ export {
   getWorkoutTagsAsync,
   getWorkoutsAsync,
   getWorkoutCount,
+  getWorkoutStats,
   addNewWorkout,
 };
