@@ -61,7 +61,7 @@ async function getWorkoutsAsync(db: SQLiteDatabase) {
   return db.getAllAsync<Workout>(
     `
     SELECT wk.id, wk.title FROM workout AS wk
-    WHERE wk.app_user_id = 1 AND wk.training_day_id IS NULL
+    WHERE wk.app_user_id = 1
     ORDER BY wk.id;
     `
   );
@@ -132,7 +132,7 @@ async function getWorkoutCount(db: SQLiteDatabase) {
       `
       SELECT count(id) AS workout_count
       FROM workout
-      WHERE app_user_id = 1 AND training_day_id IS NULL;
+      WHERE app_user_id = 1;
       `
     )
     .then((tableRow) => tableRow?.workout_count ?? 0);

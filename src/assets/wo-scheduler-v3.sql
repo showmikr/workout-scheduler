@@ -51,12 +51,10 @@ CREATE TABLE IF NOT EXISTS "link_tag_workout" (
 CREATE TABLE IF NOT EXISTS "workout" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
-  "training_day_id" bigint,
   "title" text NOT NULL,
   "list_order" int NOT NULL,
   "last_session" text, -- (represents ISO Date as string)
-  FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY ("training_day_id") REFERENCES "training_day" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "workout_days" (
@@ -183,21 +181,6 @@ CREATE TABLE IF NOT EXISTS "pr_history" (
   FOREIGN KEY ("exercise_class_id") REFERENCES "exercise_class" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS "training_cycle" (
-  "id" INTEGER PRIMARY KEY,
-  "app_user_id" bigint NOT NULL,
-  "title" text NOT NULL,
-  "list_order" int NOT NULL,
-  FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "training_day" (
-  "id" INTEGER PRIMARY KEY,
-  "training_cycle_id" bigint NOT NULL,
-  "list_order" int NOT NULL,
-  FOREIGN KEY ("training_cycle_id") REFERENCES "training_cycle" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
 -- END OF CREATE STATEMENTS --
 
 
@@ -216,30 +199,11 @@ INSERT INTO app_user (aws_cognito_sub, first_name, last_name, user_name, email, 
   VALUES
 	('c8bf7e34-7dcf-11ee-b962-0242ac120002', 'David', 'Shcherbina', 'kalashnikov', 'davidshcherbina@gmail.com', true, null, '2022-05-07T14:12:34.000Z', '2023-11-07T19:12:34.000Z', 150, 79.37866, 1.8288);
 
-INSERT INTO training_cycle (app_user_id, title, list_order)
+INSERT INTO workout (app_user_id, title, list_order, last_session)
     VALUES
-    (1, 'Weekly Workout Cycle', 1);
-
-INSERT INTO training_day (training_cycle_id, list_order)
-    VALUES
-    (1, 1),
-    (1, 2),
-    (1, 3),
-    (1, 4),
-    (1, 5),
-    (1, 6),
-    (1, 7);
-
-INSERT INTO workout (app_user_id, training_day_id, title, list_order, last_session)
-    VALUES
-    (1, NULL,   'Upperbody',                1,  '2023-11-28T22:40:00.000Z'),
-    (1, NULL,   'Legday workout + core',    2,  '2023-12-02T17:15:00.000Z'),
-    (1, NULL,   'Warmup Stretches',         3,  '2022-11-28T22:40:00.000Z'),
-
-    (1, 2,      'Warmup Stretches',         1,  '2022-11-28T22:40:00.000Z'),
-    (1, 2,      'Upperbody',                2,  '2023-11-28T22:40:00.000Z'),
-    (1, 6,      'Warmup Stretches',         1,  '2022-11-28T23:30:00.000Z'),
-    (1, 6,      'Legday workout + core',    2,  '2023-12-02T17:15:00.000Z');
+    (1, 'Upperbody',                1,  '2023-11-28T22:40:00.000Z'),
+    (1, 'Legday workout + core',    2,  '2023-12-02T17:15:00.000Z'),
+    (1, 'Warmup Stretches',         3,  '2022-11-28T22:40:00.000Z');
 
 INSERT INTO workout_tag (app_user_id, title)
     VALUES
@@ -251,8 +215,7 @@ INSERT INTO link_tag_workout (workout_tag_id, workout_id)
     (1, 1),
     (1, 3),
     (2, 2),
-    (2, 3),
-    (2, 4);
+    (2, 3);
 
 INSERT INTO exercise_type (title)
     VALUES
