@@ -1,18 +1,12 @@
 import { SQLiteDatabase } from "expo-sqlite";
-import {
-  exerciseEnums,
-  ExerciseEnums,
-  ResistanceSection,
-} from "@/utils/exercise-types";
-import { ExerciseClass } from "../../sqlite-types";
-import { Mandatory } from "@/utils/utility-types";
+import { exerciseEnums, ResistanceSection } from "@/utils/exercise-types";
 import { getResistanceSets } from "./query-sets";
 
-export type AddExerciseCardParams = Pick<
-  Mandatory<ExerciseClass>,
-  "id" | "exercise_type_id" | "title"
->;
-
+export type AddExerciseCardParams = {
+  id: number;
+  exercise_type_id: number;
+  title: string;
+};
 const getExerciseClasses = async (db: SQLiteDatabase) => {
   return await db.getAllAsync<AddExerciseCardParams>(
     `

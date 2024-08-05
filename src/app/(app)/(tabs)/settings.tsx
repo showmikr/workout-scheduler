@@ -10,7 +10,6 @@ import { deleteDB } from "@/utils/db-utils";
 import { ThemedText, ThemedView } from "@/components/Themed";
 import { useSession } from "@/context/session-provider";
 import { useState } from "react";
-import { AppUser } from "../../../../sqlite-types";
 import { Link } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { twColors } from "@/constants/Colors";
@@ -28,14 +27,19 @@ export default function TabOneScreen() {
     console.log(results);
   };
 
+  type UserFields = {
+    id: number;
+    first_name: string;
+    last_name: string;
+    user_name: string;
+    email: string;
+    creation_date: string;
+  };
+
   const colorScheme = useColorScheme();
   const { signOut, session } = useSession();
-  const [userData, setUserData] = useState<Partial<AppUser> | null>(null);
+  const [userData, setUserData] = useState<UserFields | null>(null);
   const db = useSQLiteContext();
-  type SelectFields = Pick<
-    AppUser,
-    "id" | "first_name" | "last_name" | "user_name" | "email" | "creation_date"
-  >;
 
   if (!session) {
     throw new Error("session is null despite being in page that requires auth");
@@ -43,7 +47,7 @@ export default function TabOneScreen() {
 
   if (!userData) {
     const subjectClaim: string = session.subjectClaim;
-    db.getFirstAsync<SelectFields>(
+    db.getFirstAsync<UserFields>(
       "SELECT id, first_name, last_name, user_name, email, creation_date FROM app_user WHERE aws_cognito_sub = ?",
       [subjectClaim]
     ).then((result) => {
@@ -80,8 +84,8 @@ export default function TabOneScreen() {
         Object.entries(userData).map(([key, value]) => (
           <ThemedText style={styles.userTableText} key={key}>
             {key}:{" "}
-            {key === "creation_date" ?
-              new Date(value as string).toDateString()
+            {key === "creation_date" && typeof value === "string" ?
+              new Date(value).toDateString()
             : value}
           </ThemedText>
         ))}
