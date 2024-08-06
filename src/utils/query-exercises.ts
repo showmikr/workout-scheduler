@@ -1,7 +1,7 @@
 import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
 import { exerciseEnums, ResistanceSection } from "@/utils/exercise-types";
 import { getResistanceSets } from "./query-sets";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export type AddExerciseCardParams = {
   id: number;
@@ -35,14 +35,15 @@ const addExercise = async (
     workoutId
   )) ?? { exercise_count: 0 };
 
-  const runResult = await db.runAsync(
+  const result = await db.getFirstAsync<{ exercise_id: number }>(
     `
     INSERT INTO exercise (exercise_class_id, workout_id, list_order)
-    VALUES (?, ?, ?);
+    VALUES (?, ?, ?)
+    RETURNING exercise.id AS exercise_id;
     `,
     [exerciseClass.id, workoutId, exercise_count + 1]
   );
-  return runResult;
+  return result;
 };
 
 /**
@@ -54,11 +55,11 @@ const addExercise = async (
  */
 const getResistanceExerciseIds = async (
   db: SQLiteDatabase,
-  workoutId: string
+  workoutId: number
 ) => {
-  const exerciseIds = await db.getAllAsync<{ exercise_id: number }>(
+  return await db.getAllAsync<{ exercise_id: number }>(
     `
-    SELECT id AS exercise_id
+    SELECT exercise.id AS exercise_id
     FROM exercise
     INNER JOIN exercise_class ON exercise.exercise_class_id = exercise_class.id
     WHERE workout_id = ? AND exercise_class.exercise_type_id = ?
@@ -96,7 +97,7 @@ const getResistanceSection = async (
     `,
       [exerciseId, exerciseEnums.RESISTANCE_ENUM]
     ),
-    getResistanceSets(db, exerciseId.toString()),
+    getResistanceSets(db, exerciseId),
   ]);
   if (!exercise) {
     throw new Error("Exercise not found");
@@ -105,6 +106,25 @@ const getResistanceSection = async (
     ...exercise,
     sets,
   };
+};
+
+const useResistanceExerciseIds = (db: SQLiteDatabase, workoutId: number) => {
+  return useQuery({
+    queryKey: ["exercise-ids", workoutId],
+    queryFn: () => getResistanceExerciseIds(db, workoutId),
+  });
+};
+
+const useResistanceSection = <TSelected = ResistanceSection>(
+  exerciseId: number,
+  select?: (data: ResistanceSection) => TSelected
+) => {
+  const db = useSQLiteContext();
+  return useQuery({
+    queryKey: ["resistance-section", exerciseId],
+    queryFn: () => getResistanceSection(db, exerciseId),
+    select,
+  });
 };
 
 const getResistanceSections = async (
@@ -125,7 +145,7 @@ const getResistanceSections = async (
 
   const exerciseSections = await Promise.all(
     exerciseRows.map(async (exercise) => {
-      const sets = await getResistanceSets(db, exercise.exercise_id.toString());
+      const sets = await getResistanceSets(db, exercise.exercise_id);
       return {
         ...exercise,
         sets,
@@ -136,16 +156,15 @@ const getResistanceSections = async (
 };
 
 const deleteExercise = async (db: SQLiteDatabase, exerciseId: number) => {
-  const result = await db.runAsync(
-    `DELETE FROM exercise WHERE id = ?`,
+  const result = await db.getFirstAsync<{ exercise_id: number }>(
+    `
+    DELETE FROM exercise WHERE id = ?
+    RETURNING id AS exercise_id
+    `,
     exerciseId
   );
-  console.log(
-    "triggered delete exerciseId: " +
-      exerciseId +
-      ", rows deleted: " +
-      result.changes
-  );
+  console.log("triggered delete exerciseId: " + result?.exercise_id);
+  return result;
 };
 
 /**
@@ -154,7 +173,7 @@ const deleteExercise = async (db: SQLiteDatabase, exerciseId: number) => {
  * @param workoutId - The ID of the workout that the exercise belongs to.
  * @returns A mutation function that can be used to delete an exercise, and objects containing the mutation state and callbacks.
  */
-const useDeleteExerciseMutation = (workoutId: string) => {
+const useDeleteExerciseMutation = (workoutId: number, exerciseId: number) => {
   const db = useSQLiteContext();
   const queryClient = useQueryClient();
   return useMutation({
@@ -164,9 +183,16 @@ const useDeleteExerciseMutation = (workoutId: string) => {
       console.error(error);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["exercise-sections", workoutId],
-      });
+      queryClient
+        .invalidateQueries({
+          queryKey: ["exercise-ids", workoutId],
+        })
+        .then(() => {
+          queryClient.removeQueries({
+            queryKey: ["resistance-section", exerciseId],
+            exact: true,
+          });
+        });
       queryClient.invalidateQueries({
         queryKey: ["workout-stats", workoutId],
       });
@@ -180,4 +206,6 @@ export {
   addExercise,
   deleteExercise,
   useDeleteExerciseMutation,
+  useResistanceExerciseIds,
+  useResistanceSection,
 };

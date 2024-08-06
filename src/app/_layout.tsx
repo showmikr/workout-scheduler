@@ -62,6 +62,7 @@ export default function RootLayout() {
             </BottomSheetModalProvider>
           </GestureHandlerRootView>
         </SessionProvider>
+        {/* <DevToolsBubble /> Use for debugging react-query */}
       </QueryClientProvider>
     </ThemeProvider>
   );

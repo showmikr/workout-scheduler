@@ -18,14 +18,16 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { CardOptionsUnderlay } from "./CardUnderlay";
-import { useDeleteExerciseMutation } from "@/utils/query-exercises";
+import {
+  useDeleteExerciseMutation,
+  useResistanceSection,
+} from "@/utils/query-exercises";
 
-type ExerciseCardProps = {
-  workoutId: string;
+const ExerciseContentContainer = ({
+  exercise,
+}: {
   exercise: ResistanceSection;
-};
-
-const ExerciseContentContainer = ({ exercise }: ExerciseCardProps) => {
+}) => {
   return (
     <View
       style={{
@@ -89,7 +91,7 @@ function ExercisePressableContainer({
   children,
 }: {
   exercise: ResistanceSection;
-  workoutId: string;
+  workoutId: number;
   children: React.ReactElement;
 }) {
   const animatedOpacity = useSharedValue(1);
@@ -137,11 +139,20 @@ function ExercisePressableContainer({
   );
 }
 
-const ExerciseCard = ({ workoutId, exercise }: ExerciseCardProps) => {
-  const deleteMutation = useDeleteExerciseMutation(workoutId);
+const ExerciseCard = ({
+  workoutId,
+  exerciseId,
+}: {
+  workoutId: number;
+  exerciseId: number;
+}) => {
+  const deleteMutation = useDeleteExerciseMutation(workoutId, exerciseId);
+  const { data: exercise } = useResistanceSection(exerciseId);
   const deleteExercise = () => {
-    deleteMutation.mutate({ exerciseId: exercise.exercise_id });
+    deleteMutation.mutate({ exerciseId });
   };
+  if (!exercise) return null;
+
   return (
     <Swipeable
       renderRightActions={(_progress, dragX) => (
@@ -152,7 +163,7 @@ const ExerciseCard = ({ workoutId, exercise }: ExerciseCardProps) => {
       dragOffsetFromLeftEdge={30}
     >
       <ExercisePressableContainer workoutId={workoutId} exercise={exercise}>
-        <ExerciseContentContainer workoutId={workoutId} exercise={exercise} />
+        <ExerciseContentContainer exercise={exercise} />
       </ExercisePressableContainer>
     </Swipeable>
   );

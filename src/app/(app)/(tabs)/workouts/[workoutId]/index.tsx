@@ -10,8 +10,7 @@ import {
 import { twColors } from "@/constants/Colors";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import { ThemedText, ThemedView } from "@/components/Themed";
-import { useQuery } from "@tanstack/react-query";
-import { getResistanceSections } from "@/utils/query-exercises";
+import { useResistanceExerciseIds } from "@/utils/query-exercises";
 import WorkoutHeader from "@/components/WorkoutHeader";
 import FloatingAddButton, {
   floatingAddButtonStyles,
@@ -32,12 +31,13 @@ export default function WorkoutDetails() {
   if (!workoutId || !workoutTitle) {
     throw new Error("Workout ID or title not provided. This should not happen");
   }
+  const workoutIdNumber = parseInt(workoutId);
+  if (isNaN(workoutIdNumber)) {
+    throw new Error("Workout ID is not a number. This should not happen");
+  }
 
   const db = useSQLiteContext();
-  const { data: sectionData } = useQuery({
-    queryKey: ["exercise-sections", workoutId],
-    queryFn: () => getResistanceSections(db, workoutId),
-  });
+  const { data: exerciseIds } = useResistanceExerciseIds(db, workoutIdNumber);
 
   const onPressFloatingAddBtn = () => {
     router.push({
@@ -46,7 +46,7 @@ export default function WorkoutDetails() {
     });
   };
 
-  if (!sectionData) {
+  if (!exerciseIds) {
     return (
       <ThemedView style={styles.rootView}>
         <SafeAreaView style={[styles.safeAreaView, { alignItems: "center" }]}>
@@ -56,7 +56,7 @@ export default function WorkoutDetails() {
     );
   }
 
-  if (sectionData.length === 0) {
+  if (exerciseIds.length === 0) {
     return (
       <ThemedView style={styles.rootView}>
         <SafeAreaView style={styles.emptyView}>
@@ -86,10 +86,13 @@ export default function WorkoutDetails() {
               style={floatingAddButtonStyles.blankSpaceMargin}
             ></ThemedView>
           }
-          data={sectionData}
+          data={exerciseIds}
           keyExtractor={(item) => item.exercise_id.toString()}
           renderItem={({ item }) => (
-            <ExerciseCard workoutId={workoutId} exercise={item} />
+            <ExerciseCard
+              workoutId={workoutIdNumber}
+              exerciseId={item.exercise_id}
+            />
           )}
         />
         <FloatingAddButton onPress={onPressFloatingAddBtn} />

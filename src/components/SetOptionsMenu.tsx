@@ -15,12 +15,13 @@ import GenericBottomSheet from "./GenericBottomSheet";
 const SetOptionsMenu = forwardRef(
   (
     props: {
-      workoutId: string;
+      workoutId: number;
+      exerciseId: number;
       exerciseSet: UnifiedResistanceSet;
     },
     ref: React.Ref<BottomSheetModal>
   ) => {
-    const { workoutId, exerciseSet } = props;
+    const { workoutId, exerciseId, exerciseSet } = props;
     const snapPoints = useMemo(() => ["25%"], []);
     const db = useSQLiteContext();
     const thisModal = useBottomSheetModal();
@@ -37,7 +38,7 @@ const SetOptionsMenu = forwardRef(
           result?.positionsModified
         );
         queryClient.invalidateQueries({
-          queryKey: ["exercise-sections", workoutId],
+          queryKey: ["resistance-section", exerciseId],
         });
         queryClient.invalidateQueries({
           queryKey: ["workout-stats", workoutId],

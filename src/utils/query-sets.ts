@@ -1,10 +1,16 @@
-import { SQLiteDatabase, SQLiteRunResult } from "expo-sqlite";
-import { UnifiedCardioSet, UnifiedResistanceSet } from "./exercise-types";
-import { rem } from "nativewind";
+import { SQLiteDatabase } from "expo-sqlite";
+import {
+  ExerciseSetParams,
+  ResistanceSection,
+  ResistanceSetParams,
+  UnifiedCardioSet,
+  UnifiedResistanceSet,
+} from "./exercise-types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const getResistanceSets = async (
   db: SQLiteDatabase,
-  exerciseId: string
+  exerciseId: number
 ): Promise<UnifiedResistanceSet[]> => {
   return db.getAllAsync<UnifiedResistanceSet>(
     `
@@ -116,12 +122,13 @@ const addResistanceSet = async ({
   db: SQLiteDatabase;
   exerciseId: number;
 }) => {
-  db.withTransactionAsync(async () => {
-    const setInsert = await db.getFirstAsync<{ exercise_set_id: number }>(
+  let output: UnifiedResistanceSet | null = null;
+  await db.withTransactionAsync(async () => {
+    const setInsert = await db.getFirstAsync<ExerciseSetParams>(
       `
       INSERT INTO exercise_set (exercise_id, list_order)
       VALUES (?, (SELECT COUNT(*) FROM exercise_set WHERE exercise_id = ?) + 1)
-      RETURNING id AS exercise_set_id;
+      RETURNING id AS exercise_set_id, list_order, reps, rest_time, title;
       `,
       [exerciseId, exerciseId]
     );
@@ -129,21 +136,47 @@ const addResistanceSet = async ({
     if (!exerciseSetId) {
       throw new Error("Could not insert row into exercise_set table");
     }
-    const restistanceSetInsert = await db.getFirstAsync<{
-      exercise_set_id: number;
-      resistance_set_id: number;
-    }>(
+    const restistanceSetInsert = await db.getFirstAsync<ResistanceSetParams>(
       `
       INSERT INTO resistance_set (exercise_set_id, total_weight)
       VALUES (?, 0)
-      RETURNING exercise_set_id, id AS resistance_set_id;
+      RETURNING id AS resistance_set_id, total_weight;;
       `,
       [exerciseSetId]
     );
     if (!restistanceSetInsert) {
       throw new Error("Could not insert row into exercise_set table");
     }
-    console.log("set inserted", restistanceSetInsert);
+    output = {
+      ...setInsert,
+      ...restistanceSetInsert,
+    };
+  });
+  return output as UnifiedResistanceSet | null;
+};
+
+const useAddSetMutation = (workoutId: number, exerciseId: number) => {
+  const queryClient = useQueryClient();
+  const resistanceSection = queryClient.getQueryData<ResistanceSection>([
+    "resistance-section",
+    exerciseId,
+  ]);
+  if (!resistanceSection) {
+    throw new Error("Could not find resistance section");
+  }
+  return useMutation({
+    mutationFn: addResistanceSet,
+    onError: (error) => {
+      console.error(error);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["resistance-section", exerciseId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workout-stats", workoutId],
+      });
+    },
   });
 };
 
@@ -188,6 +221,33 @@ const deleteSet = async ({
   return result as DeleteSetResult | null;
 };
 
+const useDeleteSetMutation = (workoutId: number, exerciseId: number) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteSet,
+    onError: (error) => {
+      console.error(error);
+    },
+    onSuccess: (result) => {
+      console.log(
+        "Deleted exercise set: %s, positions modified: %s",
+        result?.exerciseSetId,
+        result?.positionsModified
+      );
+      queryClient
+        .invalidateQueries({
+          queryKey: ["resistance-section", exerciseId],
+        })
+        .then(() => {
+          console.log("invalidated resistance-section");
+        });
+      queryClient.invalidateQueries({
+        queryKey: ["workout-stats", workoutId],
+      });
+    },
+  });
+};
+
 // Will remain unused until we have cardio exercises
 const getCardioSets = async (
   db: SQLiteDatabase,
@@ -219,4 +279,6 @@ export {
   updateExerciseSetRestTime,
   addResistanceSet,
   deleteSet,
+  useAddSetMutation,
+  useDeleteSetMutation,
 };

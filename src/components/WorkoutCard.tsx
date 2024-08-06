@@ -14,7 +14,7 @@ export default function WorkoutCard(props: WorkoutCardProps) {
   const { id: workoutId, title } = props.workout;
   const db = useSQLiteContext();
   const { data: workoutStats } = useQuery({
-    queryKey: ["workout-stats", workoutId.toString()],
+    queryKey: ["workout-stats", workoutId],
     queryFn: () => getWorkoutStats(db, workoutId),
   });
   return (

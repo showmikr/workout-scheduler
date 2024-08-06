@@ -30,6 +30,12 @@ export default function AddExerciseIndex() {
     );
   }
 
+  const workoutIdNumber = parseInt(workoutId);
+  if (isNaN(workoutIdNumber)) {
+    throw new Error(`workoutId is not a number. This should never happen. \
+      workoutId: ${workoutId}, workoutTitle: ${workoutTitle}`);
+  }
+
   const db = useSQLiteContext();
   const queryClient = useQueryClient();
   // TODO: handle when query errors out
@@ -51,10 +57,10 @@ export default function AddExerciseIndex() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["exercise-sections", workoutId],
+        queryKey: ["exercise-ids", workoutIdNumber],
       });
       queryClient.invalidateQueries({
-        queryKey: ["workout-stats", workoutId],
+        queryKey: ["workout-stats", workoutIdNumber],
       });
     },
   });

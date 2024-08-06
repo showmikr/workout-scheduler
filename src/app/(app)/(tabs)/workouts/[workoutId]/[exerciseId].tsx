@@ -6,8 +6,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  Button,
 } from "react-native";
-import { ThemedText, ThemedTextInput, ThemedView } from "@/components/Themed";
+import { ThemedText, ThemedTextInput } from "@/components/Themed";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import {
@@ -15,13 +16,13 @@ import {
   UnifiedResistanceSet,
 } from "@/utils/exercise-types";
 import { twColors } from "@/constants/Colors";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TableRow } from "@/components/Table";
 import {
   updateResistanceSetReps,
   updateExerciseSetReps,
   updateExerciseSetRestTime,
-  addResistanceSet,
+  useAddSetMutation,
 } from "@/utils/query-sets";
 import FloatingAddButton, {
   floatingAddButtonStyles,
@@ -31,6 +32,7 @@ import BottomMenu from "@/components/SetOptionsMenu";
 import { useCallback, useRef } from "react";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { immediateDebounce } from "@/utils/debounce-utils";
+import { useResistanceSection } from "@/utils/query-exercises";
 
 const REPS_ROW_FLEX = 9;
 const WEIGHT_ROW_FLEX = 10;
@@ -72,15 +74,25 @@ export default function ExerciseDetails() {
   if (!(exerciseId && title && workoutId)) {
     throw new Error(`exerciseId is undefined. This should never happen`);
   }
+  const exerciseIdNumber = parseInt(exerciseId);
+  const workoutIdNumber = parseInt(workoutId);
+  if (isNaN(exerciseIdNumber) || isNaN(workoutIdNumber)) {
+    throw new Error(
+      `exerciseId or workoutId is not a number. This should never happen`
+    );
+  }
   const queryClient = useQueryClient();
   const db = useSQLiteContext();
+  const selectSets = useCallback((data: ResistanceSection) => data.sets, []);
+  const { data: resistanceSets } = useResistanceSection(
+    exerciseIdNumber,
+    selectSets
+  );
 
-  const { data: resistanceSets } = useQuery({
-    queryKey: ["exercise-sections", workoutId],
-    select: (data: ResistanceSection[]) =>
-      data.find((exercise) => exercise.exercise_id.toString() === exerciseId)
-        ?.sets,
-  });
+  const { mutate: addSet } = useAddSetMutation(
+    workoutIdNumber,
+    exerciseIdNumber
+  );
 
   const repsMutation = useMutation({
     mutationFn: updateResistanceSetReps,
@@ -94,7 +106,7 @@ export default function ExerciseDetails() {
         : "No data returned from updateResistanceSetReps"
       );
       queryClient.invalidateQueries({
-        queryKey: ["exercise-sections", workoutId],
+        queryKey: ["resistance-section", exerciseIdNumber],
       });
     },
   });
@@ -111,7 +123,7 @@ export default function ExerciseDetails() {
         : "No data returned from updateResistanceSetWeight"
       );
       queryClient.invalidateQueries({
-        queryKey: ["exercise-sections", workoutId],
+        queryKey: ["resistance-section", exerciseIdNumber],
       });
     },
   });
@@ -128,22 +140,7 @@ export default function ExerciseDetails() {
         : "No data returned from updateResistanceSetRestTime"
       );
       queryClient.invalidateQueries({
-        queryKey: ["exercise-sections", workoutId],
-      });
-    },
-  });
-
-  const addSetMutation = useMutation({
-    mutationFn: addResistanceSet,
-    onError: (error) => {
-      console.error(error);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["exercise-sections", workoutId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["workout-stats", workoutId],
+        queryKey: ["resistance-section", exerciseIdNumber],
       });
     },
   });
@@ -155,10 +152,7 @@ export default function ExerciseDetails() {
   // of a useCallback b/c the immediate debounce function has internal state
   // that should not be refreshed on re-renders to ensure the time delay
   // doesn't reset on each render
-  const debouncedAddSet = useCallback(
-    immediateDebounce(addSetMutation.mutate, 400),
-    [addSetMutation.mutate]
-  );
+  const debouncedAddSet = useCallback(immediateDebounce(addSet, 400), [addSet]);
 
   // If all the exercise set data isn't fully loaded, display a loading screen
   if (!resistanceSets) {
@@ -209,7 +203,8 @@ export default function ExerciseDetails() {
               return (
                 <ResistanceSet
                   set={set}
-                  workoutId={workoutId}
+                  workoutId={workoutIdNumber}
+                  exerciseId={exerciseIdNumber}
                   onRepsChange={(reps) =>
                     repsMutation.mutate({
                       db,
@@ -239,14 +234,7 @@ export default function ExerciseDetails() {
         </ScrollView>
         <FloatingAddButton
           onPress={() => {
-            const idNumber = parseInt(exerciseId);
-            if (isNaN(idNumber)) {
-              console.error(
-                "Could not parse exerciseId as number for adding set"
-              );
-              return;
-            }
-            debouncedAddSet({ db, exerciseId: idNumber });
+            debouncedAddSet({ db, exerciseId: exerciseIdNumber });
           }}
         />
       </SafeAreaView>
@@ -257,12 +245,14 @@ export default function ExerciseDetails() {
 const ResistanceSet = ({
   set,
   workoutId,
+  exerciseId,
   onRepsChange,
   onWeightChange,
   onRestTimeChange,
 }: {
   set: UnifiedResistanceSet;
-  workoutId: string;
+  workoutId: number;
+  exerciseId: number;
   onRepsChange: (reps: number) => void;
   onWeightChange: (weight: number) => void;
   onRestTimeChange: (restTime: number) => void;
@@ -271,7 +261,12 @@ const ResistanceSet = ({
   const optionsSheet = useRef<BottomSheetModal>(null);
   return (
     <TableRow style={{ marginBottom: 2 * 14 }}>
-      <BottomMenu workoutId={workoutId} ref={optionsSheet} exerciseSet={set} />
+      <BottomMenu
+        exerciseId={exerciseId}
+        workoutId={workoutId}
+        ref={optionsSheet}
+        exerciseSet={set}
+      />
       <View style={[styles.inline, { flex: REPS_ROW_FLEX }]}>
         <ThemedTextInput
           inputMode="numeric"
