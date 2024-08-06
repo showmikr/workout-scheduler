@@ -1,6 +1,7 @@
-import { SQLiteDatabase } from "expo-sqlite";
+import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
 import { exerciseEnums, ResistanceSection } from "@/utils/exercise-types";
 import { getResistanceSets } from "./query-sets";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export type AddExerciseCardParams = {
   id: number;
@@ -86,9 +87,36 @@ const deleteExercise = async (db: SQLiteDatabase, exerciseId: number) => {
   );
 };
 
+/**
+ * A custom React hook that provides a mutation function to delete an exercise from a workout.
+ *
+ * @param workoutId - The ID of the workout that the exercise belongs to.
+ * @returns A mutation function that can be used to delete an exercise, and objects containing the mutation state and callbacks.
+ */
+const useDeleteExerciseMutation = (workoutId: string) => {
+  const db = useSQLiteContext();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ exerciseId }: { exerciseId: number }) =>
+      deleteExercise(db, exerciseId),
+    onError: (error) => {
+      console.error(error);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["exercise-sections", workoutId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workout-stats", workoutId],
+      });
+    },
+  });
+};
+
 export {
   getExerciseClasses,
   getResistanceSections,
   addExercise,
   deleteExercise,
+  useDeleteExerciseMutation,
 };

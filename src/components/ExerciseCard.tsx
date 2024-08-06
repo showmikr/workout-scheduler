@@ -18,9 +18,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { CardOptionsUnderlay } from "./CardUnderlay";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
-import { deleteExercise } from "@/utils/query-exercises";
+import { useDeleteExerciseMutation } from "@/utils/query-exercises";
 
 type ExerciseCardProps = {
   workoutId: string;
@@ -140,37 +138,14 @@ function ExercisePressableContainer({
 }
 
 const ExerciseCard = ({ workoutId, exercise }: ExerciseCardProps) => {
-  const db = useSQLiteContext();
-  const queryClient = useQueryClient();
-  const deleteMutation = useMutation({
-    mutationFn: ({
-      db,
-      exerciseId,
-    }: {
-      db: SQLiteDatabase;
-      exerciseId: number;
-    }) => deleteExercise(db, exerciseId),
-    onError: (error) => {
-      console.error(error);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["exercise-sections", workoutId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["workout-stats", workoutId],
-      });
-    },
-  });
+  const deleteMutation = useDeleteExerciseMutation(workoutId);
+  const deleteExercise = () => {
+    deleteMutation.mutate({ exerciseId: exercise.exercise_id });
+  };
   return (
     <Swipeable
       renderRightActions={(_progress, dragX) => (
-        <CardOptionsUnderlay
-          dragX={dragX}
-          onPress={() =>
-            deleteMutation.mutate({ db, exerciseId: exercise.exercise_id })
-          }
-        />
+        <CardOptionsUnderlay dragX={dragX} onPress={deleteExercise} />
       )}
       friction={1.8}
       rightThreshold={20}
