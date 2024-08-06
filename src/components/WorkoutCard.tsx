@@ -5,7 +5,7 @@ import { ThemedText } from "@/components/Themed";
 import ResistanceIcon from "@/assets/icons/resistance_icon_grey.svg";
 import { FontAwesome6 } from "@expo/vector-icons";
 import { Swipeable } from "react-native-gesture-handler";
-import { CardOptionsUnderlay } from "./ExerciseSwipeable";
+import { CardOptionsUnderlay } from "./CardUnderlay";
 import { useQuery } from "@tanstack/react-query";
 import { useSQLiteContext } from "expo-sqlite";
 type WorkoutCardProps = { workout: Workout; tags: string[] };

@@ -1,14 +1,26 @@
-import {
-  PressableProps,
-  StyleSheet,
-  TextStyle,
-  View,
-  ViewStyle,
-} from "react-native";
+import { StyleSheet, TextStyle, View } from "react-native";
 import { twColors } from "@/constants/Colors";
 import { ResistanceSection, UnifiedCardioSet } from "@/utils/exercise-types";
 import { ThemedText } from "@/components/Themed";
 import { TableRow } from "@/components/Table";
+import {
+  Gesture,
+  GestureDetector,
+  Swipeable,
+} from "react-native-gesture-handler";
+import { router } from "expo-router";
+import Animated, {
+  interpolateColor,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
+import { CardOptionsUnderlay } from "./CardUnderlay";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
+import { deleteExercise } from "@/utils/query-exercises";
 
 const CardioSetList = ({ sets }: { sets: UnifiedCardioSet[] }) => {
   return (
@@ -29,14 +41,11 @@ const CardioSetList = ({ sets }: { sets: UnifiedCardioSet[] }) => {
 };
 
 type ExerciseCardProps = {
-  workoutId: number;
+  workoutId: string;
   exercise: ResistanceSection;
-} & PressableProps;
+};
 
-const ExerciseCard = ({
-  workoutId,
-  exercise,
-}: Omit<ExerciseCardProps, "PressableProps">) => {
+const ExerciseContentContainer = ({ exercise }: ExerciseCardProps) => {
   return (
     <View
       style={{
@@ -91,6 +100,104 @@ const ExerciseCard = ({
         )
       )}
     </View>
+  );
+};
+
+function ExercisePressableContainer({
+  exercise,
+  workoutId,
+  children,
+}: {
+  exercise: ResistanceSection;
+  workoutId: string;
+  children: React.ReactElement;
+}) {
+  const animatedOpacity = useSharedValue(1);
+  const colorTransitionProgress = useSharedValue(0);
+  const animStyles = useAnimatedStyle(() => {
+    return {
+      opacity: animatedOpacity.value,
+      backgroundColor: interpolateColor(
+        colorTransitionProgress.value,
+        [0, 1],
+        // initial backgroundColor = twColors.neutral950
+        ["rgb(10, 10, 10)", "rgb(32, 32, 32)"]
+      ),
+    };
+  });
+  const onPressHandler = () => {
+    router.push({
+      pathname: "workouts/[workoutId]/[exerciseId]",
+      params: {
+        workoutId: workoutId,
+        exerciseId: exercise.exercise_id,
+        title: exercise.title,
+      },
+    });
+  };
+  const gesture = Gesture.Tap()
+    .maxDeltaX(10)
+    .onStart(() => {
+      animatedOpacity.value = withSequence(
+        withTiming(0.7, { duration: 75 }),
+        withTiming(1, { duration: 125 })
+      );
+      colorTransitionProgress.value = withSequence(
+        withTiming(1, { duration: 75 }),
+        withTiming(0, { duration: 125 })
+      );
+    })
+    .onEnd(() => {
+      runOnJS(onPressHandler)();
+    });
+  return (
+    <GestureDetector gesture={gesture}>
+      <Animated.View style={[animStyles]}>{children}</Animated.View>
+    </GestureDetector>
+  );
+}
+
+const ExerciseCard = ({ workoutId, exercise }: ExerciseCardProps) => {
+  const db = useSQLiteContext();
+  const queryClient = useQueryClient();
+  const deleteMutation = useMutation({
+    mutationFn: ({
+      db,
+      exerciseId,
+    }: {
+      db: SQLiteDatabase;
+      exerciseId: number;
+    }) => deleteExercise(db, exerciseId),
+    onError: (error) => {
+      console.error(error);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["exercise-sections", workoutId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["workout-stats", workoutId],
+      });
+    },
+  });
+  return (
+    <Swipeable
+      renderRightActions={(_progress, dragX) => (
+        <CardOptionsUnderlay
+          dragX={dragX}
+          onPress={() =>
+            deleteMutation.mutate({ db, exerciseId: exercise.exercise_id })
+          }
+        />
+      )}
+      friction={1.8}
+      rightThreshold={20}
+      dragOffsetFromLeftEdge={30}
+    >
+      <ExercisePressableContainer workoutId={workoutId} exercise={exercise}>
+        <ExerciseContentContainer workoutId={workoutId} exercise={exercise} />
+      </ExercisePressableContainer>
+    </Swipeable>
   );
 };
 
