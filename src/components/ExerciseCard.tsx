@@ -1,6 +1,6 @@
 import { StyleSheet, TextStyle, View } from "react-native";
 import { twColors } from "@/constants/Colors";
-import { ResistanceSection, UnifiedCardioSet } from "@/utils/exercise-types";
+import { ResistanceSection } from "@/utils/exercise-types";
 import { ThemedText } from "@/components/Themed";
 import { TableRow } from "@/components/Table";
 import {
@@ -21,24 +21,6 @@ import { CardOptionsUnderlay } from "./CardUnderlay";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
 import { deleteExercise } from "@/utils/query-exercises";
-
-const CardioSetList = ({ sets }: { sets: UnifiedCardioSet[] }) => {
-  return (
-    <>
-      {sets.map((set) => (
-        <ThemedText style={{ fontSize: 1.25 * 14 }}>
-          Reps: {set.reps}
-          {"    "}
-          Rest: {set.rest_time}s{"    "}
-          Target Distance:{" "}
-          {set.target_distance ? set.target_distance + "m" : "null"}
-          {"    "}
-          Target Time: {set.target_time ? set.target_time + "s" : "null"}
-        </ThemedText>
-      ))}
-    </>
-  );
-};
 
 type ExerciseCardProps = {
   workoutId: string;
