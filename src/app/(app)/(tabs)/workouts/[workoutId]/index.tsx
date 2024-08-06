@@ -152,7 +152,7 @@ export default function WorkoutDetails() {
     },
   });
 
-  const onPresFloatingAddBtn = () => {
+  const onPressFloatingAddBtn = () => {
     router.push({
       pathname: "/workouts/add-exercise",
       params: { workoutId: workoutId, workoutTitle: workoutTitle },
@@ -182,7 +182,7 @@ export default function WorkoutDetails() {
           >
             Wow, much empty...
           </ThemedText>
-          <FloatingAddButton onPress={onPresFloatingAddBtn} />
+          <FloatingAddButton onPress={onPressFloatingAddBtn} />
         </SafeAreaView>
       </ThemedView>
     );
@@ -219,7 +219,7 @@ export default function WorkoutDetails() {
             </Swipeable>
           )}
         />
-        <FloatingAddButton onPress={onPresFloatingAddBtn} />
+        <FloatingAddButton onPress={onPressFloatingAddBtn} />
       </SafeAreaView>
     </ThemedView>
   );
