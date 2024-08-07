@@ -20,7 +20,7 @@ function OverlaySeparator() {
   return <View style={styles.overlaySeparator} />;
 }
 
-export default function WorkoutDetails() {
+export default function ExercisesPage() {
   // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
   const searchParams = useLocalSearchParams<{
     workoutId: string;
