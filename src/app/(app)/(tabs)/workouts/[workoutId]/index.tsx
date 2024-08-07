@@ -15,6 +15,7 @@ import WorkoutHeader from "@/components/WorkoutHeader";
 import FloatingAddButton, {
   floatingAddButtonStyles,
 } from "@/components/FloatingAddButton";
+import { useCallback } from "react";
 
 function OverlaySeparator() {
   return <View style={styles.overlaySeparator} />;
@@ -35,71 +36,71 @@ export default function ExercisesPage() {
   if (isNaN(workoutIdNumber)) {
     throw new Error("Workout ID is not a number. This should not happen");
   }
-
   const db = useSQLiteContext();
   const { data: exerciseIds } = useResistanceExerciseIds(db, workoutIdNumber);
 
-  const onPressFloatingAddBtn = () => {
+  const onPressFloatingAddBtn = useCallback(() => {
     router.push({
       pathname: "/workouts/add-exercise",
       params: { workoutId: workoutId, workoutTitle: workoutTitle },
     });
-  };
-
-  if (!exerciseIds) {
-    return (
-      <ThemedView style={styles.rootView}>
-        <SafeAreaView style={[styles.safeAreaView, { alignItems: "center" }]}>
-          <ActivityIndicator color={twColors.neutral500} />
-        </SafeAreaView>
-      </ThemedView>
-    );
-  }
-
-  if (exerciseIds.length === 0) {
-    return (
-      <ThemedView style={styles.rootView}>
-        <SafeAreaView style={styles.emptyView}>
-          <ThemedText
-            style={{
-              fontSize: 1.875 * 14,
-              lineHeight: 2.25 * 14,
-              color: twColors.neutral500,
-            }}
-          >
-            Wow, much empty...
-          </ThemedText>
-          <FloatingAddButton onPress={onPressFloatingAddBtn} />
-        </SafeAreaView>
-      </ThemedView>
-    );
-  }
+  }, [workoutId, workoutTitle]);
 
   return (
     <ThemedView style={styles.rootView}>
+      <WorkoutHeader title={workoutTitle} />
       <SafeAreaView style={styles.safeAreaView}>
-        <FlatList
-          ListHeaderComponent={() => <WorkoutHeader title={workoutTitle} />}
-          ItemSeparatorComponent={OverlaySeparator}
-          ListFooterComponent={
-            <ThemedView
-              style={floatingAddButtonStyles.blankSpaceMargin}
-            ></ThemedView>
-          }
-          data={exerciseIds}
-          keyExtractor={(item) => item.exercise_id.toString()}
-          renderItem={({ item }) => (
-            <ExerciseCard
-              workoutId={workoutIdNumber}
-              exerciseId={item.exercise_id}
-            />
-          )}
-        />
+        {exerciseIds ?
+          <ExerciseList data={exerciseIds} workoutId={workoutIdNumber} />
+        : <ActivityIndicator
+            style={{ alignSelf: "center" }}
+            color={twColors.neutral500}
+          />
+        }
         <FloatingAddButton onPress={onPressFloatingAddBtn} />
       </SafeAreaView>
     </ThemedView>
   );
 }
+
+const ExerciseList = ({
+  data,
+  workoutId,
+}: {
+  data: { exercise_id: number }[];
+  workoutId: number;
+}) => {
+  if (data.length === 0) {
+    return (
+      <ThemedText
+        style={{
+          alignSelf: "center",
+          fontSize: 1.875 * 14,
+          lineHeight: 2.25 * 14,
+          color: twColors.neutral500,
+        }}
+      >
+        Wow, much empty...
+      </ThemedText>
+    );
+  }
+
+  return (
+    <FlatList
+      ItemSeparatorComponent={OverlaySeparator}
+      ListFooterComponent={
+        <ThemedView
+          style={floatingAddButtonStyles.blankSpaceMargin}
+        ></ThemedView>
+      }
+      data={data}
+      keyExtractor={(item) => item.exercise_id.toString()}
+      renderItem={({ item }) => (
+        <ExerciseCard workoutId={workoutId} exerciseId={item.exercise_id} />
+      )}
+    />
+  );
+};
 
 const styles = StyleSheet.create({
   rootView: {

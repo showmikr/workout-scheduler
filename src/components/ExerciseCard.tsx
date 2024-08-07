@@ -1,4 +1,4 @@
-import { StyleSheet, TextStyle, View } from "react-native";
+import { LayoutAnimation, StyleSheet, TextStyle, View } from "react-native";
 import { twColors } from "@/constants/Colors";
 import { ResistanceSection } from "@/utils/exercise-types";
 import { ThemedText } from "@/components/Themed";
@@ -22,6 +22,10 @@ import {
   useDeleteExerciseMutation,
   useResistanceSection,
 } from "@/utils/query-exercises";
+import { useCallback, useEffect, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import isEqual from "@/utils/is-equal";
+import { immediateDebounce } from "@/utils/debounce-utils";
 
 const ExerciseContentContainer = ({
   exercise,
@@ -146,17 +150,40 @@ const ExerciseCard = ({
   workoutId: number;
   exerciseId: number;
 }) => {
-  const deleteMutation = useDeleteExerciseMutation(workoutId, exerciseId);
+  const { mutate: deleteExercise } = useDeleteExerciseMutation(
+    workoutId,
+    exerciseId
+  );
   const { data: exercise } = useResistanceSection(exerciseId);
-  const deleteExercise = () => {
-    deleteMutation.mutate({ exerciseId });
-  };
-  if (!exercise) return null;
+  // Don't let user spam the delete button to trigger multiple deletes
+  const debouncedDelete = useCallback(
+    immediateDebounce(() => deleteExercise({ exerciseId }), 1000),
+    [exerciseId]
+  );
+
+  const queryClient = useQueryClient();
+  const queryKey = useMemo(
+    () => ["resistance-section", exerciseId] as const,
+    [exerciseId]
+  );
+  useEffect(() => {
+    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      if (
+        event.type === "observerRemoved" &&
+        isEqual(event.query.queryKey, queryKey)
+      ) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      }
+    });
+    return () => unsubscribe();
+  }, [queryClient, queryKey]);
+
+  if (!exercise) return null; // TODO: Add a loading state
 
   return (
     <Swipeable
       renderRightActions={(_progress, dragX) => (
-        <CardOptionsUnderlay dragX={dragX} onPress={deleteExercise} />
+        <CardOptionsUnderlay dragX={dragX} onPress={debouncedDelete} />
       )}
       friction={1.8}
       rightThreshold={20}

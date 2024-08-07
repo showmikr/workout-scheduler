@@ -2,6 +2,7 @@ import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
 import { exerciseEnums, ResistanceSection } from "@/utils/exercise-types";
 import { getResistanceSets } from "./query-sets";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { LayoutAnimation } from "react-native";
 
 export type AddExerciseCardParams = {
   id: number;
