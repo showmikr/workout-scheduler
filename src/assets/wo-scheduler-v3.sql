@@ -64,15 +64,25 @@ CREATE TABLE IF NOT EXISTS "workout_days" (
   FOREIGN KEY ("workout_id") REFERENCES "workout" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS "exercise_class" (
+  "id" INTEGER PRIMARY KEY,
+  "app_user_id" bigint NOT NULL,
+  "exercise_type_id" bigint NOT NULL,
+  "exercise_equipment_id" bigint,
+  "is_archived" boolean NOT NULL DEFAULT false,
+  "title" text NOT NULL,
+  FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY ("exercise_type_id") REFERENCES "exercise_type" ("id"),
+  FOREIGN KEY ("exercise_equipment_id") REFERENCES "exercise_equipment" ("id")
+);
+
 CREATE TABLE IF NOT EXISTS "exercise" (
   "id" INTEGER PRIMARY KEY,
   "exercise_class_id" bigint NOT NULL,
   "workout_id" bigint NOT NULL,
-  "exercise_equipment_id" bigint,
   "list_order" int NOT NULL,
   "initial_weight" real,
   "notes" text,
-  FOREIGN KEY ("exercise_equipment_id") REFERENCES "exercise_equipment" ("id"),
   FOREIGN KEY ("workout_id") REFERENCES "workout" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY ("exercise_class_id") REFERENCES "exercise_class" ("id") ON DELETE CASCADE
 );
@@ -160,16 +170,6 @@ CREATE TABLE IF NOT EXISTS "user_bodyweight" (
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS "exercise_class" (
-  "id" INTEGER PRIMARY KEY,
-  "app_user_id" bigint NOT NULL,
-  "exercise_type_id" bigint NOT NULL,
-  "is_archived" boolean NOT NULL DEFAULT false,
-  "title" text NOT NULL,
-  FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY ("exercise_type_id") REFERENCES "exercise_type" ("id")
-);
-
 CREATE TABLE IF NOT EXISTS "pr_history" (
   "id" INTEGER PRIMARY KEY,
   "exercise_class_id" bigint NOT NULL,
@@ -222,30 +222,29 @@ INSERT INTO exercise_type (title)
     ('Resistance'),
     ('Cardiovascular');
 
-INSERT INTO exercise_class (app_user_id, exercise_type_id, title)
-    VALUES
-    (1, 1, 'Bench Press'),
-    (1, 1, 'Chin-Ups'),
-    (1, 1, 'Overhead Press'),
-    (1, 1, 'Bicep Curls'),
-    (1, 1, 'Rows'),
-    (1, 1, 'Tricep Extensions'),
-    (1, 1, 'Leg Curls'),
-    (1, 1, 'Calf Raises'),
-    (1, 1, 'Core Push-Ins'),
-    (1, 1, 'Deadlift'),
-    (1, 1, 'Squat'),
-    (1, 2, 'Jog'),
-    (1, 2, 'Stretches'),
-    (1, 1, 'Leg Press');
-
 INSERT INTO exercise_equipment (title)
     VALUES
+    ('Barbell'),
     ('Dumbbell'),
-    ('Adjustable Barbell'),
-    ('Fixed-Weight Barbell'),
     ('Machine'),
     ('Bodyweight');
+
+INSERT INTO exercise_class (app_user_id, exercise_type_id, exercise_equipment_id, title)
+    VALUES
+    (1, 1, 2, 'Bench Press'),
+    (1, 1, 4, 'Chin-Ups'),
+    (1, 1, 1, 'Overhead Press'),
+    (1, 1, 2, 'Bicep Curls'),
+    (1, 1, 1, 'Rows'),
+    (1, 1, 3, 'Tricep Extensions'),
+    (1, 1, 3, 'Leg Curls'),
+    (1, 1, 3, 'Calf Raises'),
+    (1, 1, 4, 'Core Push-Ins'),
+    (1, 1, 1, 'Deadlift'),
+    (1, 1, 1, 'Squat'),
+    (1, 2, 4, 'Jog'),
+    (1, 2, 4, 'Stretches'),
+    (1, 1, 3, 'Leg Press');
 
 INSERT INTO pr_history (weight, reps, distance, time, date, exercise_class_id)
     VALUES
@@ -266,21 +265,21 @@ INSERT INTO pr_history (weight, reps, distance, time, date, exercise_class_id)
 
     (13.60777, 12, NULL, NULL, '2022-11-07T14:12:34.000Z', 4); -- should be Bicep Curls exercise_class
 
-INSERT INTO exercise (exercise_class_id, workout_id, exercise_equipment_id, list_order, initial_weight, notes)
+INSERT INTO exercise (exercise_class_id, workout_id, list_order, initial_weight, notes)
     VALUES
-    ( 1,  1,  2,     1,  45,    ''),
-    ( 2,  1,  5,     2,  NULL,  ''),
-    ( 3,  1,  1,     3,  NULL,  ''),
-    ( 4,  1,  1,     4,  NULL,  ''),
-    ( 5,  1,  4,     5,  NULL,  ''),
-    ( 6,  1,  4,     6,  NULL,  'Extended down variant'),
-    ( 7,  2,  4,     1,  NULL,  'Try to hit 12 reps'),
-    ( 8,  2,  4,     2,  20,    ''),
-    ( 9,  2,  4,     3,  20,    ''),
-    (10,  2,  4,     4,  50,    'Bruh'),
-    (11,  2,  2,     5,  45,    ''),
-    (12,  2,  NULL,  6,  NULL,  ''),
-    (13,  3,  NULL,  1,  NULL,  '');
+    ( 1,  1,  1,  45,    NULL),
+    ( 2,  1,  2,  NULL,  NULL),
+    ( 3,  1,  3,  NULL,  NULL),
+    ( 4,  1,  4,  NULL,  NULL),
+    ( 5,  1,  5,  NULL,  NULL),
+    ( 6,  1,  6,  NULL,  'Extended down variant'),
+    ( 7,  2,  1,  NULL,  'Try to hit 12 reps'),
+    ( 8,  2,  2,  20,    NULL),
+    ( 9,  2,  3,  20,    NULL),
+    (10,  2,  4,  50,    'Bruh'),
+    (11,  2,  5,  45,    NULL),
+    (12,  2,  6,  NULL,  NULL),
+    (13,  3,  1,  NULL,  NULL);
 
 INSERT INTO "exercise_set" (exercise_id, title, list_order, reps, rest_time)
     VALUES
