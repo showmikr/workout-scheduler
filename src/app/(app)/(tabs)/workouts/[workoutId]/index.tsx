@@ -22,7 +22,6 @@ function OverlaySeparator() {
 }
 
 export default function ExercisesPage() {
-  // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
   const searchParams = useLocalSearchParams<{
     workoutId: string;
     workoutTitle: string;
