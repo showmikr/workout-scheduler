@@ -1,4 +1,4 @@
-import { StyleSheet, FlatList, View } from "react-native";
+import { StyleSheet, FlatList } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import WorkoutCard from "@/components/WorkoutCard";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
