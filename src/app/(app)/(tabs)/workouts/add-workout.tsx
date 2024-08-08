@@ -13,11 +13,7 @@ import {
 import { twColors } from "@/constants/Colors";
 import { router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  AddNewWorkoutArgsObj,
-  addNewWorkout,
-  getWorkoutCount,
-} from "@/utils/query-workouts";
+import { addNewWorkout, getWorkoutCount } from "@/utils/query-workouts";
 
 export default function NewWorkoutModal() {
   const db = useSQLiteContext();
@@ -46,7 +42,7 @@ const AddWorkoutCard = (props: { workoutCount: number }) => {
   const defaultTitle = `New Workout #${props.workoutCount + 1}`;
   const [title, setTitle] = useState(defaultTitle);
   const newWorkoutMutation = useMutation({
-    mutationFn: (argsObject: AddNewWorkoutArgsObj) => addNewWorkout(argsObject),
+    mutationFn: addNewWorkout,
     onSuccess: (newWorkout) => {
       queryClient.invalidateQueries({ queryKey: ["workout_count"] });
       queryClient.invalidateQueries({ queryKey: ["workouts"] });

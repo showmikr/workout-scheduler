@@ -18,7 +18,7 @@ export default function TabTwoLayout() {
                   fontSize: 18,
                   padding: 8,
                 }}
-                href="/workouts/new-workout-modal"
+                href="/workouts/add-workout"
               >
                 New Workout
               </Link>
@@ -28,7 +28,7 @@ export default function TabTwoLayout() {
         }}
       />
       <Stack.Screen
-        name="new-workout-modal"
+        name="add-workout"
         options={{
           headerShown: false,
           presentation: "modal",
