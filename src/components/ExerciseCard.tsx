@@ -1,4 +1,4 @@
-import { LayoutAnimation, StyleSheet, TextStyle, View } from "react-native";
+import { StyleSheet, TextStyle, View } from "react-native";
 import { twColors } from "@/constants/Colors";
 import { ResistanceSection } from "@/utils/exercise-types";
 import { ThemedText } from "@/components/Themed";
@@ -18,13 +18,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { CardOptionsUnderlay } from "./CardUnderlay";
-import {
-  useDeleteExerciseMutation,
-  useResistanceSection,
-} from "@/utils/query-exercises";
-import { useCallback, useEffect, useMemo } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import isEqual from "@/utils/is-equal";
+import { useDeleteExerciseMutation } from "@/utils/query-exercises";
+import { useCallback } from "react";
 import { immediateDebounce } from "@/utils/debounce-utils";
 
 const ExerciseContentContainer = ({
@@ -144,41 +139,22 @@ function ExercisePressableContainer({
 }
 
 const ExerciseCard = ({
+  exercise,
   workoutId,
-  exerciseId,
 }: {
+  exercise: ResistanceSection;
   workoutId: number;
-  exerciseId: number;
 }) => {
+  const exerciseId = exercise.exercise_id;
   const { mutate: deleteExercise } = useDeleteExerciseMutation(
     workoutId,
     exerciseId
   );
-  const { data: exercise } = useResistanceSection(exerciseId);
   // Don't let user spam the delete button to trigger multiple deletes
   const debouncedDelete = useCallback(
     immediateDebounce(() => deleteExercise({ exerciseId }), 1000),
     [exerciseId]
   );
-
-  const queryClient = useQueryClient();
-  const queryKey = useMemo(
-    () => ["resistance-section", exerciseId] as const,
-    [exerciseId]
-  );
-  useEffect(() => {
-    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
-      if (
-        event.type === "observerRemoved" &&
-        isEqual(event.query.queryKey, queryKey)
-      ) {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      }
-    });
-    return () => unsubscribe();
-  }, [queryClient, queryKey]);
-
-  if (!exercise) return null; // TODO: Add a loading state
 
   return (
     <Swipeable

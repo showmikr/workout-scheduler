@@ -12,15 +12,13 @@ import {
 } from "react-native";
 import { twColors } from "@/constants/Colors";
 import { router } from "expo-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addNewWorkout, getWorkoutCount } from "@/utils/query-workouts";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { addNewWorkout, useWorkouts, Workout } from "@/utils/query-workouts";
 
 export default function NewWorkoutModal() {
   const db = useSQLiteContext();
-  const { data: workoutCount } = useQuery({
-    queryKey: ["workout_count"],
-    queryFn: () => getWorkoutCount(db),
-  });
+  const selectCount = (data: Workout[]) => data.length;
+  const { data: workoutCount } = useWorkouts(db, selectCount);
 
   return (
     <SafeAreaView
@@ -44,9 +42,7 @@ const AddWorkoutCard = (props: { workoutCount: number }) => {
   const newWorkoutMutation = useMutation({
     mutationFn: addNewWorkout,
     onSuccess: (newWorkout) => {
-      queryClient.invalidateQueries({ queryKey: ["workout_count"] });
       queryClient.invalidateQueries({ queryKey: ["workouts"] });
-      queryClient.invalidateQueries({ queryKey: ["workout_tag_mappings"] });
       console.log(
         "Added new workout, id:",
         newWorkout.id,

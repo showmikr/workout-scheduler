@@ -2,7 +2,6 @@ import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
 import { exerciseEnums, ResistanceSection } from "@/utils/exercise-types";
 import { getResistanceSets } from "./query-sets";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { LayoutAnimation } from "react-native";
 
 export type AddExerciseCardParams = {
   id: number;
@@ -128,34 +127,6 @@ const useResistanceSection = <TSelected = ResistanceSection>(
   });
 };
 
-const getResistanceSections = async (
-  db: SQLiteDatabase,
-  workoutId: string
-): Promise<ResistanceSection[]> => {
-  const exerciseRows = await db.getAllAsync<ResistanceExercise>(
-    `
-    SELECT ex.id AS exercise_id, ex_class.title, ex_class.exercise_type_id
-    FROM exercise AS ex
-    INNER JOIN
-      exercise_class AS ex_class ON ex.exercise_class_id = ex_class.id
-    WHERE ex.workout_id = ? AND ex_class.exercise_type_id = ?;
-    `,
-    workoutId,
-    exerciseEnums.RESISTANCE_ENUM
-  );
-
-  const exerciseSections = await Promise.all(
-    exerciseRows.map(async (exercise) => {
-      const sets = await getResistanceSets(db, exercise.exercise_id);
-      return {
-        ...exercise,
-        sets,
-      };
-    })
-  );
-  return exerciseSections;
-};
-
 const deleteExercise = async (db: SQLiteDatabase, exerciseId: number) => {
   const result = await db.getFirstAsync<{ exercise_id: number }>(
     `
@@ -184,18 +155,8 @@ const useDeleteExerciseMutation = (workoutId: number, exerciseId: number) => {
       console.error(error);
     },
     onSuccess: () => {
-      queryClient
-        .invalidateQueries({
-          queryKey: ["exercise-ids", workoutId],
-        })
-        .then(() => {
-          queryClient.removeQueries({
-            queryKey: ["resistance-section", exerciseId],
-            exact: true,
-          });
-        });
       queryClient.invalidateQueries({
-        queryKey: ["workout-stats", workoutId],
+        queryKey: ["workout-section", workoutId],
       });
     },
   });
@@ -203,10 +164,9 @@ const useDeleteExerciseMutation = (workoutId: number, exerciseId: number) => {
 
 export {
   getExerciseClasses,
-  getResistanceSections,
+  getResistanceSets,
   addExercise,
   deleteExercise,
   useDeleteExerciseMutation,
   useResistanceExerciseIds,
-  useResistanceSection,
 };

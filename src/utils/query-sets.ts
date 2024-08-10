@@ -1,12 +1,12 @@
 import { SQLiteDatabase } from "expo-sqlite";
 import {
   ExerciseSetParams,
-  ResistanceSection,
   ResistanceSetParams,
   UnifiedCardioSet,
   UnifiedResistanceSet,
 } from "./exercise-types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { WorkoutSection } from "./query-workouts";
 
 const getResistanceSets = async (
   db: SQLiteDatabase,
@@ -157,10 +157,9 @@ const addResistanceSet = async ({
 
 const useAddSetMutation = (workoutId: number, exerciseId: number) => {
   const queryClient = useQueryClient();
-  const resistanceSection = queryClient.getQueryData<ResistanceSection>([
-    "resistance-section",
-    exerciseId,
-  ]);
+  const resistanceSection = queryClient
+    .getQueryData<WorkoutSection>(["workout-section", workoutId])
+    ?.exercises.find((exercise) => exercise.exercise_id === exerciseId);
   if (!resistanceSection) {
     throw new Error("Could not find resistance section");
   }
@@ -171,10 +170,7 @@ const useAddSetMutation = (workoutId: number, exerciseId: number) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["resistance-section", exerciseId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["workout-stats", workoutId],
+        queryKey: ["workout-section", workoutId],
       });
     },
   });
@@ -234,15 +230,8 @@ const useDeleteSetMutation = (workoutId: number, exerciseId: number) => {
         result?.exerciseSetId,
         result?.positionsModified
       );
-      queryClient
-        .invalidateQueries({
-          queryKey: ["resistance-section", exerciseId],
-        })
-        .then(() => {
-          console.log("invalidated resistance-section");
-        });
       queryClient.invalidateQueries({
-        queryKey: ["workout-stats", workoutId],
+        queryKey: ["workout-section", workoutId],
       });
     },
   });

@@ -1,22 +1,27 @@
 import { router } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
-import { getWorkoutStats, Workout, WorkoutStats } from "@/utils/query-workouts";
+import {
+  useWorkoutSection,
+  Workout,
+  WorkoutStats,
+} from "@/utils/query-workouts";
 import { ThemedText } from "@/components/Themed";
 import ResistanceIcon from "@/assets/icons/resistance_icon_grey.svg";
 import { FontAwesome6 } from "@expo/vector-icons";
 import { Swipeable } from "react-native-gesture-handler";
 import { CardOptionsUnderlay } from "./CardUnderlay";
-import { useQuery } from "@tanstack/react-query";
-import { useSQLiteContext } from "expo-sqlite";
-type WorkoutCardProps = { workout: Workout; tags: string[] };
+import { useCallback } from "react";
 
-export default function WorkoutCard(props: WorkoutCardProps) {
+export default function WorkoutCard(props: { workout: Workout }) {
   const { id: workoutId, title } = props.workout;
-  const db = useSQLiteContext();
-  const { data: workoutStats } = useQuery({
-    queryKey: ["workout-stats", workoutId],
-    queryFn: () => getWorkoutStats(db, workoutId),
-  });
+  const selectStats = useCallback(
+    (data: WorkoutStats) => ({
+      totalExercises: data.totalExercises,
+      totalSets: data.totalSets,
+    }),
+    [workoutId]
+  );
+  const { data: workoutStats } = useWorkoutSection(workoutId, selectStats);
   return (
     <Swipeable
       renderRightActions={(_progress, dragX) => (

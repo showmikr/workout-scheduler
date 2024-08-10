@@ -38,10 +38,7 @@ const SetOptionsMenu = forwardRef(
           result?.positionsModified
         );
         queryClient.invalidateQueries({
-          queryKey: ["resistance-section", exerciseId],
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["workout-stats", workoutId],
+          queryKey: ["workout-section", workoutId],
         });
       },
     });

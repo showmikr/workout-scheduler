@@ -1,21 +1,22 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useSQLiteContext } from "expo-sqlite";
 import {
   SafeAreaView,
   FlatList,
   StyleSheet,
   ActivityIndicator,
   View,
+  LayoutAnimation,
 } from "react-native";
 import { twColors } from "@/constants/Colors";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import { ThemedText, ThemedView } from "@/components/Themed";
-import { useResistanceExerciseIds } from "@/utils/query-exercises";
 import WorkoutHeader from "@/components/WorkoutHeader";
 import FloatingAddButton, {
   floatingAddButtonStyles,
 } from "@/components/FloatingAddButton";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
+import { ResistanceSection } from "@/utils/exercise-types";
+import { useWorkoutSection, WorkoutSection } from "@/utils/query-workouts";
 
 function OverlaySeparator() {
   return <View style={styles.overlaySeparator} />;
@@ -35,8 +36,14 @@ export default function ExercisesPage() {
   if (isNaN(workoutIdNumber)) {
     throw new Error("Workout ID is not a number. This should not happen");
   }
-  const db = useSQLiteContext();
-  const { data: exerciseIds } = useResistanceExerciseIds(db, workoutIdNumber);
+  const selectExercises = useCallback(
+    (data: WorkoutSection) => data.exercises,
+    []
+  );
+  const { data: exercises } = useWorkoutSection(
+    workoutIdNumber,
+    selectExercises
+  );
 
   const onPressFloatingAddBtn = useCallback(() => {
     router.push({
@@ -49,8 +56,8 @@ export default function ExercisesPage() {
     <ThemedView style={styles.rootView}>
       <WorkoutHeader title={workoutTitle} />
       <SafeAreaView style={styles.safeAreaView}>
-        {exerciseIds ?
-          <ExerciseList data={exerciseIds} workoutId={workoutIdNumber} />
+        {exercises ?
+          <ExerciseList workoutId={workoutIdNumber} data={exercises} />
         : <ActivityIndicator
             style={{ alignSelf: "center" }}
             color={twColors.neutral500}
@@ -66,9 +73,14 @@ const ExerciseList = ({
   data,
   workoutId,
 }: {
-  data: { exercise_id: number }[];
+  data: ResistanceSection[];
   workoutId: number;
 }) => {
+  // Trigger layout animation when list items are added or removed
+  useEffect(() => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+  }, [data.length]);
+
   if (data.length === 0) {
     return (
       <ThemedText
@@ -95,7 +107,7 @@ const ExerciseList = ({
       data={data}
       keyExtractor={(item) => item.exercise_id.toString()}
       renderItem={({ item }) => (
-        <ExerciseCard workoutId={workoutId} exerciseId={item.exercise_id} />
+        <ExerciseCard workoutId={workoutId} exercise={item} />
       )}
     />
   );

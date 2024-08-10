@@ -6,15 +6,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  Button,
 } from "react-native";
 import { ThemedText, ThemedTextInput } from "@/components/Themed";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import {
-  ResistanceSection,
-  UnifiedResistanceSet,
-} from "@/utils/exercise-types";
+import { UnifiedResistanceSet } from "@/utils/exercise-types";
 import { twColors } from "@/constants/Colors";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TableRow } from "@/components/Table";
@@ -32,7 +28,7 @@ import BottomMenu from "@/components/SetOptionsMenu";
 import { useCallback, useRef } from "react";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { immediateDebounce } from "@/utils/debounce-utils";
-import { useResistanceSection } from "@/utils/query-exercises";
+import { useWorkoutSection, WorkoutSection } from "@/utils/query-workouts";
 
 const REPS_ROW_FLEX = 9;
 const WEIGHT_ROW_FLEX = 10;
@@ -83,9 +79,15 @@ export default function ExerciseDetails() {
   }
   const queryClient = useQueryClient();
   const db = useSQLiteContext();
-  const selectSets = useCallback((data: ResistanceSection) => data.sets, []);
-  const { data: resistanceSets } = useResistanceSection(
-    exerciseIdNumber,
+  const selectSets = useCallback(
+    (data: WorkoutSection) =>
+      data.exercises.find(
+        (exercise) => exercise.exercise_id === exerciseIdNumber
+      )?.sets,
+    [exerciseIdNumber]
+  );
+  const { data: resistanceSets } = useWorkoutSection(
+    workoutIdNumber,
     selectSets
   );
 
@@ -106,7 +108,7 @@ export default function ExerciseDetails() {
         : "No data returned from updateResistanceSetReps"
       );
       queryClient.invalidateQueries({
-        queryKey: ["resistance-section", exerciseIdNumber],
+        queryKey: ["workout-section", workoutIdNumber],
       });
     },
   });
@@ -123,7 +125,7 @@ export default function ExerciseDetails() {
         : "No data returned from updateResistanceSetWeight"
       );
       queryClient.invalidateQueries({
-        queryKey: ["resistance-section", exerciseIdNumber],
+        queryKey: ["workout-section", workoutIdNumber],
       });
     },
   });
@@ -140,7 +142,7 @@ export default function ExerciseDetails() {
         : "No data returned from updateResistanceSetRestTime"
       );
       queryClient.invalidateQueries({
-        queryKey: ["resistance-section", exerciseIdNumber],
+        queryKey: ["workout-section", workoutIdNumber],
       });
     },
   });
