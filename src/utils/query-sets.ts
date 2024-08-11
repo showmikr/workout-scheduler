@@ -6,29 +6,7 @@ import {
   UnifiedResistanceSet,
 } from "./exercise-types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { WorkoutSection } from "./query-workouts";
-
-const getResistanceSets = async (
-  db: SQLiteDatabase,
-  exerciseId: number
-): Promise<UnifiedResistanceSet[]> => {
-  return db.getAllAsync<UnifiedResistanceSet>(
-    `
-        SELECT 
-          exercise_set.id AS exercise_set_id,
-          exercise_set.list_order,
-          exercise_set.reps,
-          exercise_set.rest_time,
-          exercise_set.title,
-          resistance_set.id AS resistance_set_id,
-          resistance_set.total_weight
-        FROM exercise_set 
-        INNER JOIN resistance_set ON exercise_set.id = resistance_set.exercise_set_id 
-        WHERE exercise_set.exercise_id = ?
-        `,
-    exerciseId
-  );
-};
+import { WorkoutSection } from "@/hooks/workout-section";
 
 type setRepArgs = {
   db: SQLiteDatabase;
@@ -176,67 +154,6 @@ const useAddSetMutation = (workoutId: number, exerciseId: number) => {
   });
 };
 
-type DeleteSetResult = {
-  exerciseSetId: number;
-  positionsModified: number;
-};
-const deleteSet = async ({
-  db,
-  exerciseSetId,
-}: {
-  db: SQLiteDatabase;
-  exerciseSetId: number;
-}) => {
-  let result: DeleteSetResult | null = null;
-  await db.withTransactionAsync(async () => {
-    const removedSet = await db.getFirstAsync<{
-      exercise_id: number;
-      deleted_pos: number;
-    }>(
-      `
-      DELETE FROM exercise_set 
-      WHERE id = ?
-      RETURNING exercise_id, list_order AS deleted_pos; 
-      `,
-      [exerciseSetId]
-    );
-    if (!removedSet) {
-      throw new Error("Could not delete row from exercise_set table");
-    }
-    const updateResult = await db.runAsync(
-      `
-      UPDATE exercise_set
-      SET list_order = list_order - 1
-      WHERE exercise_id = ? 
-        AND list_order > ?;
-      `,
-      [removedSet.exercise_id, removedSet.deleted_pos]
-    );
-    result = { exerciseSetId, positionsModified: updateResult.changes };
-  });
-  return result as DeleteSetResult | null;
-};
-
-const useDeleteSetMutation = (workoutId: number, exerciseId: number) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: deleteSet,
-    onError: (error) => {
-      console.error(error);
-    },
-    onSuccess: (result) => {
-      console.log(
-        "Deleted exercise set: %s, positions modified: %s",
-        result?.exerciseSetId,
-        result?.positionsModified
-      );
-      queryClient.invalidateQueries({
-        queryKey: ["workout-section", workoutId],
-      });
-    },
-  });
-};
-
 // Will remain unused until we have cardio exercises
 const getCardioSets = async (
   db: SQLiteDatabase,
@@ -262,12 +179,9 @@ const getCardioSets = async (
 };
 
 export {
-  getResistanceSets,
   updateResistanceSetReps,
   updateExerciseSetReps,
   updateExerciseSetRestTime,
   addResistanceSet,
-  deleteSet,
   useAddSetMutation,
-  useDeleteSetMutation,
 };

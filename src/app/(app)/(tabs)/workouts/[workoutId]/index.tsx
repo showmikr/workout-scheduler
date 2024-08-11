@@ -16,7 +16,7 @@ import FloatingAddButton, {
 } from "@/components/FloatingAddButton";
 import { useCallback, useEffect } from "react";
 import { ResistanceSection } from "@/utils/exercise-types";
-import { useWorkoutSection, WorkoutSection } from "@/utils/query-workouts";
+import { useWorkoutSection, WorkoutSection } from "@/hooks/workout-section";
 
 function OverlaySeparator() {
   return <View style={styles.overlaySeparator} />;

@@ -4,7 +4,20 @@ export const exerciseEnums = {
   CARDIO_ENUM: 2,
 } as const;
 
+export type Workout = { id: number; title: string };
+
+export type WorkoutStats = {
+  totalExercises: number;
+  totalSets: number;
+};
+
 export type ExerciseEnums = typeof exerciseEnums;
+
+export type ExerciseClass = {
+  id: number;
+  exercise_type_id: number;
+  title: string;
+};
 
 export type ExerciseSetParams = {
   exercise_set_id: number;

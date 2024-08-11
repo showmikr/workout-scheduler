@@ -7,10 +7,9 @@ import {
 } from "@gorhom/bottom-sheet";
 import { twColors } from "@/constants/Colors";
 import { UnifiedResistanceSet } from "@/utils/exercise-types";
-import { deleteSet } from "@/utils/query-sets";
 import { useSQLiteContext } from "expo-sqlite";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import GenericBottomSheet from "./GenericBottomSheet";
+import { useDeleteSet } from "@/hooks/delete-set";
 
 const SetOptionsMenu = forwardRef(
   (
@@ -25,23 +24,7 @@ const SetOptionsMenu = forwardRef(
     const snapPoints = useMemo(() => ["25%"], []);
     const db = useSQLiteContext();
     const thisModal = useBottomSheetModal();
-    const queryClient = useQueryClient();
-    const deleteSetMutation = useMutation({
-      mutationFn: deleteSet,
-      onError: (error) => {
-        console.error(error);
-      },
-      onSuccess: (result) => {
-        console.log(
-          "Deleted exercise set: %s, positions modified: %s",
-          result?.exerciseSetId,
-          result?.positionsModified
-        );
-        queryClient.invalidateQueries({
-          queryKey: ["workout-section", workoutId],
-        });
-      },
-    });
+    const deleteSetMutation = useDeleteSet(workoutId, exerciseId);
     return (
       <GenericBottomSheet ref={ref} snapPoints={snapPoints}>
         <BottomSheetView style={styles.container}>

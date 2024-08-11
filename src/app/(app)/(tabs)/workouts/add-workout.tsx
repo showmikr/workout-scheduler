@@ -12,13 +12,14 @@ import {
 } from "react-native";
 import { twColors } from "@/constants/Colors";
 import { router } from "expo-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addNewWorkout, useWorkouts, Workout } from "@/utils/query-workouts";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAddWorkout } from "@/hooks/add-workout";
+import { Workout } from "@/utils/exercise-types";
+import { useWorkouts } from "@/hooks/workout-ids";
 
 export default function NewWorkoutModal() {
-  const db = useSQLiteContext();
   const selectCount = (data: Workout[]) => data.length;
-  const { data: workoutCount } = useWorkouts(db, selectCount);
+  const { data: workoutCount } = useWorkouts(selectCount);
 
   return (
     <SafeAreaView
@@ -39,25 +40,7 @@ const AddWorkoutCard = (props: { workoutCount: number }) => {
   const queryClient = useQueryClient();
   const defaultTitle = `New Workout #${props.workoutCount + 1}`;
   const [title, setTitle] = useState(defaultTitle);
-  const newWorkoutMutation = useMutation({
-    mutationFn: addNewWorkout,
-    onSuccess: (newWorkout) => {
-      queryClient.invalidateQueries({ queryKey: ["workouts"] });
-      console.log(
-        "Added new workout, id:",
-        newWorkout.id,
-        ", title:",
-        newWorkout.title
-      );
-      router.replace({
-        pathname: "/workouts/[workoutId]",
-        params: { workoutId: newWorkout.id, workoutTitle: newWorkout.title },
-      });
-    },
-    onError: (err) => {
-      console.error(err);
-    },
-  });
+  const addWorkoutMutation = useAddWorkout();
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -106,11 +89,20 @@ const AddWorkoutCard = (props: { workoutCount: number }) => {
           width: "auto",
         })}
         onPress={() =>
-          newWorkoutMutation.mutate({
-            db,
-            title,
-            workoutCount: props.workoutCount,
-          })
+          addWorkoutMutation.mutate(
+            { db, title, workoutCount: props.workoutCount },
+            {
+              onSuccess: (newWorkout) => {
+                router.replace({
+                  pathname: "/workouts/[workoutId]",
+                  params: {
+                    workoutId: newWorkout.id,
+                    workoutTitle: newWorkout.title,
+                  },
+                });
+              },
+            }
+          )
         }
       >
         <Text

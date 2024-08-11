@@ -1,4 +1,3 @@
-import { useSQLiteContext } from "expo-sqlite/next";
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -6,13 +5,9 @@ import {
   useColorScheme,
 } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
-import {
-  addExercise,
-  AddExerciseCardParams,
-  getExerciseClasses,
-} from "@/utils/query-exercises";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ThemedView, ThemedText } from "@/components/Themed";
+import { useAddExercise } from "@/hooks/add-exercise";
+import { useExerciseClasses } from "@/hooks/exercise-classes";
 
 export default function AddExerciseIndex() {
   const colorScheme = useColorScheme();
@@ -36,31 +31,9 @@ export default function AddExerciseIndex() {
       workoutId: ${workoutId}, workoutTitle: ${workoutTitle}`);
   }
 
-  const db = useSQLiteContext();
-  const queryClient = useQueryClient();
   // TODO: handle when query errors out
-  const { data: exerciseClasses, isLoading } = useQuery({
-    queryKey: ["add-exercise-list", workoutId],
-    queryFn: () => getExerciseClasses(db),
-  });
-
-  const addExerciseMutation = useMutation({
-    mutationFn: ({
-      exerciseClass,
-    }: {
-      exerciseClass: AddExerciseCardParams;
-    }) => {
-      return addExercise(db, workoutId, exerciseClass);
-    },
-    onError: (error) => {
-      console.error(error);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["workout-section", workoutIdNumber],
-      });
-    },
-  });
+  const { data: exerciseClasses, isLoading } = useExerciseClasses();
+  const addExerciseMutation = useAddExercise(workoutIdNumber);
 
   if (isLoading) {
     return (

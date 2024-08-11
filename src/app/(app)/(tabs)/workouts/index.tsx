@@ -1,13 +1,11 @@
 import { StyleSheet, FlatList } from "react-native";
-import { useSQLiteContext } from "expo-sqlite/next";
 import WorkoutCard from "@/components/WorkoutCard";
-import { useWorkouts } from "@/utils/query-workouts";
+import { useWorkouts } from "@/hooks/workout-ids";
 import { ThemedView, ThemedText } from "@/components/Themed";
 import { twColors } from "@/constants/Colors";
 
 export default function TabTwoScreen() {
-  const db = useSQLiteContext();
-  const { data: workouts } = useWorkouts(db);
+  const { data: workouts } = useWorkouts();
 
   if (!workouts) {
     return (

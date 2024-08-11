@@ -1,9 +1,5 @@
-import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
-import { exerciseEnums, ResistanceSection } from "./exercise-types";
-import { getResistanceSets } from "./query-sets";
-import { useQuery } from "@tanstack/react-query";
-
-export type Workout = { id: number; title: string };
+import { SQLiteDatabase } from "expo-sqlite";
+import { WorkoutStats } from "./exercise-types";
 
 /**
  * Gets a HashMap of all the workout tags for a given user.
@@ -56,94 +52,6 @@ async function getWorkoutTagsAsync(db: SQLiteDatabase) {
   return hashMap;
 }
 
-/**
- * This function requires that we pass a database connection handle.
- * In general this means we will need to pass it via a db context (i.e useSQLiteContext())
- */
-async function getWorkoutsAsync(db: SQLiteDatabase) {
-  return db.getAllAsync<Workout>(
-    `
-    SELECT wk.id, wk.title FROM workout AS wk
-    WHERE wk.app_user_id = 1
-    ORDER BY wk.id;
-    `
-  );
-}
-
-export type WorkoutSection = {
-  exercises: ResistanceSection[];
-  totalExercises: number;
-  totalSets: number;
-};
-
-/**
- * Retrieves the details of a specific workout section, including the exercises and associated sets.
- *
- * @param db - The SQLite database connection.
- * @param workoutId - The ID of the workout to retrieve.
- * @param title - The title of the workout.
- * @returns A `WorkoutSection` object containing the workout details.
- */
-const getWorkoutSection = async (
-  db: SQLiteDatabase,
-  workoutId: number
-): Promise<WorkoutSection> => {
-  const exerciseRows = await db.getAllAsync<Omit<ResistanceSection, "sets">>(
-    `
-    SELECT ex.id AS exercise_id, ex_class.title, ex_class.exercise_type_id
-    FROM exercise AS ex
-    INNER JOIN
-      exercise_class AS ex_class ON ex.exercise_class_id = ex_class.id
-    WHERE ex.workout_id = ? AND ex_class.exercise_type_id = ?;
-    `,
-    workoutId,
-    exerciseEnums.RESISTANCE_ENUM
-  );
-
-  const exercises = await Promise.all(
-    exerciseRows.map(async (exercise) => {
-      return {
-        ...exercise,
-        sets: await getResistanceSets(db, exercise.exercise_id),
-      };
-    })
-  );
-
-  return {
-    exercises,
-    totalExercises: exerciseRows.length,
-    totalSets: exercises.reduce((acc, curr) => acc + curr.sets.length, 0),
-  };
-};
-
-const useWorkouts = <T = Workout[]>(
-  db: SQLiteDatabase,
-  select?: (data: Workout[]) => T
-) => {
-  return useQuery({
-    queryKey: ["workouts"],
-    queryFn: () => getWorkoutsAsync(db),
-    select,
-  });
-};
-
-const useWorkoutSection = <T = WorkoutSection>(
-  workoutId: number,
-  select?: (section: WorkoutSection) => T
-) => {
-  const db = useSQLiteContext();
-  return useQuery({
-    queryKey: ["workout-section", workoutId],
-    queryFn: () => getWorkoutSection(db, workoutId),
-    select,
-  });
-};
-
-export type WorkoutStats = {
-  totalExercises: number;
-  totalSets: number;
-};
-
 async function getWorkoutStats(db: SQLiteDatabase, workoutId: number) {
   return db.getFirstAsync<WorkoutStats>(
     `
@@ -163,41 +71,6 @@ async function getWorkoutStats(db: SQLiteDatabase, workoutId: number) {
   );
 }
 
-export type AddNewWorkoutArgsObj = {
-  db: SQLiteDatabase;
-  title: string;
-  workoutCount: number;
-};
-/**
- * Adds a new empty workout to the sqlite database.
- *
- * @param title represents the title for the workout
- *
- * @param workoutCount Used to tell how many workouts
- * the user already has so that when we can give the new
- * workout the correct list_order table number
- * (i.e, if we have 5 workouts we can say we are adding a workout
- * whose list_order in the sqlite workout table is 6)
- *
- * @returns The id of the new workout entry in the corresponding sqlite table
- *
- */
-async function addNewWorkout({
-  db,
-  title,
-  workoutCount,
-}: AddNewWorkoutArgsObj): Promise<Workout> {
-  const newWorkoutId = await db.getFirstAsync<Workout>(
-    `
-      INSERT INTO workout (app_user_id, title, list_order)
-      VALUES (1, ?, ?) 
-      RETURNING workout.id, workout.title;
-      `,
-    [title, workoutCount + 1]
-  );
-  return { id: newWorkoutId!.id, title };
-}
-
 async function getWorkoutCount(db: SQLiteDatabase) {
   return db
     .getFirstAsync<{ workout_count: number }>(
@@ -213,10 +86,6 @@ async function getWorkoutCount(db: SQLiteDatabase) {
 export {
   getAllTagsAsync,
   getWorkoutTagsAsync,
-  getWorkoutsAsync,
   getWorkoutCount,
   getWorkoutStats,
-  addNewWorkout,
-  useWorkouts,
-  useWorkoutSection,
 };

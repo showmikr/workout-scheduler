@@ -28,7 +28,7 @@ import BottomMenu from "@/components/SetOptionsMenu";
 import { useCallback, useRef } from "react";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { immediateDebounce } from "@/utils/debounce-utils";
-import { useWorkoutSection, WorkoutSection } from "@/utils/query-workouts";
+import { useWorkoutSection, WorkoutSection } from "@/hooks/workout-section";
 
 const REPS_ROW_FLEX = 9;
 const WEIGHT_ROW_FLEX = 10;
