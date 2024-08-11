@@ -16,7 +16,7 @@ import FloatingAddButton, {
 } from "@/components/FloatingAddButton";
 import { useCallback, useEffect } from "react";
 import { ResistanceSection } from "@/utils/exercise-types";
-import { useWorkoutSection, WorkoutSection } from "@/hooks/workout-section";
+import { useExerciseSections } from "@/hooks/exercises/exercises";
 
 function OverlaySeparator() {
   return <View style={styles.overlaySeparator} />;
@@ -36,14 +36,8 @@ export default function ExercisesPage() {
   if (isNaN(workoutIdNumber)) {
     throw new Error("Workout ID is not a number. This should not happen");
   }
-  const selectExercises = useCallback(
-    (data: WorkoutSection) => data.exercises,
-    []
-  );
-  const { data: exercises } = useWorkoutSection(
-    workoutIdNumber,
-    selectExercises
-  );
+
+  const { data: exercises } = useExerciseSections(workoutIdNumber);
 
   const onPressFloatingAddBtn = useCallback(() => {
     router.push({

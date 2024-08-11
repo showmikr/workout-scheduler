@@ -9,7 +9,7 @@ import { twColors } from "@/constants/Colors";
 import { UnifiedResistanceSet } from "@/utils/exercise-types";
 import { useSQLiteContext } from "expo-sqlite";
 import GenericBottomSheet from "./GenericBottomSheet";
-import { useDeleteSet } from "@/hooks/delete-set";
+import { useDeleteSet } from "@/hooks/sets/exercise-sets";
 
 const SetOptionsMenu = forwardRef(
   (
@@ -24,7 +24,7 @@ const SetOptionsMenu = forwardRef(
     const snapPoints = useMemo(() => ["25%"], []);
     const db = useSQLiteContext();
     const thisModal = useBottomSheetModal();
-    const deleteSetMutation = useDeleteSet(workoutId, exerciseId);
+    const deleteSetMutation = useDeleteSet(workoutId);
     return (
       <GenericBottomSheet ref={ref} snapPoints={snapPoints}>
         <BottomSheetView style={styles.container}>

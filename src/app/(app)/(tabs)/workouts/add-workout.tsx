@@ -13,9 +13,9 @@ import {
 import { twColors } from "@/constants/Colors";
 import { router } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAddWorkout } from "@/hooks/add-workout";
+import { useAddWorkout } from "@/hooks/workouts/workout-ids";
 import { Workout } from "@/utils/exercise-types";
-import { useWorkouts } from "@/hooks/workout-ids";
+import { useWorkouts } from "@/hooks/workouts/workout-ids";
 
 export default function NewWorkoutModal() {
   const selectCount = (data: Workout[]) => data.length;

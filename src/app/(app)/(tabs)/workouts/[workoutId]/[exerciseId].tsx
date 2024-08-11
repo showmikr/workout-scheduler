@@ -12,14 +12,7 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { UnifiedResistanceSet } from "@/utils/exercise-types";
 import { twColors } from "@/constants/Colors";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TableRow } from "@/components/Table";
-import {
-  updateResistanceSetReps,
-  updateExerciseSetReps,
-  updateExerciseSetRestTime,
-  useAddSetMutation,
-} from "@/utils/query-sets";
 import FloatingAddButton, {
   floatingAddButtonStyles,
 } from "@/components/FloatingAddButton";
@@ -28,7 +21,12 @@ import BottomMenu from "@/components/SetOptionsMenu";
 import { useCallback, useRef } from "react";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { immediateDebounce } from "@/utils/debounce-utils";
-import { useWorkoutSection, WorkoutSection } from "@/hooks/workout-section";
+import {
+  useRepsMutation,
+  useRestMutation,
+  useWeightMutation,
+} from "@/hooks/sets/individual-set";
+import { useAddSet, useSets } from "@/hooks/sets/exercise-sets";
 
 const REPS_ROW_FLEX = 9;
 const WEIGHT_ROW_FLEX = 10;
@@ -77,75 +75,13 @@ export default function ExerciseDetails() {
       `exerciseId or workoutId is not a number. This should never happen`
     );
   }
-  const queryClient = useQueryClient();
   const db = useSQLiteContext();
-  const selectSets = useCallback(
-    (data: WorkoutSection) =>
-      data.exercises.find(
-        (exercise) => exercise.exercise_id === exerciseIdNumber
-      )?.sets,
-    [exerciseIdNumber]
-  );
-  const { data: resistanceSets } = useWorkoutSection(
-    workoutIdNumber,
-    selectSets
-  );
+  const { data: resistanceSets } = useSets(workoutIdNumber, exerciseIdNumber);
+  const { mutate: addSet } = useAddSet(workoutIdNumber);
 
-  const { mutate: addSet } = useAddSetMutation(
-    workoutIdNumber,
-    exerciseIdNumber
-  );
-
-  const repsMutation = useMutation({
-    mutationFn: updateResistanceSetReps,
-    onError: (error) => {
-      console.error(error);
-    },
-    onSuccess: (data) => {
-      console.log(
-        data?.reps ?
-          "updatedReps: " + data.reps
-        : "No data returned from updateResistanceSetReps"
-      );
-      queryClient.invalidateQueries({
-        queryKey: ["workout-section", workoutIdNumber],
-      });
-    },
-  });
-
-  const weightMutation = useMutation({
-    mutationFn: updateExerciseSetReps,
-    onError: (error) => {
-      console.log(error);
-    },
-    onSuccess: (data) => {
-      console.log(
-        data?.total_weight ?
-          "updatedWeight " + data.total_weight
-        : "No data returned from updateResistanceSetWeight"
-      );
-      queryClient.invalidateQueries({
-        queryKey: ["workout-section", workoutIdNumber],
-      });
-    },
-  });
-
-  const restTimeMutation = useMutation({
-    mutationFn: updateExerciseSetRestTime,
-    onError: (error) => {
-      console.error(error);
-    },
-    onSuccess: (data) => {
-      console.log(
-        data?.rest_time ?
-          "updatedRestTime " + data.rest_time
-        : "No data returned from updateResistanceSetRestTime"
-      );
-      queryClient.invalidateQueries({
-        queryKey: ["workout-section", workoutIdNumber],
-      });
-    },
-  });
+  const repsMutation = useRepsMutation(workoutIdNumber);
+  const weightMutation = useWeightMutation(workoutIdNumber);
+  const restTimeMutation = useRestMutation(workoutIdNumber);
 
   // adds a slight delay to the addSetMutation to
   // prevent sqlite transactions from overlapping.

@@ -18,9 +18,9 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { CardOptionsUnderlay } from "./CardUnderlay";
-import { useDeleteExercise } from "@/hooks/delete-exercise";
 import { useCallback } from "react";
 import { immediateDebounce } from "@/utils/debounce-utils";
+import { useDeleteExercise } from "@/hooks/exercises/exercises";
 
 const ExerciseContentContainer = ({
   exercise,
@@ -146,7 +146,7 @@ const ExerciseCard = ({
   workoutId: number;
 }) => {
   const exerciseId = exercise.exercise_id;
-  const { mutate: deleteExercise } = useDeleteExercise(workoutId, exerciseId);
+  const { mutate: deleteExercise } = useDeleteExercise(workoutId);
   // Don't let user spam the delete button to trigger multiple deletes
   const debouncedDelete = useCallback(
     immediateDebounce(() => deleteExercise({ exerciseId }), 1000),

@@ -1,6 +1,6 @@
 import { StyleSheet, FlatList } from "react-native";
 import WorkoutCard from "@/components/WorkoutCard";
-import { useWorkouts } from "@/hooks/workout-ids";
+import { useWorkouts } from "@/hooks/workouts/workout-ids";
 import { ThemedView, ThemedText } from "@/components/Themed";
 import { twColors } from "@/constants/Colors";
 

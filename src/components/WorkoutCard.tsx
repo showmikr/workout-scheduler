@@ -1,24 +1,17 @@
 import { router } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
-import { useWorkoutSection } from "@/hooks/workout-section";
+
 import { ThemedText } from "@/components/Themed";
 import ResistanceIcon from "@/assets/icons/resistance_icon_grey.svg";
 import { FontAwesome6 } from "@expo/vector-icons";
 import { Swipeable } from "react-native-gesture-handler";
 import { CardOptionsUnderlay } from "./CardUnderlay";
-import { useCallback } from "react";
 import { Workout, WorkoutStats } from "@/utils/exercise-types";
+import { useWorkoutStats } from "@/hooks/workouts/workout-section";
 
 export default function WorkoutCard(props: { workout: Workout }) {
   const { id: workoutId, title } = props.workout;
-  const selectStats = useCallback(
-    (data: WorkoutStats) => ({
-      totalExercises: data.totalExercises,
-      totalSets: data.totalSets,
-    }),
-    [workoutId]
-  );
-  const { data: workoutStats } = useWorkoutSection(workoutId, selectStats);
+  const { data: workoutStats } = useWorkoutStats(workoutId);
   return (
     <Swipeable
       renderRightActions={(_progress, dragX) => (

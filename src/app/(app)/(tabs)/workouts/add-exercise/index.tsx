@@ -6,8 +6,8 @@ import {
 } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
 import { ThemedView, ThemedText } from "@/components/Themed";
-import { useAddExercise } from "@/hooks/add-exercise";
-import { useExerciseClasses } from "@/hooks/exercise-classes";
+import { useExerciseClasses } from "@/hooks/exercises/exercise-classes";
+import { useAddExercise } from "@/hooks/exercises/exercises";
 
 export default function AddExerciseIndex() {
   const colorScheme = useColorScheme();
