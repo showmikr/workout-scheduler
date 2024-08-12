@@ -4,6 +4,14 @@ export const exerciseEnums = {
   CARDIO_ENUM: 2,
 } as const;
 
+type EquipmentConstants = "Barbell" | "Dumbbell" | "Machine" | "Bodyweight";
+export const equipmentTable: Record<EquipmentConstants, number> = {
+  Barbell: 1,
+  Dumbbell: 2,
+  Machine: 3,
+  Bodyweight: 4,
+};
+
 export type Workout = { id: number; title: string };
 
 export type WorkoutStats = {
@@ -16,6 +24,7 @@ export type ExerciseEnums = typeof exerciseEnums;
 export type ExerciseClass = {
   id: number;
   exercise_type_id: number;
+  exercise_equipment_id: number;
   title: string;
 };
 

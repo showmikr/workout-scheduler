@@ -231,7 +231,7 @@ INSERT INTO exercise_equipment (title)
 
 INSERT INTO exercise_class (app_user_id, exercise_type_id, exercise_equipment_id, title)
     VALUES
-    (1, 1, 2, 'Bench Press'),
+    (1, 1, 1, 'Bench Press'),
     (1, 1, 4, 'Chin-Ups'),
     (1, 1, 1, 'Overhead Press'),
     (1, 1, 2, 'Bicep Curls'),

@@ -1,13 +1,15 @@
 import {
   ActivityIndicator,
+  FlatList,
   SafeAreaView,
   StyleSheet,
   useColorScheme,
 } from "react-native";
-import { Link, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { ThemedView, ThemedText } from "@/components/Themed";
 import { useExerciseClasses } from "@/hooks/exercises/exercise-classes";
 import { useAddExercise } from "@/hooks/exercises/exercises";
+import ExerciseClassCard from "@/components/ExerciseClassCard";
 
 export default function AddExerciseIndex() {
   const colorScheme = useColorScheme();
@@ -48,25 +50,24 @@ export default function AddExerciseIndex() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      {exerciseClasses && exerciseClasses.length > 0 ?
-        exerciseClasses.map((exerciseClass) => (
-          <Link
-            href={{
-              pathname: "/workouts/[workoutId]",
-              params: { workoutId: workoutId, workoutTitle: workoutTitle },
-            }}
-            key={exerciseClass.id}
-            style={[
-              styles.exerciseLink,
-              { color: colorScheme === "dark" ? "white" : "black" },
-            ]}
-            onPress={() => {
-              addExerciseMutation.mutate({ exerciseClass });
-            }}
-          >
-            {exerciseClass.title}
-          </Link>
-        ))
+      {exerciseClasses ?
+        <FlatList
+          data={exerciseClasses}
+          contentContainerStyle={{ gap: 1 * 14 }}
+          renderItem={({ item }) => (
+            <ExerciseClassCard
+              title={item.title}
+              equipmentId={item.exercise_equipment_id}
+              onPress={() => {
+                router.navigate({
+                  pathname: "/workouts/[workoutId]",
+                  params: { workoutId: workoutId, workoutTitle: workoutTitle },
+                });
+                addExerciseMutation.mutate({ exerciseClass: item });
+              }}
+            />
+          )}
+        />
       : <ThemedText
           style={[
             styles.loadingText,
