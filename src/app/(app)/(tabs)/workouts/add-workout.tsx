@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { twColors } from "@/constants/Colors";
 import { router } from "expo-router";
-import { useQueryClient } from "@tanstack/react-query";
 import { useAddWorkout } from "@/hooks/workouts/workout-ids";
 import { Workout } from "@/utils/exercise-types";
 import { useWorkouts } from "@/hooks/workouts/workout-ids";
@@ -37,7 +36,6 @@ export default function NewWorkoutModal() {
 const AddWorkoutCard = (props: { workoutCount: number }) => {
   const db = useSQLiteContext();
   const colorScheme = useColorScheme();
-  const queryClient = useQueryClient();
   const defaultTitle = `New Workout #${props.workoutCount + 1}`;
   const [title, setTitle] = useState(defaultTitle);
   const addWorkoutMutation = useAddWorkout();
@@ -90,7 +88,11 @@ const AddWorkoutCard = (props: { workoutCount: number }) => {
         })}
         onPress={() =>
           addWorkoutMutation.mutate(
-            { db, title, workoutCount: props.workoutCount },
+            {
+              db,
+              title: title.length > 0 ? title : defaultTitle,
+              workoutCount: props.workoutCount,
+            },
             {
               onSuccess: (newWorkout) => {
                 router.replace({
