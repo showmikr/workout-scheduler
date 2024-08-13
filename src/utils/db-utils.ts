@@ -34,6 +34,14 @@ async function deleteDB(dbFileName: string) {
 }
 
 async function initDb(db: SQLiteDatabase) {
+  // Ensure Foreign Key constraints are enabled
+  // Note: This also enforces cascade deletes
+  // Note: added this also b/c app reloads in dev mode caused
+  // any mutations to the db that relied on cascade deletes to fail
+  // (i.e, deleting an exercise row didn't delete related exercise_sets and resistance_sets)
+  // hence why I'm enabling it here so that on reloads, constraints are still enforced
+  await db.runAsync("PRAGMA foreign_keys = ON;");
+
   const tableInfo = await db.getFirstAsync<{ table_count: number }>(
     "SELECT COUNT(name) as table_count FROM sqlite_master WHERE type=?",
     ["table"]
