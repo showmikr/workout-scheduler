@@ -1,8 +1,13 @@
 import {
   ActivityIndicator,
+  Button,
   FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
   SafeAreaView,
   StyleSheet,
+  TouchableOpacity,
   useColorScheme,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
@@ -10,6 +15,8 @@ import { ThemedView, ThemedText } from "@/components/Themed";
 import { useExerciseClasses } from "@/hooks/exercises/exercise-classes";
 import { useAddExercise } from "@/hooks/exercises/exercises";
 import ExerciseClassCard from "@/components/ExerciseClassCard";
+import { useState } from "react";
+import CustomExerciseClassCard from "@/components/AddExerciseClass";
 
 export default function AddExerciseIndex() {
   const colorScheme = useColorScheme();
@@ -37,6 +44,8 @@ export default function AddExerciseIndex() {
   const { data: exerciseClasses, isLoading } = useExerciseClasses();
   const addExerciseMutation = useAddExercise(workoutIdNumber);
 
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
   if (isLoading) {
     return (
       <SafeAreaView style={styles.loadingView}>
@@ -49,8 +58,8 @@ export default function AddExerciseIndex() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      {exerciseClasses ?
+    <>
+      <SafeAreaView style={{ flex: 1 }}>
         <FlatList
           data={exerciseClasses}
           contentContainerStyle={{ gap: 1 * 14 }}
@@ -61,23 +70,58 @@ export default function AddExerciseIndex() {
               onPress={() => {
                 router.navigate({
                   pathname: "/workouts/[workoutId]",
-                  params: { workoutId: workoutId, workoutTitle: workoutTitle },
+                  params: {
+                    workoutId: workoutId,
+                    workoutTitle: workoutTitle,
+                  },
                 });
                 addExerciseMutation.mutate({ exerciseClass: item });
               }}
             />
           )}
         />
-      : <ThemedText
-          style={[
-            styles.loadingText,
-            { color: colorScheme === "dark" ? "white" : "black" },
-          ]}
+        <Button
+          title="Custom Exercise"
+          onPress={() => setIsModalVisible(true)}
+        />
+      </SafeAreaView>
+      <Modal
+        animationType="fade"
+        visible={isModalVisible}
+        transparent={true}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+          }}
+          onPress={() => {
+            setIsModalVisible(false);
+            console.log("Pressed outside modal");
+          }}
         >
-          Loading...
-        </ThemedText>
-      }
-    </SafeAreaView>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={{
+              flexDirection: "row",
+            }}
+            onPress={(e) => {
+              e.preventDefault();
+            }}
+          >
+            <CustomExerciseClassCard
+              onCreateExercise={() => {
+                setIsModalVisible(false);
+              }}
+            />
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+    </>
   );
 }
 
