@@ -4,13 +4,26 @@ export const exerciseEnums = {
   CARDIO_ENUM: 2,
 } as const;
 
-type EquipmentConstants = "Barbell" | "Dumbbell" | "Machine" | "Bodyweight";
-export const equipmentTable: Record<EquipmentConstants, number> = {
-  Barbell: 1,
-  Dumbbell: 2,
-  Machine: 3,
-  Bodyweight: 4,
-};
+// hard coded constants based on the sqlite db table "exercise_equipment"
+export const equipmentEnums = {
+  barbell: 1,
+  dumbbell: 2,
+  machine: 3,
+  bodyweight: 4,
+  other: 5,
+} as const;
+
+/// hard coded constants based on the sqlite db table "body_part"
+export const bodyPartEnums = {
+  chest: 1,
+  arms: 2,
+  back: 3,
+  legs: 4,
+  shoulders: 5,
+  core: 6,
+  fullBody: 7,
+  other: 8,
+} as const;
 
 export type Workout = { id: number; title: string };
 
@@ -25,6 +38,7 @@ export type ExerciseClass = {
   id: number;
   exercise_type_id: number;
   exercise_equipment_id: number;
+  body_part_id: number | null;
   title: string;
 };
 

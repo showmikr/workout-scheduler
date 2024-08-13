@@ -19,10 +19,13 @@ const figmaColors = {
   redAccent: "#A53535",
   orangeAccent: "#AD760A",
   greyDark: "#2F2F2F",
+  greyLight: "#575757",
   greyLighter: "#8E8E8E",
   greyDarkBorder: "#3D3D3D",
   addGreen: "#78C200",
   primaryWhite: "#DEDEDE",
+  primaryBlack: "#0D0D0D",
+  lighterPrimaryBlack: "#141414",
 };
 
 export default {

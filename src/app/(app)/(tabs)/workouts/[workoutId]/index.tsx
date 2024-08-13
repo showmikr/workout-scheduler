@@ -6,6 +6,9 @@ import {
   ActivityIndicator,
   View,
   LayoutAnimation,
+  Pressable,
+  Modal,
+  Button,
 } from "react-native";
 import { twColors } from "@/constants/Colors";
 import { ExerciseCard } from "@/components/ExerciseCard";
@@ -14,7 +17,7 @@ import WorkoutHeader from "@/components/WorkoutHeader";
 import FloatingAddButton, {
   floatingAddButtonStyles,
 } from "@/components/FloatingAddButton";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ResistanceSection } from "@/utils/exercise-types";
 import { useExerciseSections } from "@/hooks/exercises/exercises";
 
@@ -47,19 +50,17 @@ export default function ExercisesPage() {
   }, [workoutId, workoutTitle]);
 
   return (
-    <ThemedView style={styles.rootView}>
+    <SafeAreaView style={styles.safeAreaView}>
       <WorkoutHeader title={workoutTitle} />
-      <SafeAreaView style={styles.safeAreaView}>
-        {exercises ?
-          <ExerciseList workoutId={workoutIdNumber} data={exercises} />
-        : <ActivityIndicator
-            style={{ alignSelf: "center" }}
-            color={twColors.neutral500}
-          />
-        }
-        <FloatingAddButton onPress={onPressFloatingAddBtn} />
-      </SafeAreaView>
-    </ThemedView>
+      {exercises ?
+        <ExerciseList workoutId={workoutIdNumber} data={exercises} />
+      : <ActivityIndicator
+          style={{ alignSelf: "center" }}
+          color={twColors.neutral500}
+        />
+      }
+      <FloatingAddButton onPress={onPressFloatingAddBtn} />
+    </SafeAreaView>
   );
 }
 
@@ -110,6 +111,8 @@ const ExerciseList = ({
 const styles = StyleSheet.create({
   rootView: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "stretch",
   },
   safeAreaView: {
     flex: 1,

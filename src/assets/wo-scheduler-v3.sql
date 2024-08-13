@@ -33,6 +33,11 @@ CREATE TABLE IF NOT EXISTS "exercise_equipment" (
   "title" text UNIQUE NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS "body_part" (
+  "id" INTEGER PRIMARY KEY,
+  "title" text UNIQUE NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS "workout_tag" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
@@ -68,12 +73,14 @@ CREATE TABLE IF NOT EXISTS "exercise_class" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
   "exercise_type_id" bigint NOT NULL,
-  "exercise_equipment_id" bigint,
+  "exercise_equipment_id" bigint NOT NULL,
+  "body_part_id" bigint,
   "is_archived" boolean NOT NULL DEFAULT false,
   "title" text NOT NULL,
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY ("exercise_type_id") REFERENCES "exercise_type" ("id"),
-  FOREIGN KEY ("exercise_equipment_id") REFERENCES "exercise_equipment" ("id")
+  FOREIGN KEY ("exercise_equipment_id") REFERENCES "exercise_equipment" ("id"),
+  FOREIGN KEY ("body_part_id") REFERENCES "body_part" ("id")
 );
 
 CREATE TABLE IF NOT EXISTS "exercise" (
@@ -227,24 +234,36 @@ INSERT INTO exercise_equipment (title)
     ('Barbell'),
     ('Dumbbell'),
     ('Machine'),
-    ('Bodyweight');
+    ('Bodyweight'),
+    ('Other');
 
-INSERT INTO exercise_class (app_user_id, exercise_type_id, exercise_equipment_id, title)
+INSERT INTO body_part (title)
     VALUES
-    (1, 1, 1, 'Bench Press'),
-    (1, 1, 4, 'Chin-Ups'),
-    (1, 1, 1, 'Overhead Press'),
-    (1, 1, 2, 'Bicep Curls'),
-    (1, 1, 1, 'Rows'),
-    (1, 1, 3, 'Tricep Extensions'),
-    (1, 1, 3, 'Leg Curls'),
-    (1, 1, 3, 'Calf Raises'),
-    (1, 1, 4, 'Core Push-Ins'),
-    (1, 1, 1, 'Deadlift'),
-    (1, 1, 1, 'Squat'),
-    (1, 2, 4, 'Jog'),
-    (1, 2, 4, 'Stretches'),
-    (1, 1, 3, 'Leg Press');
+    ('Chest'),
+    ('Arms'),
+    ('Back'),
+    ('Legs'),
+    ('Shoulders'),
+    ('Core'),
+    ('Full Body'),
+    ('Other');
+
+INSERT INTO exercise_class (app_user_id, exercise_type_id, exercise_equipment_id, body_part_id, title)
+    VALUES
+    (1, 1, 1, 1, 'Bench Press'),
+    (1, 1, 4, 3, 'Chin-Ups'),
+    (1, 1, 1, 5, 'Overhead Press'),
+    (1, 1, 2, 2, 'Bicep Curls'),
+    (1, 1, 1, 3, 'Rows'),
+    (1, 1, 3, 2, 'Tricep Extensions'),
+    (1, 1, 3, 4, 'Leg Curls'),
+    (1, 1, 3, 4, 'Calf Raises'),
+    (1, 1, 4, 6, 'Core Push-Ins'),
+    (1, 1, 1, 7, 'Deadlift'),
+    (1, 1, 1, 4, 'Squat'),
+    (1, 2, 4, 8, 'Jog'),
+    (1, 2, 4, 8, 'Stretches'),
+    (1, 1, 3, 4, 'Leg Press');
 
 INSERT INTO pr_history (weight, reps, distance, time, date, exercise_class_id)
     VALUES
