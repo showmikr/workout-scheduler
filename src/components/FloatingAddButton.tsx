@@ -33,7 +33,8 @@ const FloatingAddButton = ({ onPress }: { onPress: () => void }) => {
 
 const styles = StyleSheet.create({
   blankSpaceMargin: {
-    paddingBottom: 8 * 14,
+    paddingTop: 4 * 14,
+    paddingBottom: 12 * 14,
   },
 });
 

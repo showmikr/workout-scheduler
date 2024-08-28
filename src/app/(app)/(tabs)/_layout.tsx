@@ -1,12 +1,13 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, Redirect, Tabs } from "expo-router";
-import { Pressable, useColorScheme } from "react-native";
+import { Link, Redirect, router, Tabs } from "expo-router";
+import { Pressable, useColorScheme, View } from "react-native";
 
-import Colors from "@/constants/Colors";
+import Colors, { figmaColors } from "@/constants/Colors";
 import { useSession } from "@/context/session-provider";
 import { useSQLiteContext } from "expo-sqlite";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
-
+import { BottomTabBar } from "@react-navigation/bottom-tabs";
+import { ThemedText } from "@/components/Themed";
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
  */
@@ -16,12 +17,37 @@ function TabBarIcon(props: {
 }) {
   return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
 }
+import { StyleSheet } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { useActiveWorkout } from "@/context/active-workout-provider";
+
+const MiniWorkoutPlayer = ({
+  title,
+  onPress,
+}: {
+  title: string;
+  onPress: () => void;
+}) => {
+  return (
+    <View>
+      <TouchableOpacity
+        style={styles.miniPlayerContainer}
+        activeOpacity={0.8}
+        onPress={onPress}
+      >
+        <ThemedText style={styles.miniPlayerText}>{title}</ThemedText>
+        <FontAwesome name="play" size={24} color={figmaColors.primaryWhite} />
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { session } = useSession();
   const db = useSQLiteContext();
   useDrizzleStudio(db);
+  const { inProgress, activeWorkout } = useActiveWorkout();
 
   // Only require authentication within the (app) group's layout as users
   // need to be able to access the (auth) group and sign in again.
@@ -35,6 +61,21 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+      }}
+      tabBar={(props) => {
+        return (
+          <View>
+            {inProgress && (
+              <MiniWorkoutPlayer
+                title={activeWorkout.title}
+                onPress={() => {
+                  router.push("/active-workout");
+                }}
+              />
+            )}
+            <BottomTabBar {...props} />
+          </View>
+        );
       }}
     >
       <Tabs.Screen
@@ -77,3 +118,20 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  miniPlayerContainer: {
+    minHeight: 64,
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    backgroundColor: figmaColors.redAccent,
+  },
+  miniPlayerText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: figmaColors.primaryWhite,
+  },
+});

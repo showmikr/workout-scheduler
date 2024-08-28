@@ -6,11 +6,10 @@ import {
   ActivityIndicator,
   View,
   LayoutAnimation,
-  Pressable,
-  Modal,
-  Button,
+  Text,
+  TouchableOpacity,
 } from "react-native";
-import { twColors } from "@/constants/Colors";
+import { figmaColors, twColors } from "@/constants/Colors";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import { ThemedText, ThemedView } from "@/components/Themed";
 import WorkoutHeader from "@/components/WorkoutHeader";
@@ -20,6 +19,7 @@ import FloatingAddButton, {
 import { useCallback, useEffect, useState } from "react";
 import { ResistanceSection } from "@/utils/exercise-types";
 import { useExerciseSections } from "@/hooks/exercises/exercises";
+import { useActiveWorkout } from "@/context/active-workout-provider";
 
 function OverlaySeparator() {
   return <View style={styles.overlaySeparator} />;
@@ -53,7 +53,11 @@ export default function ExercisesPage() {
     <SafeAreaView style={styles.safeAreaView}>
       <WorkoutHeader title={workoutTitle} />
       {exercises ?
-        <ExerciseList workoutId={workoutIdNumber} data={exercises} />
+        <ExerciseList
+          workoutId={workoutIdNumber}
+          workoutTitle={workoutTitle}
+          data={exercises}
+        />
       : <ActivityIndicator
           style={{ alignSelf: "center" }}
           color={twColors.neutral500}
@@ -67,9 +71,11 @@ export default function ExercisesPage() {
 const ExerciseList = ({
   data,
   workoutId,
+  workoutTitle,
 }: {
   data: ResistanceSection[];
   workoutId: number;
+  workoutTitle: string;
 }) => {
   // Trigger layout animation when list items are added or removed
   useEffect(() => {
@@ -92,19 +98,39 @@ const ExerciseList = ({
   }
 
   return (
-    <FlatList
-      ItemSeparatorComponent={OverlaySeparator}
-      ListFooterComponent={
-        <ThemedView
-          style={floatingAddButtonStyles.blankSpaceMargin}
-        ></ThemedView>
-      }
-      data={data}
-      keyExtractor={(item) => item.exercise_id.toString()}
-      renderItem={({ item }) => (
-        <ExerciseCard workoutId={workoutId} exercise={item} />
-      )}
-    />
+    <>
+      <FlatList
+        ItemSeparatorComponent={OverlaySeparator}
+        ListFooterComponent={
+          <ThemedView style={floatingAddButtonStyles.blankSpaceMargin}>
+            <StartWorkoutButton workoutTitle={workoutTitle} />
+          </ThemedView>
+        }
+        data={data}
+        keyExtractor={(item) => item.exercise_id.toString()}
+        renderItem={({ item }) => (
+          <ExerciseCard workoutId={workoutId} exercise={item} />
+        )}
+      />
+    </>
+  );
+};
+
+const StartWorkoutButton = ({ workoutTitle }: { workoutTitle: string }) => {
+  const { inProgress, setActiveWorkout } = useActiveWorkout();
+  return (
+    <TouchableOpacity
+      style={styles.startWorkoutButton}
+      activeOpacity={0.6}
+      onPress={() => {
+        if (!inProgress) {
+          setActiveWorkout({ count: 0, title: workoutTitle });
+          router.push("/active-workout");
+        }
+      }}
+    >
+      <Text style={styles.startWorkoutButtonText}>Start Workout</Text>
+    </TouchableOpacity>
   );
 };
 
@@ -132,5 +158,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     rowGap: 24,
+  },
+  startWorkoutButton: {
+    backgroundColor: figmaColors.redAccent,
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    marginHorizontal: 16,
+  },
+  startWorkoutButtonText: {
+    color: figmaColors.primaryWhite,
+    fontWeight: "bold",
   },
 });
