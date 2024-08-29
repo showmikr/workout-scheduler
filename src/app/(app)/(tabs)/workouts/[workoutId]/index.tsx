@@ -16,10 +16,13 @@ import WorkoutHeader from "@/components/WorkoutHeader";
 import FloatingAddButton, {
   floatingAddButtonStyles,
 } from "@/components/FloatingAddButton";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { ResistanceSection } from "@/utils/exercise-types";
 import { useExerciseSections } from "@/hooks/exercises/exercises";
-import { useActiveWorkout } from "@/context/active-workout-provider";
+import {
+  useActiveWorkout,
+  useActiveWorkoutActions,
+} from "@/context/active-workout-provider";
 
 function OverlaySeparator() {
   return <View style={styles.overlaySeparator} />;
@@ -117,16 +120,26 @@ const ExerciseList = ({
 };
 
 const StartWorkoutButton = ({ workoutTitle }: { workoutTitle: string }) => {
-  const { inProgress, setActiveWorkout } = useActiveWorkout();
+  const activeWorkout = useActiveWorkout();
+  const { startWorkout } = useActiveWorkoutActions();
+
   return (
     <TouchableOpacity
       style={styles.startWorkoutButton}
       activeOpacity={0.6}
       onPress={() => {
-        if (!inProgress) {
-          setActiveWorkout({ count: 0, title: workoutTitle });
-          router.push("/active-workout");
+        // if there is already an active workout, do nothing
+        if (activeWorkout) {
+          return;
         }
+        // otherwise start the workout
+        startWorkout({
+          title: workoutTitle,
+          elapsedTime: 0,
+          exercises: [],
+          restingSetId: null,
+        });
+        router.push("/active-workout");
       }}
     >
       <Text style={styles.startWorkoutButtonText}>Start Workout</Text>
