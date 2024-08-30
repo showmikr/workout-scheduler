@@ -122,8 +122,9 @@ CREATE TABLE IF NOT EXISTS "cardio_set" (
 CREATE TABLE IF NOT EXISTS "workout_session" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
-  "title" text NOT NULL,
-  "date" text NOT NULL, -- (represents ISO Date as string)
+  "title" text NOT NULL DEFAULT 'Custom Workout',
+  "started_on" text NOT NULL, -- (represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ)
+  "ended_on" text NOT NULL, -- (represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ)
   "calories" int,
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -131,49 +132,36 @@ CREATE TABLE IF NOT EXISTS "workout_session" (
 CREATE TABLE IF NOT EXISTS "exercise_session" (
   "id" INTEGER PRIMARY KEY,
   "workout_session_id" bigint NOT NULL,
-  "pr_history_id" bigint,
   "exercise_class_id" bigint NOT NULL,
-  "list_order" int NOT NULL,
-  "initial_weight" real,
-  "was_completed" boolean NOT NULL DEFAULT false,
   FOREIGN KEY ("workout_session_id") REFERENCES "workout_session" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY ("pr_history_id") REFERENCES "pr_history" ("id") ON DELETE SET NULL,
   FOREIGN KEY ("exercise_class_id") REFERENCES "exercise_class" ("id") ON DELETE SET NULL
-);
-
-CREATE TABLE IF NOT EXISTS "cardio_set_session" (
-  "id" INTEGER PRIMARY KEY,
-  "set_session_id" bigint NOT NULL,
-  "target_distance" real,
-  "target_time" int,
-  "actual_distance" real,
-  "actual_time" int,
-  FOREIGN KEY ("set_session_id") REFERENCES "set_session" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "set_session" (
   "id" INTEGER PRIMARY KEY,
   "exercise_session_id" bigint NOT NULL,
-  "title" text,
   "reps" int NOT NULL DEFAULT 1,
-  "list_order" int NOT NULL,
-  "elapsed_time" int NOT NULL DEFAULT 0,
   "rest_time" int NOT NULL DEFAULT 0,
-  FOREIGN KEY ("exercise_session_id") REFERENCES "exercise_session" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "resistance_set_session" (
-  "id" INTEGER PRIMARY KEY,
-  "set_session_id" bigint NOT NULL,
+  "completed" boolean NOT NULL DEFAULT false,
+  "set_type" int NOT NULL, -- 1 = resistance, 2 = cardio
   "total_weight" real,
-  FOREIGN KEY ("set_session_id") REFERENCES "set_session" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+  "target_distance" real,
+  "target_time" int,
+  "actual_distance" real,
+  "actual_time" int,
+  CHECK (
+    (set_type = 1 AND total_weight IS NOT NULL)
+    OR
+    (set_type = 2 AND total_weight IS NULL)
+  ),
+  FOREIGN KEY ("exercise_session_id") REFERENCES "exercise_session" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "user_bodyweight" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
   "weight" real NOT NULL,
-  "date" text NOT NULL, -- (represents ISO Date as string)
+  "date" text NOT NULL, -- (represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ)
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -184,7 +172,7 @@ CREATE TABLE IF NOT EXISTS "pr_history" (
   "reps" int,
   "distance" real,
   "time" int,
-  "date" text NOT NULL, -- (represents ISO Date as string)
+  "date" text NOT NULL, -- (represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ)
   FOREIGN KEY ("exercise_class_id") REFERENCES "exercise_class" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -575,383 +563,117 @@ INSERT INTO workout_days (workout_id, day)
     (1,'Tuesday'),
     (2,'Saturday');
 
-INSERT INTO workout_session (app_user_id, title, date, calories)
-    VALUES
-    (1, 'Upperbody',                '2022-01-02T07:34:12',   306),
-    (1, 'Upperbody',                '2022-01-07T07:34:12',   142),
-    (1, 'Upperbody',                '2022-01-12T07:34:12',   263),
-    (1, 'Upperbody',                '2022-01-17T07:34:12',   384),
-    (1, 'Upperbody',                '2022-01-25T07:34:12',   373),
-    (1, 'Upperbody',                '2022-01-29T07:34:12',   147),
-    (1, 'Upperbody',                '2022-01-31T07:34:12',   278),
-	
-	  (1, 'Upperbody',                '2022-02-02T07:34:12',   279),
-    (1, 'Upperbody',                '2022-02-07T07:34:12',   103),
-    (1, 'Upperbody',                '2022-02-12T07:34:12',   343),
-    (1, 'Upperbody',                '2022-02-17T07:34:12',   339),
-    (1, 'Upperbody',                '2022-02-25T07:34:12',   347),
-    (1, 'Upperbody',                '2022-02-29T07:34:12',   236),
-    (1, 'Upperbody',                '2022-02-31T07:34:12',    93),
-	
-	  (1, 'Upperbody',                '2022-03-02T07:34:12',   281),
-    (1, 'Upperbody',                '2022-03-07T07:34:12',   316),
-    (1, 'Upperbody',                '2022-03-12T07:34:12',   300),
-    (1, 'Upperbody',                '2022-03-17T07:34:12',   386),
-    (1, 'Upperbody',                '2022-03-25T07:34:12',   214),
-    (1, 'Upperbody',                '2022-03-29T07:34:12',   247),
-    (1, 'Upperbody',                '2022-03-31T07:34:12',   256),
-	
-	  (1, 'Upperbody',                '2022-04-02T07:34:12',   305),
-    (1, 'Upperbody',                '2022-04-07T07:34:12',   394),
-    (1, 'Upperbody',                '2022-04-12T07:34:12',   344),
-    (1, 'Upperbody',                '2022-04-17T07:34:12',   238),
-    (1, 'Upperbody',                '2022-04-25T07:34:12',   116),
-    (1, 'Upperbody',                '2022-04-29T07:34:12',    90),
-    (1, 'Upperbody',                '2022-04-31T07:34:12',    94),
-	
-	  (1, 'Upperbody',                '2022-05-02T07:34:12',   359),
-    (1, 'Upperbody',                '2022-05-07T07:34:12',   265),
-    (1, 'Upperbody',                '2022-05-12T07:34:12',   90),
-    (1, 'Upperbody',                '2022-05-17T07:34:12',   341),
-    (1, 'Upperbody',                '2022-05-25T07:34:12',   126),
-    (1, 'Upperbody',                '2022-05-29T07:34:12',   185),
-    (1, 'Upperbody',                '2022-05-31T07:34:12',   392),
-	
-	  (1, 'Upperbody',                '2022-06-02T07:34:12',   300),
-    (1, 'Upperbody',                '2022-06-07T07:34:12',   118),
-    (1, 'Upperbody',                '2022-06-12T07:34:12',   329),
-    (1, 'Upperbody',                '2022-06-17T07:34:12',   110),
-    (1, 'Upperbody',                '2022-06-25T07:34:12',   265),
-    (1, 'Upperbody',                '2022-06-29T07:34:12',   158),
-    (1, 'Upperbody',                '2022-06-31T07:34:12',   223),
-	
-	  (1, 'Upperbody',                '2022-07-02T07:34:12',   196),
-    (1, 'Upperbody',                '2022-07-07T07:34:12',   201),
-    (1, 'Upperbody',                '2022-07-12T07:34:12',   184),
-    (1, 'Upperbody',                '2022-07-17T07:34:12',   389),
-    (1, 'Upperbody',                '2022-07-25T07:34:12',   315),
-    (1, 'Upperbody',                '2022-07-29T07:34:12',   255),
-    (1, 'Upperbody',                '2022-07-31T07:34:12',   107),
-	
-	  (1, 'Upperbody',                '2022-08-02T07:34:12',   167),
-    (1, 'Upperbody',                '2022-08-07T07:34:12',   389),
-    (1, 'Upperbody',                '2022-08-12T07:34:12',   356),
-    (1, 'Upperbody',                '2022-08-17T07:34:12',   312),
-    (1, 'Upperbody',                '2022-08-25T07:34:12',   123),
-    (1, 'Upperbody',                '2022-08-29T07:34:12',   251),
-    (1, 'Upperbody',                '2022-08-31T07:34:12',   310),
-	
-	  (1, 'Upperbody',                '2022-09-02T07:34:12',   175),
-    (1, 'Upperbody',                '2022-09-07T07:34:12',   132),
-    (1, 'Upperbody',                '2022-09-12T07:34:12',   239),
-    (1, 'Upperbody',                '2022-09-17T07:34:12',   157),
-    (1, 'Upperbody',                '2022-09-25T07:34:12',   211),
-    (1, 'Upperbody',                '2022-09-29T07:34:12',    87),
-    (1, 'Upperbody',                '2022-09-31T07:34:12',   153),
-	
-	  (1, 'Upperbody',                '2022-10-02T07:34:12',   156),
-    (1, 'Upperbody',                '2022-10-07T07:34:12',   298),
-    (1, 'Upperbody',                '2022-10-12T07:34:12',   184),
-    (1, 'Upperbody',                '2022-10-17T07:34:12',   277),
-    (1, 'Upperbody',                '2022-10-25T07:34:12',    91),
-    (1, 'Upperbody',                '2022-10-29T07:34:12',    99),
-    (1, 'Upperbody',                '2022-10-31T07:34:12',   293),
-	
-	  (1, 'Upperbody',                '2022-11-02T07:34:12',   257),
-    (1, 'Upperbody',                '2022-11-07T07:34:12',   271),
-    (1, 'Upperbody',                '2022-11-12T07:34:12',   157),
-    (1, 'Upperbody',                '2022-11-17T07:34:12',   223),
-    (1, 'Upperbody',                '2022-11-25T07:34:12',   278),
-    (1, 'Upperbody',                '2022-11-29T07:34:12',   128),
-    (1, 'Upperbody',                '2022-11-31T07:34:12',    86),
-	
-	  (1 , 'Upperbody',                '2022-12-02T07:34:12',  237),
-    (1, 'Upperbody',                '2022-12-07T07:34:12',   179),
-    (1, 'Upperbody',                '2022-12-12T07:34:12',   145),
-    (1, 'Upperbody',                '2022-12-17T07:34:12',   116),
-    (1, 'Upperbody',                '2022-12-25T07:34:12',   204),
-    (1, 'Upperbody',                '2022-12-29T07:34:12',   103),
-    (1, 'Upperbody',                '2022-12-31T07:34:12',   281),
 
-	  (1, 'Upperbody',                '2023-01-02T07:34:12',   115),
-    (1, 'Upperbody',                '2023-01-07T07:34:12',   202),
-    (1, 'Upperbody',                '2023-01-12T07:34:12',   182),
-    (1, 'Upperbody',                '2023-01-17T07:34:12',   239),
-    (1, 'Upperbody',                '2023-01-25T07:34:12',   227),
-    (1, 'Upperbody',                '2023-01-29T07:34:12',   287),
-    (1, 'Upperbody',                '2023-01-31T07:34:12',   170),
-	
-	  (1, 'Upperbody',                '2023-02-02T07:34:12',   152),
-    (1, 'Upperbody',                '2023-02-07T07:34:12',   235),
-    (1, 'Upperbody',                '2023-02-12T07:34:12',   282),
-    (1, 'Upperbody',                '2023-02-17T07:34:12',   234),
-    (1, 'Upperbody',                '2023-02-25T07:34:12',   296),
-    (1, 'Upperbody',                '2023-02-29T07:34:12',   248),
-    (1, 'Upperbody',                '2023-02-31T07:34:12',   343),
-	
-	  (1, 'Upperbody',                '2023-03-02T07:34:12',   330),
-    (1, 'Upperbody',                '2023-03-07T07:34:12',   240),
-    (1, 'Upperbody',                '2023-03-12T07:34:12',   283),
-    (1, 'Upperbody',                '2023-03-17T07:34:12',   156),
-    (1, 'Upperbody',                '2023-03-25T07:34:12',   331),
-    (1, 'Upperbody',                '2023-03-29T07:34:12',   153),
-    (1, 'Upperbody',                '2023-03-31T07:34:12',   290),
-	
-	  (1, 'Upperbody',                '2023-04-02T07:34:12',   151),
-    (1, 'Upperbody',                '2023-04-07T07:34:12',   244),
-    (1, 'Upperbody',                '2023-04-12T07:34:12',   180),
-    (1, 'Upperbody',                '2023-04-17T07:34:12',   341),
-    (1, 'Upperbody',                '2023-04-25T07:34:12',   234),
-    (1, 'Upperbody',                '2023-04-29T07:34:12',   261),
-    (1, 'Upperbody',                '2023-04-31T07:34:12',   318),
-	
-	  (1, 'Upperbody',                '2023-05-02T07:34:12',   179),
-    (1, 'Upperbody',                '2023-05-07T07:34:12',   213),
-    (1, 'Upperbody',                '2023-05-12T07:34:12',   182),
-    (1, 'Upperbody',                '2023-05-17T07:34:12',   297),
-    (1, 'Upperbody',                '2023-05-25T07:34:12',   243),
-    (1, 'Upperbody',                '2023-05-29T07:34:12',   223),
-    (1, 'Upperbody',                '2023-05-31T07:34:12',   337),
-	
-	  (1, 'Upperbody',                '2023-06-02T07:34:12',   177),
-    (1, 'Upperbody',                '2023-06-07T07:34:12',   277),
-    (1, 'Upperbody',                '2023-06-12T07:34:12',   180),
-    (1, 'Upperbody',                '2023-06-17T07:34:12',   319),
-    (1, 'Upperbody',                '2023-06-25T07:34:12',   420),
-    (1, 'Upperbody',                '2023-06-29T07:34:12',   238),
-    (1, 'Upperbody',                '2023-06-31T07:34:12',   287),
-	
-	  (1, 'Upperbody',                '2023-07-02T07:34:12',   187),
-    (1, 'Upperbody',                '2023-07-07T07:34:12',   204),
-    (1, 'Upperbody',                '2023-07-12T07:34:12',   230),
-    (1, 'Upperbody',                '2023-07-17T07:34:12',   305),
-    (1, 'Upperbody',                '2023-07-25T07:34:12',   302),
-    (1, 'Upperbody',                '2023-07-29T07:34:12',   327),
-    (1, 'Upperbody',                '2023-07-31T07:34:12',   238),
-	
-	  (1, 'Upperbody',                '2023-08-02T07:34:12',   345),
-    (1, 'Upperbody',                '2023-08-07T07:34:12',   170),
-    (1, 'Upperbody',                '2023-08-12T07:34:12',   188),
-    (1, 'Upperbody',                '2023-08-17T07:34:12',   181),
-    (1, 'Upperbody',                '2023-08-25T07:34:12',   324),
-    (1, 'Upperbody',                '2023-08-29T07:34:12',   278),
-    (1, 'Upperbody',                '2023-08-31T07:34:12',   213),
-	
-	  (1, 'Upperbody',                '2023-09-02T07:34:12',   223),
-    (1, 'Upperbody',                '2023-09-07T07:34:12',   224),
-    (1, 'Upperbody',                '2023-09-12T07:34:12',   150),
-    (1, 'Upperbody',                '2023-09-17T07:34:12',   295),
-    (1, 'Upperbody',                '2023-09-25T07:34:12',   260),
-    (1, 'Upperbody',                '2023-09-29T07:34:12',   169),
-    (1, 'Upperbody',                '2023-09-31T07:34:12',   288),
-	
-	  (1, 'Upperbody',                '2023-10-02T07:34:12',   296),
-    (1, 'Upperbody',                '2023-10-07T07:34:12',   261),
-    (1, 'Upperbody',                '2023-10-12T07:34:12',   198),
-    (1, 'Upperbody',                '2023-10-17T07:34:12',   318),
-    (1, 'Upperbody',                '2023-10-25T07:34:12',   190),
-    (1, 'Upperbody',                '2023-10-29T07:34:12',   183),
-    (1, 'Upperbody',                '2023-10-31T07:34:12',   310),
-    
-    (1, 'Warmup Stretches',         '2023-11-07T14:12:34',    34),
-    (1, 'Upperbody',                '2023-11-07T14:12:34',   205), /* id: 156 */
-    (1, 'Daily Jog',                '2023-11-07T14:12:34',   134),
-    (1, 'Daily Jog',                '2023-11-11T17:05:03',   120),
-    (1, 'Legday workout + core',    '2023-11-15T07:34:12',   204), /* id: 159 */
-    (1, 'Upperbody',                '2023-11-15T07:34:12',   203),
-    (1, 'Upperbody',                '2023-11-23T07:34:12',   296),
-    (1, 'Upperbody',                '2023-11-28T07:34:12',   274),
+-- Create temporary table for dates
+CREATE TEMPORARY TABLE dates(date TEXT);
 
-    (1, 'Upperbody',                '2023-12-02T07:34:12',   203),
-    (1, 'Upperbody',                '2023-12-07T07:34:12',   108),
-    (1, 'Upperbody',                '2023-12-12T07:34:12',   253),
-    (1, 'Upperbody',                '2023-12-17T07:34:12',   393),
-    (1, 'Upperbody',                '2023-12-25T07:34:12',   169),
-    (1, 'Upperbody',                '2023-12-29T07:34:12',   222),
-    (1, 'Upperbody',                '2023-12-31T07:34:12',   257),
+-- Insert dates for the past year
+WITH RECURSIVE date_range(date) AS (
+  SELECT date('now', '-1 year')
+  UNION ALL
+  SELECT date(date, '+1 day')
+  FROM date_range
+  WHERE date < date('now')
+)
+INSERT INTO dates(date)
+SELECT date FROM date_range;
 
-    (1, 'Upperbody',                '2024-01-03T07:34:12',   247),
-    (1, 'Upperbody',                '2024-01-10T07:34:12',   332),
-    (1, 'Upperbody',                '2024-01-13T07:34:12',   202),
-    (1, 'Upperbody',                '2024-01-17T07:34:12',   355),
-    (1, 'Upperbody',                '2024-01-20T07:34:12',   509),
-    (1, 'Upperbody',                '2024-01-24T07:34:12',   271),
-    (1, 'Upperbody',                '2024-01-27T07:34:12',   261),
-    (1, 'Upperbody',                '2024-01-31T07:34:12',   440),
+CREATE TEMPORARY TABLE workout_sessions(
+    app_user_id INTEGER,
+    title_id INTEGER,
+    started_on TEXT,
+    ended_on TEXT,
+    calories INTEGER
+);
+INSERT INTO workout_sessions
+SELECT
+    1 as app_user_id,
+    (ABS(random()) % 7 + 1) as title_id,
+    date as started_on,
+    datetime(date, '+' || (20 + ABS(random()) % 161) || ' minutes') as ended_on,
+    80 + ABS(random()) % 421 as calories
+FROM dates
+LIMIT 200;
 
-    (1, 'Upperbody',                '2024-02-03T07:34:12',   322),
-    (1, 'Upperbody',                '2024-02-05T07:34:12',   322),
-    (1, 'Upperbody',                '2024-02-05T09:34:12',   402),
-    (1, 'Upperbody',                '2024-02-07T07:34:12',   244),
-    (1, 'Upperbody',                '2024-02-10T07:34:12',   286),
-    (1, 'Upperbody',                '2024-02-14T07:34:12',   329),
-    (1, 'Upperbody',                '2024-02-17T07:34:12',   150),
-    (1, 'Upperbody',                '2024-02-19T07:34:12',   230), /* id: 185 */
-    (1, 'Upperbody',                '2024-02-20T07:34:12',   403), /* id: 186 */
-    (1, 'Upperbody',                '2024-02-24T07:34:12',   255),
-    (1, 'Upperbody',                '2024-02-28T17:25:12',   313),
 
-    (1, 'Upperbody',                '2024-03-02T17:25:12',   357),
-    (1, 'Upperbody',                '2024-03-09T17:25:12',   150),
-    (1, 'Upperbody',                '2024-03-12T17:25:12',   222),
-    (1, 'Upperbody',                '2024-03-20T17:25:12',   97),
-    (1, 'Upperbody',                '2024-03-23T17:25:12',   342),
-    (1, 'Upperbody',                '2024-03-27T17:25:12',   186),
-    (1, 'Upperbody',                '2024-03-30T17:25:12',   373),
+CREATE TEMPORARY TABLE exercise_sessions(
+    workout_session_id INTEGER,
+    exercise_class_id INTEGER,
+    exercise_order INTEGER
+);
+INSERT INTO exercise_sessions
+SELECT
+    ws.rowid as workout_session_id,
+    ec.id as exercise_class_id,
+    ROW_NUMBER() OVER (PARTITION BY ws.rowid ORDER BY random()) as exercise_order
+FROM workout_sessions ws
+CROSS JOIN exercise_class ec
+WHERE ec.exercise_type_id = 1
+AND ec.app_user_id = 1;
 
-    (1, 'Upperbody',                '2024-04-10T17:25:12',   240),
-    (1, 'Upperbody',                '2024-04-13T17:25:12',   383),
-    (1, 'Upperbody',                '2024-04-20T17:25:12',   238);
+CREATE TEMPORARY TABLE set_sessions(
+    workout_session_id INTEGER,
+    exercise_class_id INTEGER,
+    reps INTEGER,
+    rest_time INTEGER,
+    completed INTEGER,
+    set_type INTEGER,
+    total_weight REAL,
+    set_order INTEGER
+);
+INSERT INTO set_sessions
+SELECT
+    es.workout_session_id,
+    es.exercise_class_id,
+    2 + ABS(random()) % 19 as reps,
+    ABS(random()) % 211 as rest_time,
+    CASE WHEN random() < 0.1 THEN 0 ELSE 1 END as completed,
+    1 as set_type,
+    20 + ABS(random()) % 81 as total_weight,
+    ROW_NUMBER() OVER (PARTITION BY es.workout_session_id, es.exercise_class_id ORDER BY random()) as set_order
+FROM exercise_sessions es
+CROSS JOIN (SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5) nums;
 
-INSERT INTO exercise_session (workout_session_id, pr_history_id, list_order, initial_weight, was_completed, exercise_class_id)
-    VALUES
-    (156, 2,     1,  20.41166,     True,  1), /*Upperbody*/
-    (156, NULL,  2,  NULL,   True,  3),
-    (156, NULL,  3,  NULL,   True,  4),
-    (156, NULL,  4,  NULL,   True,  5), 
-    (156, 7,     5,  NULL,   True,  6),
+-- Insert workout sessions
+INSERT INTO workout_session (app_user_id, title, started_on, ended_on, calories)
+SELECT
+    app_user_id,
+    CASE title_id
+        WHEN 1 THEN 'Full Body'
+        WHEN 2 THEN 'Custom Workout'
+        WHEN 3 THEN 'Back Day'
+        WHEN 4 THEN 'Chest Day'
+        WHEN 5 THEN 'Leg Day'
+        WHEN 6 THEN 'Arm Day'
+        WHEN 7 THEN 'Power Lifting'
+    END as title,
+    started_on,
+    ended_on,
+    calories
+FROM workout_sessions;
 
-    (159, NULL,  1,  NULL,   True,  7), /*Legs*/
-    (159, NULL,  2,  9.071847,     True,  8),
-    (159, NULL,  3,  9.071847,     True,  9),
-    (159, NULL,  4,  22.67962,     True,  10),
-    (159, 4,     5,  20.41166,     True,  11),
-    (159, NULL,  6,  NULL,   False, 12),
+-- Insert exercise sessions
+INSERT INTO exercise_session (workout_session_id, exercise_class_id)
+SELECT workout_session_id, exercise_class_id
+FROM exercise_sessions
+WHERE exercise_order <= 3 + ABS(random()) % 3;
 
-    (185, 2,     1,  20.41166,     True,  1), /*Upperbody*/
-    (185, NULL,  2,  NULL,   True,  3),
-    (185, NULL,  3,  NULL,   True,  4),
-    (185, NULL,  4,  NULL,   True,  5), 
-    (185, 7,     5,  NULL,   True,  6),
-    
-    (186, 2,     1,  20.41166,     True,  1), /*Upperbody*/
-    (186, NULL,  2,  NULL,   True,  3),
-    (186, NULL,  3,  NULL,   True,  4),
-    (186, NULL,  4,  NULL,   True,  5), 
-    (186, 7,     5,  NULL,   True,  6);
+-- Insert set sessions
+INSERT INTO set_session (exercise_session_id, reps, rest_time, completed, set_type, total_weight)
+SELECT
+    es.id,
+    ss.reps,
+    ss.rest_time,
+    ss.completed,
+    ss.set_type,
+    ss.total_weight
+FROM set_sessions ss
+JOIN exercise_session es ON ss.workout_session_id = es.workout_session_id AND ss.exercise_class_id = es.exercise_class_id
+WHERE ss.set_order <= 3 + ABS(random()) % 3;
 
-INSERT INTO set_session (exercise_session_id, title, reps, list_order, elapsed_time, rest_time)
-    VALUES
-    (1,     'Warm Up',          5,      1,  18, 192),
-    (1,     'Main Set',         12,     2,  47, 180),
-    (3,     'Main Set',         10,     1,  52, 180),
-    (4,     'Main Set',         12,     1,  49, 180),
-    (5,     'Main Set',         12,     1,  72, 180),
-    (6,     'Main Set',         16,     1,  174, 0),
-    
-    /* --- */
+-- Drop temporary tables
+DROP TABLE dates;
+DROP TABLE workout_sessions;
+DROP TABLE exercise_sessions;
+DROP TABLE set_sessions;
 
-    (7,     'Main Set',         12,     1,  84, 180),
-    (8,     'Main Set',         10,     1,  42, 180),
-    (9,     'Main Set',         16,     1,  57, 180),
-    (10,    'Warm-Up',          5,      1,  23, 180),
-    (10,    'Main Set',         12,     2,  61, 180),
-    (11,    'Warm-Up',          5,      1,  34, 180),
-    (11,    'Main Set',         12,     2,  76, 180),
-    (12,    'Cool-Down Jog',    420,    1,  0,  0),
-
-    (13,     'Warm Up',          5,      1,  18, 192),
-    (13,     'Main Set',         12,     2,  47, 180),
-    (15,     'Main Set',         10,     1,  52, 180),
-    (16,     'Main Set',         12,     1,  49, 180),
-    (17,     'Main Set',         12,     1,  72, 180),
-    (18,     'Main Set',         16,     1,  174, 0),
-    
-    (19,     'Warm Up',          5,      1,  18, 192),
-    (19,     'Main Set',         12,     2,  47, 180),
-    (21,     'Main Set',         10,     1,  52, 180);
-
-INSERT INTO resistance_set_session (set_session_id, total_weight)
-    VALUES
-    (1,     56.69905),
-    (2,     79.37866),
-    (3,     73.48196),
-    (4,     24.94758),
-    (5,     31.75147),
-    (6,     68.03886),
-    (7,     11.33981),
-
-    (8,     49.89516),
-    (9,     54.43108),
-    (10,    22.67962),
-    (11,    145.1496),
-    (12,    254.0117),
-    (13,    61.23497),
-    (14,    102.0583),
-
-    (16,     56.69905),
-    (17,     79.37866),
-    (18,     73.48196),
-    (19,     24.94758),
-    (20,     31.75147),
-    (21,     68.03886),
-    (22,     11.33981),
-    (23,     56.69905);
-
-INSERT INTO cardio_set_session (set_session_id, target_distance, target_time, actual_distance, actual_time)
-    VALUES
-    (15, 69, 69, 6969, 6969);
-
--- Insert 200 workout sessions
-WITH RECURSIVE
-  dates(date) AS (
-    SELECT date('now', '-9 months')
-    UNION ALL
-    SELECT date(date, '+1 day')
-    FROM dates
-    WHERE date < date('now')
-  ),
-  numbered_dates AS (
-    SELECT date, ROW_NUMBER() OVER (ORDER BY date) AS row_num
-    FROM dates
-  )
-INSERT INTO workout_session (app_user_id, title, date, calories)
-SELECT 
-  1, 
-  CASE (ABS(RANDOM()) % 3)
-    WHEN 0 THEN 'Upper Body Workout'
-    WHEN 1 THEN 'Lower Body Workout'
-    ELSE 'Full Body Workout'
-  END,
-  date,
-  200 + (ABS(RANDOM()) % 300)
-FROM numbered_dates
-WHERE row_num <= 200
-ORDER BY date;
-
--- Insert exercise sessions for each workout session
-INSERT INTO exercise_session (workout_session_id, pr_history_id, exercise_class_id, list_order, initial_weight, was_completed)
-SELECT 
-  ws.id,
-  NULL,
-  (ABS(RANDOM()) % 11) + 1, -- Random exercise class id between 1 and 11
-  (ROW_NUMBER() OVER (PARTITION BY ws.id ORDER BY RANDOM())) as list_order,
-  45 + (ABS(RANDOM()) % 100),
-  1
-FROM workout_session ws
-CROSS JOIN (SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) -- 4 exercises per workout
-ORDER BY ws.id, list_order;
-
--- Insert set sessions for each exercise session
-INSERT INTO set_session (exercise_session_id, title, reps, list_order, elapsed_time, rest_time)
-SELECT 
-  es.id,
-  CASE (ABS(RANDOM()) % 3)
-    WHEN 0 THEN 'Warm-up'
-    WHEN 1 THEN 'Main set'
-    ELSE 'Cool-down'
-  END,
-  8 + (ABS(RANDOM()) % 8), -- Random reps between 8 and 15
-  ROW_NUMBER() OVER (PARTITION BY es.id ORDER BY RANDOM()),
-  30 + (ABS(RANDOM()) % 60), -- Random elapsed time between 30 and 89 seconds
-  60 + (ABS(RANDOM()) % 120) -- Random rest time between 60 and 179 seconds
-FROM exercise_session es
-CROSS JOIN (SELECT 1 UNION SELECT 2 UNION SELECT 3) -- 3 sets per exercise
-ORDER BY es.id, list_order;
-
--- Insert resistance set sessions
-INSERT INTO resistance_set_session (set_session_id, total_weight)
-SELECT 
-  ss.id,
-  40 + (ABS(RANDOM()) % 160) -- Random weight between 40 and 199
-FROM set_session ss;

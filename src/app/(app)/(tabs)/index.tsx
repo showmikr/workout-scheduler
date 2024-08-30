@@ -85,14 +85,16 @@ function useGraphData() {
 
   // Otherwise, asynchronously load it all up
   Promise.all([
-    myDB.getAllAsync<any>(
+    myDB.getAllAsync<any>( // TODO: update this query to match the schema
       `
-        SELECT ws.title, ws.calories, SUM(elapsed_time + rest_time) AS elapsed_time, ws.date, ws.id
-          FROM workout_session AS ws
-          LEFT JOIN exercise_session AS es ON ws.id = es.workout_session_id 
-          LEFT JOIN set_session AS ess ON es.id = ess.exercise_session_id
-          WHERE ws.app_user_id = 1
-          GROUP BY ws.id
+      SELECT 
+        ws.id,
+        ws.title,
+        unixepoch(ws.ended_on) - unixepoch(ws.started_on) AS elapsed_time,
+        ws.calories,
+        ws.started_on AS date
+      FROM workout_session AS ws
+      WHERE ws.app_user_id = 1
       `
     ),
     myDB.getAllAsync<any>(
