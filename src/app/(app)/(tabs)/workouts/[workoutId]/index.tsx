@@ -47,7 +47,7 @@ export default function ExercisesPage() {
 
   const onPressFloatingAddBtn = useCallback(() => {
     router.push({
-      pathname: "/workouts/add-exercise",
+      pathname: "/add-exercise",
       params: { workoutId: workoutId, workoutTitle: workoutTitle },
     });
   }, [workoutId, workoutTitle]);

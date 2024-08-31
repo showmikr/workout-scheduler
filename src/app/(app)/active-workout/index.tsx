@@ -6,6 +6,19 @@ import {
 import { ThemedText } from "@/components/Themed";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { router } from "expo-router";
+import ActiveExerciseCard from "./_components/ActiveExerciseCard";
+
+const AddExerciseButton = () => {
+  return (
+    <TouchableOpacity
+      onPress={() => {
+        router.push("/add-exercise");
+      }}
+    >
+      <ThemedText>Add Exercise</ThemedText>
+    </TouchableOpacity>
+  );
+};
 
 export default function ActiveWorkout() {
   const activeWorkout = useActiveWorkout();
@@ -24,8 +37,12 @@ export default function ActiveWorkout() {
           cancelWorkout();
         }}
       >
-        <ThemedText style={{ fontSize: 36 }}>Cancel Workout</ThemedText>
+        <ThemedText style={{ fontSize: 24 }}>Cancel Workout</ThemedText>
       </TouchableOpacity>
+      <AddExerciseButton />
+      {activeWorkout.exercises.map((exercise) => {
+        return <ActiveExerciseCard key={exercise.id} exercise={exercise} />;
+      })}
     </SafeAreaView>
   );
 }

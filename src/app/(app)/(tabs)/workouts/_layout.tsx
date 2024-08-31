@@ -34,10 +34,6 @@ export default function TabTwoLayout() {
           presentation: "modal",
         }}
       />
-      <Stack.Screen
-        name="add-exercise/index"
-        options={{ presentation: "modal", headerTitle: "Choose an exercise" }}
-      />
     </Stack>
   );
 }

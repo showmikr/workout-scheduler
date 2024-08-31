@@ -18,6 +18,11 @@ import ExerciseClassCard from "@/components/ExerciseClassCard";
 import { useState } from "react";
 import AddCustomExerciseCard from "@/components/AddCustomExerciseCard";
 import { figmaColors } from "@/constants/Colors";
+import {
+  useActiveWorkout,
+  useActiveWorkoutActions,
+} from "@/context/active-workout-provider";
+import { ExerciseClass } from "@/utils/exercise-types";
 
 export default function AddExerciseIndex() {
   // TODO: Refactor hacky fix of 'value!' to deal with undefined search params
@@ -25,26 +30,48 @@ export default function AddExerciseIndex() {
     workoutId: string;
     workoutTitle: string;
   }>();
+
   const workoutId = searchParams.workoutId;
   const workoutTitle = searchParams.workoutTitle;
-  if (!workoutId) {
-    throw new Error(
-      `workoutId or workoutTitle is undefined. This should never happen. \
-      workoutId: ${workoutId}, workoutTitle: ${workoutTitle}`
-    );
-  }
-
   const workoutIdNumber = parseInt(workoutId);
-  if (isNaN(workoutIdNumber)) {
-    throw new Error(`workoutId is not a number. This should never happen. \
+  const activeWorkout = useActiveWorkout();
+  if (!activeWorkout) {
+    if (!workoutId) {
+      throw new Error(
+        `workoutId or workoutTitle is undefined. This should never happen. \
+      workoutId: ${workoutId}, workoutTitle: ${workoutTitle}`
+      );
+    }
+
+    if (isNaN(workoutIdNumber)) {
+      throw new Error(`workoutId is not a number. This should never happen. \
       workoutId: ${workoutId}, workoutTitle: ${workoutTitle}`);
+    }
   }
 
   // TODO: handle when query errors out
   const { data: exerciseClasses, isLoading } = useExerciseClasses();
   const addExerciseMutation = useAddExercise(workoutIdNumber);
   const { mutate: addExerciseClass } = useAddExerciseClass();
+  const { addExercise: addActiveExercise } = useActiveWorkoutActions();
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const onPressAddActiveExercise = (exerciseClass: ExerciseClass) => {
+    router.navigate({
+      pathname: "/active-workout",
+    });
+    addActiveExercise({ exerciseClass });
+  };
+  const onPressAddTemplateExercise = (exerciseClass: ExerciseClass) => {
+    router.navigate({
+      pathname: "/workouts/[workoutId]",
+      params: {
+        workoutId: workoutId,
+        workoutTitle: workoutTitle,
+      },
+    });
+    addExerciseMutation.mutate({ exerciseClass });
+  };
 
   if (isLoading) {
     return (
@@ -70,14 +97,11 @@ export default function AddExerciseIndex() {
               title={item.title}
               equipmentId={item.exercise_equipment_id}
               onPress={() => {
-                router.navigate({
-                  pathname: "/workouts/[workoutId]",
-                  params: {
-                    workoutId: workoutId,
-                    workoutTitle: workoutTitle,
-                  },
-                });
-                addExerciseMutation.mutate({ exerciseClass: item });
+                if (activeWorkout) {
+                  onPressAddActiveExercise(item);
+                } else {
+                  onPressAddTemplateExercise(item);
+                }
               }}
             />
           )}
