@@ -12,20 +12,20 @@ import { FontAwesome6 } from "@expo/vector-icons";
 import { useRef, useState } from "react";
 import { Dropdown } from "react-native-element-dropdown";
 import {
-  bodyPartEnums,
-  equipmentEnums,
+  bodyPartType,
+  equipmentType,
   exerciseEnums,
 } from "@/utils/exercise-types";
 import { useAddExerciseClass } from "@/hooks/exercises/exercise-classes";
 
-const bodyParts = Object.entries(bodyPartEnums).map(([key, value]) => ({
-  label: key[0].toUpperCase() + key.slice(1),
-  value,
+const bodyParts = Object.entries(bodyPartType).map(([key, value]) => ({
+  label: value,
+  value: parseInt(key),
 }));
 
-const equipment = Object.entries(equipmentEnums).map(([key, value]) => ({
-  label: key[0].toUpperCase() + key.slice(1),
-  value,
+const equipment = Object.entries(equipmentType).map(([key, value]) => ({
+  label: value,
+  value: parseInt(key),
 }));
 
 const DropdownIcon = () => {

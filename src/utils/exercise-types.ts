@@ -13,6 +13,14 @@ export const equipmentEnums = {
   other: 5,
 } as const;
 
+export const equipmentType = {
+  1: "Barbell",
+  2: "Dumbbell",
+  3: "Machine",
+  4: "Bodyweight",
+  5: "Other",
+} as const;
+
 /// hard coded constants based on the sqlite db table "body_part"
 export const bodyPartEnums = {
   chest: 1,
@@ -23,6 +31,17 @@ export const bodyPartEnums = {
   core: 6,
   fullBody: 7,
   other: 8,
+} as const;
+
+export const bodyPartType = {
+  1: "Chest",
+  2: "Arms",
+  3: "Back",
+  4: "Legs",
+  5: "Shoulders",
+  6: "Core",
+  7: "Full Body",
+  8: "Other",
 } as const;
 
 export type Workout = { id: number; title: string };
