@@ -20,8 +20,8 @@ import { useCallback, useEffect } from "react";
 import { ResistanceSection } from "@/utils/exercise-types";
 import { useExerciseSections } from "@/hooks/exercises/exercises";
 import {
-  useActiveWorkout,
   useActiveWorkoutActions,
+  useIsWorkoutInProgress,
 } from "@/context/active-workout-provider";
 
 function OverlaySeparator() {
@@ -120,7 +120,7 @@ const ExerciseList = ({
 };
 
 const StartWorkoutButton = ({ workoutTitle }: { workoutTitle: string }) => {
-  const activeWorkout = useActiveWorkout();
+  const isWorkoutInProgress = useIsWorkoutInProgress();
   const { startWorkout } = useActiveWorkoutActions();
 
   return (
@@ -129,7 +129,7 @@ const StartWorkoutButton = ({ workoutTitle }: { workoutTitle: string }) => {
       activeOpacity={0.6}
       onPress={() => {
         // if there is already an active workout, do nothing
-        if (activeWorkout) {
+        if (isWorkoutInProgress) {
           return;
         }
         // otherwise start the workout

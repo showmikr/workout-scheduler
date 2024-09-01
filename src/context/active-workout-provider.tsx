@@ -20,7 +20,11 @@ type ActiveExercise = {
 type ActiveWorkout = {
   title: string;
   elapsedTime: number; // measured in seconds
-  restingSetId: number | null;
+  restingExercise: {
+    exerciseId: number;
+    setId: number;
+    elapsedRest: number;
+  } | null;
   exercises: readonly ActiveExercise[];
 };
 
@@ -42,34 +46,30 @@ type ActiveWorkoutActions = {
 };
 
 type ActiveWorkoutState = {
-  activeWorkout: ActiveWorkout | null;
+  isWorkoutInProgress: boolean;
+  activeWorkout: ActiveWorkout;
   actions: ActiveWorkoutActions;
 };
-
-const ActiveWorkoutContext = createContext<StoreApi<ActiveWorkoutState> | null>(
-  null
-);
 
 function createAutoIncrement(initialValue: number = 0) {
   let currentValue = initialValue;
   return () => currentValue++;
 }
 
+const initialActiveWorkout: ActiveWorkout = {
+  title: "",
+  elapsedTime: 0,
+  restingExercise: null,
+  exercises: [],
+};
+
 const createActiveWorkoutStore = () =>
   createStore<ActiveWorkoutState>()((set, get) => {
     const exerciseIncrement = createAutoIncrement();
     const setIncrement = createAutoIncrement();
 
-    const validateActiveWorkout = () => {
-      const activeWorkout = get().activeWorkout;
-      if (!activeWorkout) {
-        throw new Error("No active workout. This should not happen");
-      }
-      return activeWorkout;
-    };
-
     const validateFindExerciseIndex = (exerciseId: number) => {
-      const activeWorkout = validateActiveWorkout();
+      const activeWorkout = get().activeWorkout;
       const exerciseIndex = activeWorkout.exercises.findIndex(
         (ex) => ex.id === exerciseId
       );
@@ -80,13 +80,17 @@ const createActiveWorkoutStore = () =>
     };
 
     return {
-      activeWorkout: null,
+      isWorkoutInProgress: false,
+      activeWorkout: initialActiveWorkout,
       actions: {
         startWorkout: (workout: ActiveWorkout) => {
-          set(() => ({ activeWorkout: workout }));
+          set(() => ({ isWorkoutInProgress: true, activeWorkout: workout }));
         },
         cancelWorkout: () => {
-          set(() => ({ activeWorkout: null }));
+          set(() => ({
+            isWorkoutInProgress: false,
+            activeWorkout: initialActiveWorkout,
+          }));
         },
         addExercise: (
           inputExercise,
@@ -97,8 +101,8 @@ const createActiveWorkoutStore = () =>
             elapsedRest: 0,
           }
         ) => {
-          set(() => {
-            const activeWorkout = validateActiveWorkout();
+          set((state) => {
+            const activeWorkout = state.activeWorkout;
             const initialSets = [
               { ...inputSet, id: setIncrement(), isCompleted: false },
             ];
@@ -118,12 +122,11 @@ const createActiveWorkoutStore = () =>
         },
         deleteExercise: (exerciseId) => {
           set((state) => {
-            const activeWorkout = state.activeWorkout!; // okay b/c validateFindExerciseIndex ensures activeWorkout is not null
-            const exerciseIndex = validateFindExerciseIndex(exerciseId);
+            const currentWorkout = state.activeWorkout;
             return {
               activeWorkout: {
-                ...activeWorkout,
-                exercises: activeWorkout.exercises.filter(
+                ...currentWorkout,
+                exercises: currentWorkout.exercises.filter(
                   (ex) => ex.id !== exerciseId
                 ),
               },
@@ -132,7 +135,7 @@ const createActiveWorkoutStore = () =>
         },
         addSet: (exerciseId, newSet) => {
           set((state) => {
-            const activeWorkout = state.activeWorkout!; // okay b/c validateFindExerciseIndex ensures activeWorkout is not null
+            const activeWorkout = state.activeWorkout;
             const exerciseIndex = validateFindExerciseIndex(exerciseId);
             const exerciseList = activeWorkout.exercises;
             const exercise = exerciseList[exerciseIndex];
@@ -154,7 +157,7 @@ const createActiveWorkoutStore = () =>
         },
         deleteSet: (exerciseId, setId) => {
           set((state) => {
-            const activeWorkout = state.activeWorkout!; // okay b/c validateFindExerciseIndex ensures activeWorkout is not null
+            const activeWorkout = state.activeWorkout;
             const exerciseIndex = validateFindExerciseIndex(exerciseId);
             const exerciseList = activeWorkout.exercises;
             const exercise = exerciseList[exerciseIndex];
@@ -173,7 +176,7 @@ const createActiveWorkoutStore = () =>
         },
         changeReps: (exerciseId, setId, reps) => {
           set((state) => {
-            const activeWorkout = state.activeWorkout!; // okay b/c validateFindExerciseIndex ensures activeWorkout is not null
+            const activeWorkout = state.activeWorkout;
             const exerciseIndex = validateFindExerciseIndex(exerciseId);
             const exerciseList = activeWorkout.exercises;
             const exercise = exerciseList[exerciseIndex];
@@ -200,7 +203,7 @@ const createActiveWorkoutStore = () =>
         },
         changeWeight: (exerciseId, setId, weight) => {
           set((state) => {
-            const activeWorkout = state.activeWorkout!; // okay b/c validateFindExerciseIndex ensures activeWorkout is not null
+            const activeWorkout = state.activeWorkout;
             const exerciseIndex = validateFindExerciseIndex(exerciseId);
             const exerciseList = activeWorkout.exercises;
             const exercise = exerciseList[exerciseIndex];
@@ -229,6 +232,10 @@ const createActiveWorkoutStore = () =>
     } satisfies ActiveWorkoutState;
   });
 
+const ActiveWorkoutContext = createContext<StoreApi<ActiveWorkoutState> | null>(
+  null
+);
+
 const ActiveWorkoutProvider = ({ children }: { children: React.ReactNode }) => {
   const [store] = useState(createActiveWorkoutStore);
   return (
@@ -252,6 +259,10 @@ const useActiveWorkoutStore = <T,>(
 
 const useActiveWorkout = () =>
   useActiveWorkoutStore((state) => state.activeWorkout);
+
+const useIsWorkoutInProgress = () =>
+  useActiveWorkoutStore((state) => state.isWorkoutInProgress);
+
 const useActiveWorkoutActions = () =>
   useActiveWorkoutStore((state) => state.actions);
 
@@ -259,5 +270,6 @@ export {
   ActiveWorkoutProvider,
   useActiveWorkout,
   useActiveWorkoutActions,
+  useIsWorkoutInProgress,
   ActiveExercise,
 };

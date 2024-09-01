@@ -19,7 +19,10 @@ function TabBarIcon(props: {
 }
 import { StyleSheet } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { useActiveWorkout } from "@/context/active-workout-provider";
+import {
+  useIsWorkoutInProgress,
+  useActiveWorkout,
+} from "@/context/active-workout-provider";
 
 const MiniWorkoutPlayer = ({
   title,
@@ -47,8 +50,8 @@ export default function TabLayout() {
   const { session } = useSession();
   const db = useSQLiteContext();
   useDrizzleStudio(db);
+  const isWorkoutInProgress = useIsWorkoutInProgress();
   const activeWorkout = useActiveWorkout();
-
   // Only require authentication within the (app) group's layout as users
   // need to be able to access the (auth) group and sign in again.
   if (!session) {
@@ -65,7 +68,7 @@ export default function TabLayout() {
       tabBar={(props) => {
         return (
           <View>
-            {activeWorkout && (
+            {isWorkoutInProgress && (
               <MiniWorkoutPlayer
                 title={activeWorkout.title}
                 onPress={() => {

@@ -19,8 +19,8 @@ import { useState } from "react";
 import AddCustomExerciseCard from "@/components/AddCustomExerciseCard";
 import { figmaColors } from "@/constants/Colors";
 import {
-  useActiveWorkout,
   useActiveWorkoutActions,
+  useIsWorkoutInProgress,
 } from "@/context/active-workout-provider";
 import { ExerciseClass } from "@/utils/exercise-types";
 
@@ -34,8 +34,8 @@ export default function AddExerciseIndex() {
   const workoutId = searchParams.workoutId;
   const workoutTitle = searchParams.workoutTitle;
   const workoutIdNumber = parseInt(workoutId);
-  const activeWorkout = useActiveWorkout();
-  if (!activeWorkout) {
+  const isWorkoutInProgress = useIsWorkoutInProgress();
+  if (!isWorkoutInProgress) {
     if (!workoutId) {
       throw new Error(
         `workoutId or workoutTitle is undefined. This should never happen. \
@@ -56,12 +56,13 @@ export default function AddExerciseIndex() {
   const { addExercise: addActiveExercise } = useActiveWorkoutActions();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  // onPress handler when user navigates to this page from the active workout screen
   const onPressAddActiveExercise = (exerciseClass: ExerciseClass) => {
-    router.navigate({
-      pathname: "/active-workout",
-    });
+    router.navigate("/active-workout");
     addActiveExercise({ exerciseClass });
   };
+
+  // onPress handler when user navigates to this page from a workout template screen
   const onPressAddTemplateExercise = (exerciseClass: ExerciseClass) => {
     router.navigate({
       pathname: "/workouts/[workoutId]",
@@ -97,7 +98,7 @@ export default function AddExerciseIndex() {
               title={item.title}
               equipmentId={item.exercise_equipment_id}
               onPress={() => {
-                if (activeWorkout) {
+                if (isWorkoutInProgress) {
                   onPressAddActiveExercise(item);
                 } else {
                   onPressAddTemplateExercise(item);

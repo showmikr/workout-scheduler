@@ -1,10 +1,6 @@
 import { ThemedText } from "@/components/Themed";
-import {
-  ActiveExercise,
-  useActiveWorkoutActions,
-} from "@/context/active-workout-provider";
-import { router } from "expo-router";
-import { TouchableOpacity, View } from "react-native";
+import { ActiveExercise } from "@/context/active-workout-provider";
+import { View } from "react-native";
 
 type ActiveExerciseCardProps = {
   exercise: ActiveExercise;
