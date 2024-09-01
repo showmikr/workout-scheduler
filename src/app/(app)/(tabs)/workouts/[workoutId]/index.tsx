@@ -20,8 +20,9 @@ import { useCallback, useEffect } from "react";
 import { ResistanceSection } from "@/utils/exercise-types";
 import { useExerciseSections } from "@/hooks/exercises/exercises";
 import {
+  InputWorkout,
   useActiveWorkoutActions,
-  useIsWorkoutInProgress,
+  useActiveWorkoutStatus,
 } from "@/context/active-workout-provider";
 
 function OverlaySeparator() {
@@ -47,7 +48,7 @@ export default function ExercisesPage() {
 
   const onPressFloatingAddBtn = useCallback(() => {
     router.push({
-      pathname: "/add-exercise",
+      pathname: "/workouts/[workoutId]/add-exercise",
       params: { workoutId: workoutId, workoutTitle: workoutTitle },
     });
   }, [workoutId, workoutTitle]);
@@ -106,7 +107,7 @@ const ExerciseList = ({
         ItemSeparatorComponent={OverlaySeparator}
         ListFooterComponent={
           <ThemedView style={floatingAddButtonStyles.blankSpaceMargin}>
-            <StartWorkoutButton workoutTitle={workoutTitle} />
+            <StartWorkoutButton workoutTitle={workoutTitle} exercises={data} />
           </ThemedView>
         }
         data={data}
@@ -119,8 +120,14 @@ const ExerciseList = ({
   );
 };
 
-const StartWorkoutButton = ({ workoutTitle }: { workoutTitle: string }) => {
-  const isWorkoutInProgress = useIsWorkoutInProgress();
+const StartWorkoutButton = ({
+  workoutTitle,
+  exercises,
+}: {
+  workoutTitle: string;
+  exercises: ResistanceSection[];
+}) => {
+  const isActive = useActiveWorkoutStatus();
   const { startWorkout } = useActiveWorkoutActions();
 
   return (
@@ -129,15 +136,25 @@ const StartWorkoutButton = ({ workoutTitle }: { workoutTitle: string }) => {
       activeOpacity={0.6}
       onPress={() => {
         // if there is already an active workout, do nothing
-        if (isWorkoutInProgress) {
+        if (isActive) {
           return;
         }
         // otherwise start the workout
         startWorkout({
           title: workoutTitle,
-          elapsedTime: 0,
-          exercises: [],
-          restingSetId: null,
+          exercises: exercises.map(
+            (exercise) =>
+              ({
+                exerciseClassId: exercise.exercise_id,
+                sets: exercise.sets.map((set) => ({
+                  weight: set.total_weight,
+                  reps: set.reps,
+                  targetRest: set.rest_time,
+                  elapsedRest: 0,
+                  isCompleted: false,
+                })),
+              }) satisfies InputWorkout["exercises"][number]
+          ),
         });
         router.push("/active-workout");
       }}

@@ -1,7 +1,9 @@
 import { SafeAreaView, StyleSheet } from "react-native";
+
 import {
-  useActiveWorkout,
   useActiveWorkoutActions,
+  useActiveWorkoutExercises,
+  useActiveWorkoutStatus,
 } from "@/context/active-workout-provider";
 import { ThemedText } from "@/components/Themed";
 import { TouchableOpacity } from "react-native-gesture-handler";
@@ -11,20 +13,22 @@ import ActiveExerciseCard from "./_components/ActiveExerciseCard";
 const AddExerciseButton = () => {
   return (
     <TouchableOpacity
+      style={{ marginVertical: 20 }}
       onPress={() => {
         router.push("/add-exercise");
       }}
     >
-      <ThemedText>Add Exercise</ThemedText>
+      <ThemedText style={{ fontSize: 28 }}>Add Exercise</ThemedText>
     </TouchableOpacity>
   );
 };
 
 export default function ActiveWorkout() {
-  const activeWorkout = useActiveWorkout();
+  const isActive = useActiveWorkoutStatus();
+  const exercises = useActiveWorkoutExercises();
   const { cancelWorkout } = useActiveWorkoutActions();
 
-  if (!activeWorkout) {
+  if (!isActive) {
     throw new Error("No active workout. This should not happen");
   }
 
@@ -40,7 +44,7 @@ export default function ActiveWorkout() {
         <ThemedText style={{ fontSize: 24 }}>Cancel Workout</ThemedText>
       </TouchableOpacity>
       <AddExerciseButton />
-      {activeWorkout.exercises.map((exercise) => {
+      {exercises.map((exercise) => {
         return <ActiveExerciseCard key={exercise.id} exercise={exercise} />;
       })}
     </SafeAreaView>

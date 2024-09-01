@@ -42,12 +42,11 @@ const DropdownIcon = () => {
  */
 export default function AddCustomExerciseCard({
   dismissModal,
-  addExerciseClass,
 }: {
-  addExerciseClass: ReturnType<typeof useAddExerciseClass>["mutate"];
   dismissModal: () => void;
 }) {
   const titleRef = useRef<string>("");
+  const { mutate: addExerciseClass } = useAddExerciseClass();
   const [bodyPartId, setBodyPart] = useState<number | null>(null);
   const [equipmentId, setEquipment] = useState<number | null>(null);
   const [equipmentInvalid, setEquipmentInvalid] = useState<boolean>(false);

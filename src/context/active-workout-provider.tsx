@@ -1,6 +1,5 @@
 import { ExerciseClass } from "@/utils/exercise-types";
-import { createContext, useContext, useState } from "react";
-import { createStore, StoreApi, useStore } from "zustand";
+import { create } from "zustand";
 
 type ActiveSet = {
   id: number;
@@ -13,14 +12,14 @@ type ActiveSet = {
 
 type ActiveExercise = {
   id: number;
-  exerciseClass: ExerciseClass;
+  exerciseClassId: number;
   sets: readonly ActiveSet[];
 };
 
 type ActiveWorkout = {
   title: string;
   elapsedTime: number; // measured in seconds
-  restingExercise: {
+  restingSet: {
     exerciseId: number;
     setId: number;
     elapsedRest: number;
@@ -29,7 +28,7 @@ type ActiveWorkout = {
 };
 
 type ActiveWorkoutActions = {
-  startWorkout: (workout: ActiveWorkout) => void;
+  startWorkout: (inputWorkout: InputWorkout) => void;
   cancelWorkout: () => void;
   addExercise: (
     inputExercise: Omit<ActiveExercise, "id" | "sets">,
@@ -45,9 +44,8 @@ type ActiveWorkoutActions = {
   changeWeight: (exerciseId: number, setId: number, weight: number) => void;
 };
 
-type ActiveWorkoutState = {
-  isWorkoutInProgress: boolean;
-  activeWorkout: ActiveWorkout;
+type ActiveWorkoutState = ActiveWorkout & {
+  inProgress: boolean;
   actions: ActiveWorkoutActions;
 };
 
@@ -59,217 +57,201 @@ function createAutoIncrement(initialValue: number = 0) {
 const initialActiveWorkout: ActiveWorkout = {
   title: "",
   elapsedTime: 0,
-  restingExercise: null,
+  restingSet: null,
   exercises: [],
 };
 
-const createActiveWorkoutStore = () =>
-  createStore<ActiveWorkoutState>()((set, get) => {
-    const exerciseIncrement = createAutoIncrement();
-    const setIncrement = createAutoIncrement();
-
-    const validateFindExerciseIndex = (exerciseId: number) => {
-      const activeWorkout = get().activeWorkout;
-      const exerciseIndex = activeWorkout.exercises.findIndex(
-        (ex) => ex.id === exerciseId
-      );
-      if (exerciseIndex === -1) {
-        throw new Error("Exercise not found");
-      }
-      return exerciseIndex;
-    };
-
-    return {
-      isWorkoutInProgress: false,
-      activeWorkout: initialActiveWorkout,
-      actions: {
-        startWorkout: (workout: ActiveWorkout) => {
-          set(() => ({ isWorkoutInProgress: true, activeWorkout: workout }));
-        },
-        cancelWorkout: () => {
-          set(() => ({
-            isWorkoutInProgress: false,
-            activeWorkout: initialActiveWorkout,
-          }));
-        },
-        addExercise: (
-          inputExercise,
-          inputSet = {
-            reps: 1,
-            weight: 20,
-            targetRest: 0,
-            elapsedRest: 0,
-          }
-        ) => {
-          set((state) => {
-            const activeWorkout = state.activeWorkout;
-            const initialSets = [
-              { ...inputSet, id: setIncrement(), isCompleted: false },
-            ];
-            const newExercise = {
-              ...inputExercise,
-              id: exerciseIncrement(),
-              sets: initialSets,
-            };
-            const newExerciseList = [...activeWorkout.exercises, newExercise];
-            return {
-              activeWorkout: {
-                ...activeWorkout,
-                exercises: newExerciseList,
-              },
-            };
-          });
-        },
-        deleteExercise: (exerciseId) => {
-          set((state) => {
-            const currentWorkout = state.activeWorkout;
-            return {
-              activeWorkout: {
-                ...currentWorkout,
-                exercises: currentWorkout.exercises.filter(
-                  (ex) => ex.id !== exerciseId
-                ),
-              },
-            };
-          });
-        },
-        addSet: (exerciseId, newSet) => {
-          set((state) => {
-            const activeWorkout = state.activeWorkout;
-            const exerciseIndex = validateFindExerciseIndex(exerciseId);
-            const exerciseList = activeWorkout.exercises;
-            const exercise = exerciseList[exerciseIndex];
-            const newSetList = [
-              ...exercise.sets,
-              { ...newSet, id: setIncrement(), isCompleted: false },
-            ];
-            return {
-              activeWorkout: {
-                ...activeWorkout,
-                exercises: [
-                  ...exerciseList.slice(0, exerciseIndex),
-                  { ...exercise, sets: newSetList },
-                  ...exerciseList.slice(exerciseIndex + 1),
-                ],
-              },
-            };
-          });
-        },
-        deleteSet: (exerciseId, setId) => {
-          set((state) => {
-            const activeWorkout = state.activeWorkout;
-            const exerciseIndex = validateFindExerciseIndex(exerciseId);
-            const exerciseList = activeWorkout.exercises;
-            const exercise = exerciseList[exerciseIndex];
-            const newSetList = exercise.sets.filter((set) => set.id !== setId);
-            return {
-              activeWorkout: {
-                ...activeWorkout,
-                exercises: [
-                  ...exerciseList.slice(0, exerciseIndex),
-                  { ...exercise, sets: newSetList },
-                  ...exerciseList.slice(exerciseIndex + 1),
-                ],
-              },
-            };
-          });
-        },
-        changeReps: (exerciseId, setId, reps) => {
-          set((state) => {
-            const activeWorkout = state.activeWorkout;
-            const exerciseIndex = validateFindExerciseIndex(exerciseId);
-            const exerciseList = activeWorkout.exercises;
-            const exercise = exerciseList[exerciseIndex];
-            const setIndex = exercise.sets.findIndex((set) => set.id === setId);
-            if (setIndex === -1) {
-              throw new Error("Set not found");
-            }
-            const newSetList = [
-              ...exercise.sets.slice(0, setIndex),
-              { ...exercise.sets[setIndex], reps },
-              ...exercise.sets.slice(setIndex + 1),
-            ];
-            return {
-              activeWorkout: {
-                ...activeWorkout,
-                exercises: [
-                  ...exerciseList.slice(0, exerciseIndex),
-                  { ...exercise, sets: newSetList },
-                  ...exerciseList.slice(exerciseIndex + 1),
-                ],
-              },
-            };
-          });
-        },
-        changeWeight: (exerciseId, setId, weight) => {
-          set((state) => {
-            const activeWorkout = state.activeWorkout;
-            const exerciseIndex = validateFindExerciseIndex(exerciseId);
-            const exerciseList = activeWorkout.exercises;
-            const exercise = exerciseList[exerciseIndex];
-            const setIndex = exercise.sets.findIndex((set) => set.id === setId);
-            if (setIndex === -1) {
-              throw new Error("Set not found");
-            }
-            const newSetList = [
-              ...exercise.sets.slice(0, setIndex),
-              { ...exercise.sets[setIndex], weight },
-              ...exercise.sets.slice(setIndex + 1),
-            ];
-            return {
-              activeWorkout: {
-                ...activeWorkout,
-                exercises: [
-                  ...exerciseList.slice(0, exerciseIndex),
-                  { ...exercise, sets: newSetList },
-                  ...exerciseList.slice(exerciseIndex + 1),
-                ],
-              },
-            };
-          });
-        },
-      },
-    } satisfies ActiveWorkoutState;
-  });
-
-const ActiveWorkoutContext = createContext<StoreApi<ActiveWorkoutState> | null>(
-  null
-);
-
-const ActiveWorkoutProvider = ({ children }: { children: React.ReactNode }) => {
-  const [store] = useState(createActiveWorkoutStore);
-  return (
-    <ActiveWorkoutContext.Provider value={store}>
-      {children}
-    </ActiveWorkoutContext.Provider>
-  );
+type InputWorkout = {
+  [K in keyof Omit<ActiveWorkout, "elapsedTime" | "restingSet">]: K extends (
+    "exercises"
+  ) ?
+    {
+      [L in keyof Omit<ActiveExercise, "id">]: L extends "sets" ?
+        Omit<ActiveSet, "id">[]
+      : ActiveExercise[L];
+    }[]
+  : ActiveWorkout[K];
 };
 
-const useActiveWorkoutStore = <T,>(
-  selector: (state: ActiveWorkoutState) => T
-) => {
-  const store = useContext(ActiveWorkoutContext);
-  if (!store) {
-    throw new Error(
-      "useActiveWorkout must be used within an ActiveWorkoutProvider"
+const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
+  const exerciseIncrement = createAutoIncrement();
+  const setIncrement = createAutoIncrement();
+
+  const validateFindExerciseIndex = (exerciseId: number) => {
+    const exerciseIndex = get().exercises.findIndex(
+      (ex) => ex.id === exerciseId
     );
-  }
-  return useStore(store, selector);
-};
+    if (exerciseIndex === -1) {
+      throw new Error("Exercise not found");
+    }
+    return exerciseIndex;
+  };
 
-const useActiveWorkout = () =>
-  useActiveWorkoutStore((state) => state.activeWorkout);
+  return {
+    inProgress: false,
+    ...initialActiveWorkout,
+    actions: {
+      startWorkout: (inputWorkout: InputWorkout) => {
+        const activeExercises = inputWorkout.exercises.map((exercise) => ({
+          ...exercise,
+          id: exerciseIncrement(),
+          sets: exercise.sets.map((set) => ({
+            ...set,
+            id: setIncrement(),
+          })),
+        }));
+        set({
+          inProgress: true,
+          ...inputWorkout,
+          exercises: activeExercises,
+          restingSet: null,
+          elapsedTime: 0,
+        });
+      },
+      cancelWorkout: () => {
+        set({ inProgress: false });
+      },
+      addExercise: (
+        inputExercise,
+        inputSet = {
+          reps: 1,
+          weight: 20,
+          targetRest: 0,
+          elapsedRest: 0,
+        }
+      ) => {
+        set((state) => {
+          const initialSets = [
+            { ...inputSet, id: setIncrement(), isCompleted: false },
+          ];
+          const newExercise = {
+            ...inputExercise,
+            id: exerciseIncrement(),
+            sets: initialSets,
+          };
+          const newExerciseList = [...state.exercises, newExercise];
+          return {
+            exercises: newExerciseList,
+          };
+        });
+      },
+      deleteExercise: (exerciseId) => {
+        set((state) => {
+          return {
+            exercises: state.exercises.filter((ex) => ex.id !== exerciseId),
+          };
+        });
+      },
+      addSet: (exerciseId, newSet) => {
+        set((state) => {
+          const exerciseIndex = validateFindExerciseIndex(exerciseId);
+          const exerciseList = state.exercises;
+          const exercise = exerciseList[exerciseIndex];
+          const newSetList = [
+            ...exercise.sets,
+            { ...newSet, id: setIncrement(), isCompleted: false },
+          ];
+          return {
+            exercises: [
+              ...exerciseList.slice(0, exerciseIndex),
+              { ...exercise, sets: newSetList },
+              ...exerciseList.slice(exerciseIndex + 1),
+            ],
+          };
+        });
+      },
+      deleteSet: (exerciseId, setId) => {
+        set((state) => {
+          const exerciseIndex = validateFindExerciseIndex(exerciseId);
+          const exerciseList = state.exercises;
+          const exercise = exerciseList[exerciseIndex];
+          const newSetList = exercise.sets.filter((set) => set.id !== setId);
+          return {
+            exercises: [
+              ...exerciseList.slice(0, exerciseIndex),
+              { ...exercise, sets: newSetList },
+              ...exerciseList.slice(exerciseIndex + 1),
+            ],
+          };
+        });
+      },
+      changeReps: (exerciseId, setId, reps) => {
+        set((state) => {
+          const exerciseIndex = validateFindExerciseIndex(exerciseId);
+          const exerciseList = state.exercises;
+          const exercise = exerciseList[exerciseIndex];
+          const setIndex = exercise.sets.findIndex((set) => set.id === setId);
+          if (setIndex === -1) {
+            throw new Error("Set not found");
+          }
+          const newSetList = [
+            ...exercise.sets.slice(0, setIndex),
+            { ...exercise.sets[setIndex], reps },
+            ...exercise.sets.slice(setIndex + 1),
+          ];
+          return {
+            exercises: [
+              ...exerciseList.slice(0, exerciseIndex),
+              { ...exercise, sets: newSetList },
+              ...exerciseList.slice(exerciseIndex + 1),
+            ],
+          };
+        });
+      },
+      changeWeight: (exerciseId, setId, weight) => {
+        set((state) => {
+          const exerciseIndex = validateFindExerciseIndex(exerciseId);
+          const exerciseList = state.exercises;
+          const exercise = exerciseList[exerciseIndex];
+          const setIndex = exercise.sets.findIndex((set) => set.id === setId);
+          if (setIndex === -1) {
+            throw new Error("Set not found");
+          }
+          const newSetList = [
+            ...exercise.sets.slice(0, setIndex),
+            { ...exercise.sets[setIndex], weight },
+            ...exercise.sets.slice(setIndex + 1),
+          ];
+          return {
+            exercises: [
+              ...exerciseList.slice(0, exerciseIndex),
+              { ...exercise, sets: newSetList },
+              ...exerciseList.slice(exerciseIndex + 1),
+            ],
+          };
+        });
+      },
+    },
+  } satisfies ActiveWorkoutState;
+});
 
-const useIsWorkoutInProgress = () =>
-  useActiveWorkoutStore((state) => state.isWorkoutInProgress);
+const useActiveWorkoutStatus = () =>
+  useActiveWorkoutStore((state) => state.inProgress);
 
 const useActiveWorkoutActions = () =>
   useActiveWorkoutStore((state) => state.actions);
 
+const useActiveWorkoutTitle = () =>
+  useActiveWorkoutStore((state) => state.title);
+
+const useActiveWorkoutElapsedTime = () =>
+  useActiveWorkoutStore((state) => state.elapsedTime);
+
+const useActiveWorkoutRestingSet = () =>
+  useActiveWorkoutStore((state) => state.restingSet);
+
+const useActiveWorkoutExercises = () =>
+  useActiveWorkoutStore((state) => state.exercises);
+
+export type { ActiveExercise };
+
 export {
-  ActiveWorkoutProvider,
-  useActiveWorkout,
+  InputWorkout,
+  initialActiveWorkout,
   useActiveWorkoutActions,
-  useIsWorkoutInProgress,
-  ActiveExercise,
+  useActiveWorkoutStatus,
+  useActiveWorkoutTitle,
+  useActiveWorkoutElapsedTime,
+  useActiveWorkoutRestingSet,
+  useActiveWorkoutExercises,
 };

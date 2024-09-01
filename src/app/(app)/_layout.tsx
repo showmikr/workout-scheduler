@@ -3,7 +3,6 @@ import { SQLiteProvider } from "expo-sqlite";
 import { useSession } from "@/context/session-provider";
 import { initDb } from "@/utils/db-utils";
 import { View } from "react-native";
-import { ActiveWorkoutProvider } from "@/context/active-workout-provider";
 
 export default function AppLayout() {
   const { session } = useSession();
@@ -12,26 +11,24 @@ export default function AppLayout() {
   }
   return (
     <SQLiteProvider databaseName={`${session.subjectClaim}.db`} onInit={initDb}>
-      <ActiveWorkoutProvider>
-        <Stack screenOptions={{ animation: "default", headerShown: true }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-          <Stack.Screen
-            name="add-exercise"
-            options={{
-              presentation: "modal",
-              headerTitle: "Choose an exercise",
-            }}
-          />
-          <Stack.Screen
-            name="hello"
-            options={{
-              headerBackTitle: "Back",
-              headerBackground: () => <View style={{ flex: 1, opacity: 1 }} />,
-            }}
-          />
-        </Stack>
-      </ActiveWorkoutProvider>
+      <Stack screenOptions={{ animation: "default", headerShown: true }}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+        <Stack.Screen
+          name="add-exercise"
+          options={{
+            presentation: "modal",
+            headerTitle: "Choose an exercise",
+          }}
+        />
+        <Stack.Screen
+          name="hello"
+          options={{
+            headerBackTitle: "Back",
+            headerBackground: () => <View style={{ flex: 1, opacity: 1 }} />,
+          }}
+        />
+      </Stack>
     </SQLiteProvider>
   );
 }

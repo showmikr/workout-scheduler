@@ -9,10 +9,12 @@ type ActiveExerciseCardProps = {
 export default function ActiveExerciseCard({
   exercise,
 }: ActiveExerciseCardProps) {
-  const { id, exerciseClass, sets } = exercise;
+  const { id, exerciseClassId, sets } = exercise;
   return (
-    <View>
-      <ThemedText>{exerciseClass.title}</ThemedText>
+    <View style={{ marginVertical: 10 }}>
+      <ThemedText style={{ fontSize: 24 }}>
+        ExerciseClassId: {exerciseClassId}
+      </ThemedText>
     </View>
   );
 }
