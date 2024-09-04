@@ -1,4 +1,3 @@
-import { ExerciseClass } from "@/utils/exercise-types";
 import { create } from "zustand";
 
 type ActiveSet = {
@@ -19,6 +18,7 @@ type ActiveExercise = {
 type ActiveWorkout = {
   title: string;
   elapsedTime: number; // measured in seconds
+  isPaused: boolean;
   restingSet: {
     exerciseId: number;
     setId: number;
@@ -29,6 +29,7 @@ type ActiveWorkout = {
 
 type ActiveWorkoutActions = {
   startWorkout: (inputWorkout: InputWorkout) => void;
+  toggleWorkoutTimer: () => void;
   cancelWorkout: () => void;
   addExercise: (
     inputExercise: Omit<ActiveExercise, "id" | "sets">,
@@ -57,6 +58,7 @@ function createAutoIncrement(initialValue: number = 0) {
 const initialActiveWorkout: ActiveWorkout = {
   title: "",
   elapsedTime: 0,
+  isPaused: true,
   restingSet: null,
   exercises: [],
 };
@@ -73,9 +75,32 @@ type InputWorkout = {
   : ActiveWorkout[K];
 };
 
+function createTimer(callback: () => void) {
+  let timerInterval: NodeJS.Timeout | null = null;
+  const timer = {
+    togglePlayPause: (isPaused: boolean) => {
+      if (isPaused) {
+        timerInterval = setInterval(callback, 1000);
+      } else {
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+      }
+    },
+  };
+  return timer;
+}
+
 const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
   const exerciseIncrement = createAutoIncrement();
   const setIncrement = createAutoIncrement();
+
+  const workoutTimer = createTimer(() => {
+    set((state) => ({
+      elapsedTime: state.elapsedTime + 1,
+    }));
+  });
 
   const validateFindExerciseIndex = (exerciseId: number) => {
     const exerciseIndex = get().exercises.findIndex(
@@ -100,12 +125,22 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
             id: setIncrement(),
           })),
         }));
-        set({
-          inProgress: true,
-          ...inputWorkout,
-          exercises: activeExercises,
-          restingSet: null,
-          elapsedTime: 0,
+        set((state) => {
+          workoutTimer.togglePlayPause(state.isPaused);
+          return {
+            inProgress: true,
+            ...inputWorkout,
+            exercises: activeExercises,
+            restingSet: null,
+            elapsedTime: 0,
+            isPaused: !state.isPaused,
+          };
+        });
+      },
+      toggleWorkoutTimer: () => {
+        set((state) => {
+          workoutTimer.togglePlayPause(state.isPaused);
+          return { isPaused: !state.isPaused };
         });
       },
       cancelWorkout: () => {

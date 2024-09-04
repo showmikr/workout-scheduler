@@ -20,6 +20,8 @@ function TabBarIcon(props: {
 import { StyleSheet } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import {
+  useActiveWorkoutActions,
+  useActiveWorkoutElapsedTime,
   useActiveWorkoutStatus,
   useActiveWorkoutTitle,
 } from "@/context/active-workout-provider";
@@ -31,6 +33,8 @@ const MiniWorkoutPlayer = ({
   title: string;
   onPress: () => void;
 }) => {
+  const { toggleWorkoutTimer } = useActiveWorkoutActions();
+  const elapsedTime = useActiveWorkoutElapsedTime();
   return (
     <View>
       <TouchableOpacity
@@ -38,8 +42,13 @@ const MiniWorkoutPlayer = ({
         activeOpacity={0.8}
         onPress={onPress}
       >
-        <ThemedText style={styles.miniPlayerText}>{title}</ThemedText>
-        <FontAwesome name="play" size={24} color={figmaColors.primaryWhite} />
+        <View>
+          <ThemedText style={styles.miniPlayerText}>{title}</ThemedText>
+          <ThemedText style={{ fontSize: 16 }}>{elapsedTime}</ThemedText>
+        </View>
+        <TouchableOpacity hitSlop={8} onPress={toggleWorkoutTimer}>
+          <FontAwesome name="play" size={24} color={figmaColors.primaryWhite} />
+        </TouchableOpacity>
       </TouchableOpacity>
     </View>
   );
