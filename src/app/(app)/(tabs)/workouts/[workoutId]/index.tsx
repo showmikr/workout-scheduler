@@ -20,7 +20,6 @@ import { useCallback, useEffect } from "react";
 import { ResistanceSection } from "@/utils/exercise-types";
 import { useExerciseSections } from "@/hooks/exercises/exercises";
 import {
-  InputWorkout,
   useActiveWorkoutActions,
   useActiveWorkoutStatus,
 } from "@/context/active-workout-provider";
@@ -142,19 +141,14 @@ const StartWorkoutButton = ({
         // otherwise start the workout
         startWorkout({
           title: workoutTitle,
-          exercises: exercises.map(
-            (exercise) =>
-              ({
-                exerciseClassId: exercise.exercise_id,
-                sets: exercise.sets.map((set) => ({
-                  weight: set.total_weight,
-                  reps: set.reps,
-                  targetRest: set.rest_time,
-                  elapsedRest: 0,
-                  isCompleted: false,
-                })),
-              }) satisfies InputWorkout["exercises"][number]
-          ),
+          exercises: exercises.map((exercise) => ({
+            exerciseClassId: exercise.exercise_id,
+            sets: exercise.sets.map((set) => ({
+              weight: set.total_weight,
+              reps: set.reps,
+              targetRest: set.rest_time,
+            })),
+          })),
         });
         router.push("/active-workout");
       }}

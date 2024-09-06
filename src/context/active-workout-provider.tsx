@@ -12,7 +12,6 @@ type ActiveSet = {
 type ActiveExercise = {
   id: number;
   exerciseClassId: number;
-  sets: readonly ActiveSet[];
 };
 
 type ActiveWorkout = {
@@ -24,7 +23,15 @@ type ActiveWorkout = {
     setId: number;
     elapsedRest: number;
   } | null;
-  exercises: readonly ActiveExercise[];
+  exercises: {
+    ids: Array<number>;
+    entities: { [id: number]: ActiveExercise };
+  };
+  sets: {
+    ids: Array<number>;
+    entities: { [id: number]: ActiveSet };
+  };
+  exerciseSets: { [exerciseId: number]: Array<number> };
 };
 
 type ActiveWorkoutActions = {
@@ -32,8 +39,8 @@ type ActiveWorkoutActions = {
   toggleWorkoutTimer: () => void;
   cancelWorkout: () => void;
   addExercise: (
-    inputExercise: Omit<ActiveExercise, "id" | "sets">,
-    inputSet?: Omit<ActiveSet, "id" | "isCompleted">
+    inputExercise: Omit<ActiveExercise, "id">,
+    inputSet?: Omit<ActiveSet, "id">
   ) => void;
   deleteExercise: (exerciseId: number) => void;
   addSet: (
@@ -60,19 +67,21 @@ const initialActiveWorkout: ActiveWorkout = {
   elapsedTime: 0,
   isPaused: true,
   restingSet: null,
-  exercises: [],
+  exercises: { ids: [], entities: {} },
+  sets: { ids: [], entities: {} },
+  exerciseSets: {},
 };
 
 type InputWorkout = {
-  [K in keyof Omit<ActiveWorkout, "elapsedTime" | "restingSet">]: K extends (
-    "exercises"
-  ) ?
-    {
-      [L in keyof Omit<ActiveExercise, "id">]: L extends "sets" ?
-        Omit<ActiveSet, "id">[]
-      : ActiveExercise[L];
-    }[]
-  : ActiveWorkout[K];
+  title: string;
+  exercises: Array<{
+    exerciseClassId: number;
+    sets: Array<{
+      reps: number;
+      weight: number;
+      targetRest: number;
+    }>;
+  }>;
 };
 
 function createTimer(callback: () => void) {
@@ -102,35 +111,54 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
     }));
   });
 
-  const validateFindExerciseIndex = (exerciseId: number) => {
-    const exerciseIndex = get().exercises.findIndex(
-      (ex) => ex.id === exerciseId
-    );
-    if (exerciseIndex === -1) {
-      throw new Error("Exercise not found");
-    }
-    return exerciseIndex;
-  };
-
   return {
     isActive: false,
     ...initialActiveWorkout,
     actions: {
       startWorkout: (inputWorkout: InputWorkout) => {
-        const activeExercises = inputWorkout.exercises.map((exercise) => ({
-          ...exercise,
-          id: exerciseIncrement(),
-          sets: exercise.sets.map((set) => ({
-            ...set,
-            id: setIncrement(),
-          })),
-        }));
+        const allExerciseIds: Array<number> = [];
+        const allSetIds: Array<number> = [];
+        const exerciseSets = {} as { [exerciseId: number]: Array<number> };
+        const myExercises = {} as { [id: number]: ActiveExercise };
+        const mySets = {} as { [id: number]: ActiveSet };
+
+        for (const exercise of inputWorkout.exercises) {
+          const setIds = exercise.sets.map((set) => setIncrement());
+          const nextExerciseId = exerciseIncrement();
+          myExercises[nextExerciseId] = {
+            id: exerciseIncrement(),
+            exerciseClassId: exercise.exerciseClassId,
+          };
+          exerciseSets[nextExerciseId] = setIds;
+          allExerciseIds.push(nextExerciseId);
+          for (let i = 0; i < setIds.length; i++) {
+            allSetIds.push(setIds[i]);
+
+            mySets[setIds[i]] = {
+              id: setIds[i],
+              reps: exercise.sets[i].reps,
+              weight: exercise.sets[i].weight,
+              targetRest: exercise.sets[i].targetRest,
+              elapsedRest: 0,
+              isCompleted: false,
+            };
+          }
+        }
+
         set((state) => {
           workoutTimer.togglePlayPause(state.isPaused);
           return {
-            isActive: true,
             ...inputWorkout,
-            exercises: activeExercises,
+            isActive: true,
+            exercises: {
+              ids: allExerciseIds,
+              entities: myExercises,
+            },
+            sets: {
+              ids: allSetIds,
+              entities: mySets,
+            },
+            exerciseSets,
             restingSet: null,
             elapsedTime: 0,
             isPaused: !state.isPaused,
@@ -144,7 +172,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
         });
       },
       cancelWorkout: () => {
-        set({ isActive: false });
+        set({ isActive: false, isPaused: true });
       },
       addExercise: (
         inputExercise,
@@ -153,107 +181,136 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
           weight: 20,
           targetRest: 0,
           elapsedRest: 0,
+          isCompleted: false,
         }
       ) => {
         set((state) => {
-          const initialSets = [
-            { ...inputSet, id: setIncrement(), isCompleted: false },
-          ];
-          const newExercise = {
-            ...inputExercise,
-            id: exerciseIncrement(),
-            sets: initialSets,
-          };
-          const newExerciseList = [...state.exercises, newExercise];
+          const nextSetId = setIncrement();
+          const nextExerciseId = exerciseIncrement();
           return {
-            exercises: newExerciseList,
-          };
+            exercises: {
+              ids: [...state.exercises.ids, nextExerciseId],
+              entities: {
+                ...state.exercises.entities,
+                [nextExerciseId]: {
+                  id: nextExerciseId,
+                  exerciseClassId: inputExercise.exerciseClassId,
+                },
+              },
+            },
+            sets: {
+              ids: [...state.sets.ids, nextSetId],
+              entities: {
+                ...state.sets.entities,
+                [nextSetId]: {
+                  id: nextSetId,
+                  reps: inputSet.reps,
+                  weight: inputSet.weight,
+                  targetRest: inputSet.targetRest,
+                  elapsedRest: inputSet.elapsedRest,
+                  isCompleted: inputSet.isCompleted,
+                },
+              },
+            },
+            exerciseSets: {
+              ...state.exerciseSets,
+              [nextExerciseId]: [
+                ...state.exerciseSets[nextExerciseId],
+                nextSetId,
+              ],
+            },
+          } satisfies Partial<ActiveWorkout>;
         });
       },
       deleteExercise: (exerciseId) => {
         set((state) => {
+          delete state.exercises.entities[exerciseId];
+          delete state.sets.entities[exerciseId];
+          delete state.exerciseSets[exerciseId];
           return {
-            exercises: state.exercises.filter((ex) => ex.id !== exerciseId),
-          };
+            exercises: {
+              ...state.exercises,
+              ids: state.exercises.ids.filter((id) => id !== exerciseId),
+            },
+            sets: {
+              ...state.sets,
+              ids: state.sets.ids.filter((id) => id !== exerciseId),
+            },
+          } satisfies Partial<ActiveWorkout>;
         });
       },
       addSet: (exerciseId, newSet) => {
         set((state) => {
-          const exerciseIndex = validateFindExerciseIndex(exerciseId);
-          const exerciseList = state.exercises;
-          const exercise = exerciseList[exerciseIndex];
-          const newSetList = [
-            ...exercise.sets,
-            { ...newSet, id: setIncrement(), isCompleted: false },
-          ];
+          const nextSetId = setIncrement();
           return {
-            exercises: [
-              ...exerciseList.slice(0, exerciseIndex),
-              { ...exercise, sets: newSetList },
-              ...exerciseList.slice(exerciseIndex + 1),
-            ],
-          };
+            exerciseSets: {
+              ...state.exerciseSets,
+              [exerciseId]: [...state.exerciseSets[exerciseId], nextSetId],
+            },
+            sets: {
+              ids: [...state.sets.ids, nextSetId],
+              entities: {
+                ...state.sets.entities,
+                [nextSetId]: {
+                  id: nextSetId,
+                  reps: newSet.reps,
+                  weight: newSet.weight,
+                  targetRest: newSet.targetRest,
+                  elapsedRest: newSet.elapsedRest,
+                  isCompleted: false,
+                },
+              },
+            },
+          } satisfies Partial<ActiveWorkout>;
         });
       },
       deleteSet: (exerciseId, setId) => {
         set((state) => {
-          const exerciseIndex = validateFindExerciseIndex(exerciseId);
-          const exerciseList = state.exercises;
-          const exercise = exerciseList[exerciseIndex];
-          const newSetList = exercise.sets.filter((set) => set.id !== setId);
+          delete state.sets.entities[setId];
           return {
-            exercises: [
-              ...exerciseList.slice(0, exerciseIndex),
-              { ...exercise, sets: newSetList },
-              ...exerciseList.slice(exerciseIndex + 1),
-            ],
-          };
+            exerciseSets: {
+              ...state.exerciseSets,
+              [exerciseId]: state.exerciseSets[exerciseId].filter(
+                (set) => set !== setId
+              ),
+            },
+            sets: {
+              ...state.sets,
+              ids: state.sets.ids.filter((id) => id !== setId),
+            },
+          } satisfies Partial<ActiveWorkout>;
         });
       },
       changeReps: (exerciseId, setId, reps) => {
         set((state) => {
-          const exerciseIndex = validateFindExerciseIndex(exerciseId);
-          const exerciseList = state.exercises;
-          const exercise = exerciseList[exerciseIndex];
-          const setIndex = exercise.sets.findIndex((set) => set.id === setId);
-          if (setIndex === -1) {
-            throw new Error("Set not found");
-          }
-          const newSetList = [
-            ...exercise.sets.slice(0, setIndex),
-            { ...exercise.sets[setIndex], reps },
-            ...exercise.sets.slice(setIndex + 1),
-          ];
           return {
-            exercises: [
-              ...exerciseList.slice(0, exerciseIndex),
-              { ...exercise, sets: newSetList },
-              ...exerciseList.slice(exerciseIndex + 1),
-            ],
-          };
+            sets: {
+              ...state.sets,
+              entities: {
+                ...state.sets.entities,
+                [setId]: {
+                  ...state.sets.entities[setId],
+                  reps,
+                },
+              },
+            },
+          } satisfies Partial<ActiveWorkout>;
         });
       },
       changeWeight: (exerciseId, setId, weight) => {
         set((state) => {
-          const exerciseIndex = validateFindExerciseIndex(exerciseId);
-          const exerciseList = state.exercises;
-          const exercise = exerciseList[exerciseIndex];
-          const setIndex = exercise.sets.findIndex((set) => set.id === setId);
-          if (setIndex === -1) {
-            throw new Error("Set not found");
-          }
-          const newSetList = [
-            ...exercise.sets.slice(0, setIndex),
-            { ...exercise.sets[setIndex], weight },
-            ...exercise.sets.slice(setIndex + 1),
-          ];
           return {
-            exercises: [
-              ...exerciseList.slice(0, exerciseIndex),
-              { ...exercise, sets: newSetList },
-              ...exerciseList.slice(exerciseIndex + 1),
-            ],
-          };
+            sets: {
+              ...state.sets,
+              entities: {
+                ...state.sets.entities,
+                [setId]: {
+                  ...state.sets.entities[setId],
+                  weight,
+                },
+              },
+            },
+          } satisfies Partial<ActiveWorkout>;
         });
       },
     },
