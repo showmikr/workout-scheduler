@@ -46,7 +46,7 @@ type ActiveWorkoutActions = {
 };
 
 type ActiveWorkoutState = ActiveWorkout & {
-  inProgress: boolean;
+  isActive: boolean;
   actions: ActiveWorkoutActions;
 };
 
@@ -113,7 +113,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
   };
 
   return {
-    inProgress: false,
+    isActive: false,
     ...initialActiveWorkout,
     actions: {
       startWorkout: (inputWorkout: InputWorkout) => {
@@ -128,7 +128,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
         set((state) => {
           workoutTimer.togglePlayPause(state.isPaused);
           return {
-            inProgress: true,
+            isActive: true,
             ...inputWorkout,
             exercises: activeExercises,
             restingSet: null,
@@ -144,7 +144,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
         });
       },
       cancelWorkout: () => {
-        set({ inProgress: false });
+        set({ isActive: false });
       },
       addExercise: (
         inputExercise,
@@ -261,7 +261,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
 });
 
 const useActiveWorkoutStatus = () =>
-  useActiveWorkoutStore((state) => state.inProgress);
+  useActiveWorkoutStore((state) => state.isActive);
 
 const useActiveWorkoutActions = () =>
   useActiveWorkoutStore((state) => state.actions);
