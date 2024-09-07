@@ -1,8 +1,8 @@
-import { SafeAreaView, StyleSheet } from "react-native";
+import { SafeAreaView, ScrollView, StyleSheet } from "react-native";
 
 import {
   useActiveWorkoutActions,
-  useActiveWorkoutExercises,
+  useActiveWorkoutExerciseIds,
   useActiveWorkoutStatus,
 } from "@/context/active-workout-provider";
 import { ThemedText } from "@/components/Themed";
@@ -25,7 +25,7 @@ const AddExerciseButton = () => {
 
 export default function ActiveWorkout() {
   const isActive = useActiveWorkoutStatus();
-  const exercises = useActiveWorkoutExercises();
+  const exerciseIds = useActiveWorkoutExerciseIds();
   const { cancelWorkout } = useActiveWorkoutActions();
 
   if (!isActive) {
@@ -34,19 +34,21 @@ export default function ActiveWorkout() {
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
-      <ThemedText>Active Workout</ThemedText>
-      <TouchableOpacity
-        onPress={() => {
-          router.back();
-          cancelWorkout();
-        }}
-      >
-        <ThemedText style={{ fontSize: 24 }}>Cancel Workout</ThemedText>
-      </TouchableOpacity>
-      <AddExerciseButton />
-      {exercises.map((exercise) => {
-        return <ActiveExerciseCard key={exercise.id} exercise={exercise} />;
-      })}
+      <ScrollView contentContainerStyle={{ alignItems: "center" }}>
+        <ThemedText>Active Workout</ThemedText>
+        <TouchableOpacity
+          onPress={() => {
+            router.back();
+            cancelWorkout();
+          }}
+        >
+          <ThemedText style={{ fontSize: 24 }}>Cancel Workout</ThemedText>
+        </TouchableOpacity>
+        <AddExerciseButton />
+        {exerciseIds.map((id) => {
+          return <ActiveExerciseCard key={id} exerciseId={id} />;
+        })}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -55,6 +57,5 @@ const styles = StyleSheet.create({
   safeAreaView: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
   },
 });

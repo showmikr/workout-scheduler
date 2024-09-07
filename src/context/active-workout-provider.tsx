@@ -12,9 +12,11 @@ type ActiveSet = {
 type ActiveExercise = {
   id: number;
   exerciseClassId: number;
+  setIds: Array<number>;
 };
 
 type ActiveWorkout = {
+  isActive: boolean;
   title: string;
   elapsedTime: number; // measured in seconds
   isPaused: boolean;
@@ -31,7 +33,7 @@ type ActiveWorkout = {
     ids: Array<number>;
     entities: { [id: number]: ActiveSet };
   };
-  exerciseSets: { [exerciseId: number]: Array<number> };
+  exerciseSets: { [exerciseId: number]: Array<ActiveSet> }; // derived state the represents actual sets for each exercise
 };
 
 type ActiveWorkoutActions = {
@@ -39,7 +41,7 @@ type ActiveWorkoutActions = {
   toggleWorkoutTimer: () => void;
   cancelWorkout: () => void;
   addExercise: (
-    inputExercise: Omit<ActiveExercise, "id">,
+    inputExercise: Omit<ActiveExercise, "id" | "setIds">,
     inputSet?: Omit<ActiveSet, "id">
   ) => void;
   deleteExercise: (exerciseId: number) => void;
@@ -53,7 +55,6 @@ type ActiveWorkoutActions = {
 };
 
 type ActiveWorkoutState = ActiveWorkout & {
-  isActive: boolean;
   actions: ActiveWorkoutActions;
 };
 
@@ -63,6 +64,7 @@ function createAutoIncrement(initialValue: number = 0) {
 }
 
 const initialActiveWorkout: ActiveWorkout = {
+  isActive: false,
   title: "",
   elapsedTime: 0,
   isPaused: true,
@@ -102,8 +104,8 @@ function createTimer(callback: () => void) {
 }
 
 const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
-  const exerciseIncrement = createAutoIncrement();
-  const setIncrement = createAutoIncrement();
+  let exerciseIncrement = createAutoIncrement();
+  let setIncrement = createAutoIncrement();
 
   const workoutTimer = createTimer(() => {
     set((state) => ({
@@ -112,25 +114,29 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
   });
 
   return {
-    isActive: false,
     ...initialActiveWorkout,
     actions: {
       startWorkout: (inputWorkout: InputWorkout) => {
         const allExerciseIds: Array<number> = [];
         const allSetIds: Array<number> = [];
-        const exerciseSets = {} as { [exerciseId: number]: Array<number> };
-        const myExercises = {} as { [id: number]: ActiveExercise };
-        const mySets = {} as { [id: number]: ActiveSet };
+        const myExercises: { [id: number]: ActiveExercise } = {};
+        const mySets: { [id: number]: ActiveSet } = {};
+        const myExerciseSets: { [exerciseId: number]: ActiveSet[] } = {};
 
         for (const exercise of inputWorkout.exercises) {
           const setIds = exercise.sets.map((set) => setIncrement());
           const nextExerciseId = exerciseIncrement();
+
           myExercises[nextExerciseId] = {
-            id: exerciseIncrement(),
+            id: nextExerciseId,
             exerciseClassId: exercise.exerciseClassId,
+            setIds,
           };
-          exerciseSets[nextExerciseId] = setIds;
+
           allExerciseIds.push(nextExerciseId);
+
+          myExerciseSets[nextExerciseId] = [];
+
           for (let i = 0; i < setIds.length; i++) {
             allSetIds.push(setIds[i]);
 
@@ -142,6 +148,8 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
               elapsedRest: 0,
               isCompleted: false,
             };
+
+            myExerciseSets[nextExerciseId].push(mySets[setIds[i]]);
           }
         }
 
@@ -158,11 +166,11 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
               ids: allSetIds,
               entities: mySets,
             },
-            exerciseSets,
+            exerciseSets: myExerciseSets,
             restingSet: null,
             elapsedTime: 0,
             isPaused: !state.isPaused,
-          };
+          } satisfies ActiveWorkout;
         });
       },
       toggleWorkoutTimer: () => {
@@ -172,7 +180,13 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
         });
       },
       cancelWorkout: () => {
-        set({ isActive: false, isPaused: true });
+        // reset incremmenters
+        setIncrement = createAutoIncrement();
+        exerciseIncrement = createAutoIncrement();
+        set((state) => {
+          workoutTimer.togglePlayPause(state.isPaused);
+          return { ...initialActiveWorkout };
+        });
       },
       addExercise: (
         inputExercise,
@@ -195,6 +209,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                 [nextExerciseId]: {
                   id: nextExerciseId,
                   exerciseClassId: inputExercise.exerciseClassId,
+                  setIds: [nextSetId],
                 },
               },
             },
@@ -215,11 +230,17 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
             exerciseSets: {
               ...state.exerciseSets,
               [nextExerciseId]: [
-                ...state.exerciseSets[nextExerciseId],
-                nextSetId,
+                {
+                  id: nextSetId,
+                  reps: inputSet.reps,
+                  weight: inputSet.weight,
+                  targetRest: inputSet.targetRest,
+                  elapsedRest: inputSet.elapsedRest,
+                  isCompleted: inputSet.isCompleted,
+                },
               ],
             },
-          } satisfies Partial<ActiveWorkout>;
+          } satisfies Partial<ActiveWorkoutState>;
         });
       },
       deleteExercise: (exerciseId) => {
@@ -236,16 +257,25 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
               ...state.sets,
               ids: state.sets.ids.filter((id) => id !== exerciseId),
             },
-          } satisfies Partial<ActiveWorkout>;
+          } satisfies Partial<ActiveWorkoutState>;
         });
       },
       addSet: (exerciseId, newSet) => {
         set((state) => {
           const nextSetId = setIncrement();
           return {
-            exerciseSets: {
-              ...state.exerciseSets,
-              [exerciseId]: [...state.exerciseSets[exerciseId], nextSetId],
+            exercises: {
+              ...state.exercises,
+              entities: {
+                ...state.exercises.entities,
+                [exerciseId]: {
+                  ...state.exercises.entities[exerciseId],
+                  setIds: [
+                    ...state.exercises.entities[exerciseId].setIds,
+                    nextSetId,
+                  ],
+                },
+              },
             },
             sets: {
               ids: [...state.sets.ids, nextSetId],
@@ -261,24 +291,50 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                 },
               },
             },
-          } satisfies Partial<ActiveWorkout>;
+            exerciseSets: {
+              ...state.exerciseSets,
+              [exerciseId]: [
+                ...state.exerciseSets[exerciseId],
+                {
+                  id: nextSetId,
+                  reps: newSet.reps,
+                  weight: newSet.weight,
+                  targetRest: newSet.targetRest,
+                  elapsedRest: newSet.elapsedRest,
+                  isCompleted: false,
+                },
+              ],
+            },
+          } satisfies Partial<ActiveWorkoutState>;
         });
       },
       deleteSet: (exerciseId, setId) => {
         set((state) => {
           delete state.sets.entities[setId];
           return {
-            exerciseSets: {
-              ...state.exerciseSets,
-              [exerciseId]: state.exerciseSets[exerciseId].filter(
-                (set) => set !== setId
-              ),
+            exercises: {
+              ...state.exercises,
+              entities: {
+                ...state.exercises.entities,
+                [exerciseId]: {
+                  ...state.exercises.entities[exerciseId],
+                  setIds: state.exercises.entities[exerciseId].setIds.filter(
+                    (id) => id !== setId
+                  ),
+                },
+              },
             },
             sets: {
               ...state.sets,
               ids: state.sets.ids.filter((id) => id !== setId),
             },
-          } satisfies Partial<ActiveWorkout>;
+            exerciseSets: {
+              ...state.exerciseSets,
+              [exerciseId]: state.exerciseSets[exerciseId].filter(
+                (set) => set.id !== setId
+              ),
+            },
+          } satisfies Partial<ActiveWorkoutState>;
         });
       },
       changeReps: (exerciseId, setId, reps) => {
@@ -294,7 +350,15 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                 },
               },
             },
-          } satisfies Partial<ActiveWorkout>;
+            exerciseSets: {
+              ...state.exerciseSets,
+              [exerciseId]: state.exerciseSets[exerciseId].map((exerciseSet) =>
+                exerciseSet.id === setId ?
+                  { ...exerciseSet, reps }
+                : exerciseSet
+              ),
+            },
+          } satisfies Partial<ActiveWorkoutState>;
         });
       },
       changeWeight: (exerciseId, setId, weight) => {
@@ -310,7 +374,15 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                 },
               },
             },
-          } satisfies Partial<ActiveWorkout>;
+            exerciseSets: {
+              ...state.exerciseSets,
+              [exerciseId]: state.exerciseSets[exerciseId].map((exerciseSet) =>
+                exerciseSet.id === setId ?
+                  { ...exerciseSet, weight }
+                : exerciseSet
+              ),
+            },
+          } satisfies Partial<ActiveWorkoutState>;
         });
       },
     },
@@ -332,8 +404,16 @@ const useActiveWorkoutElapsedTime = () =>
 const useActiveWorkoutRestingSet = () =>
   useActiveWorkoutStore((state) => state.restingSet);
 
-const useActiveWorkoutExercises = () =>
-  useActiveWorkoutStore((state) => state.exercises);
+const useActiveWorkoutExerciseIds = () =>
+  useActiveWorkoutStore((state) => state.exercises.ids);
+
+const useActiveWorkoutExercise = (exerciseId: number) => {
+  return useActiveWorkoutStore((state) => state.exercises.entities[exerciseId]);
+};
+
+const useActiveWorkoutSets = (exerciseId: number) => {
+  return useActiveWorkoutStore((state) => state.exerciseSets[exerciseId]);
+};
 
 export type { ActiveExercise };
 
@@ -345,5 +425,7 @@ export {
   useActiveWorkoutTitle,
   useActiveWorkoutElapsedTime,
   useActiveWorkoutRestingSet,
-  useActiveWorkoutExercises,
+  useActiveWorkoutExerciseIds,
+  useActiveWorkoutExercise,
+  useActiveWorkoutSets,
 };

@@ -1,20 +1,37 @@
 import { ThemedText } from "@/components/Themed";
-import { ActiveExercise } from "@/context/active-workout-provider";
+import {
+  useActiveWorkoutExercise,
+  useActiveWorkoutSets,
+} from "@/context/active-workout-provider";
 import { View } from "react-native";
 
-type ActiveExerciseCardProps = {
-  exercise: ActiveExercise;
-};
-
 export default function ActiveExerciseCard({
-  exercise,
-}: ActiveExerciseCardProps) {
-  const { id, exerciseClassId, sets } = exercise;
+  exerciseId,
+}: {
+  exerciseId: number;
+}) {
+  const { exerciseClassId, id, setIds } = useActiveWorkoutExercise(exerciseId);
+  const activeSets = useActiveWorkoutSets(id);
   return (
-    <View style={{ marginVertical: 10 }}>
+    <View style={{ marginVertical: 12 }}>
+      <ThemedText style={{ fontSize: 24 }}>Id: {id}</ThemedText>
       <ThemedText style={{ fontSize: 24 }}>
         ExerciseClassId: {exerciseClassId}
       </ThemedText>
+      {activeSets.map((set) => {
+        return (
+          <View key={set.id} style={{ marginVertical: 4 }}>
+            <ThemedText style={{ fontSize: 20 }}>SetId: {set.id}</ThemedText>
+            <ThemedText style={{ fontSize: 20 }}>Reps: {set.reps}</ThemedText>
+            <ThemedText style={{ fontSize: 20 }}>
+              Weight: {set.weight}
+            </ThemedText>
+            <ThemedText style={{ fontSize: 20 }}>
+              Rest: {set.targetRest}
+            </ThemedText>
+          </View>
+        );
+      })}
     </View>
   );
 }
