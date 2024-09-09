@@ -36,7 +36,9 @@ export default function ActiveWorkout() {
     <SafeAreaView style={styles.safeAreaView}>
       <ScrollView
         contentContainerStyle={{
-          alignItems: "center",
+          gap: 24,
+          paddingHorizontal: 24,
+          paddingBottom: 200,
         }}
       >
         <ThemedText>Active Workout</ThemedText>

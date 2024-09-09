@@ -362,6 +362,8 @@ const useActiveWorkoutExercise = (exerciseId: number) => {
 const useActiveWorkoutSetEntities = () =>
   useActiveWorkoutStore((state) => state.sets.entities);
 
+export type { ActiveSet };
+
 export {
   InputWorkout,
   initialActiveWorkout,

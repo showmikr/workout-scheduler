@@ -22,10 +22,12 @@ const figmaColors = {
   greyLight: "#575757",
   greyLighter: "#8E8E8E",
   greyDarkBorder: "#3D3D3D",
-  addGreen: "#78C200",
+  addGreen: "#67AD0B",
+  addGreenButtonFill: "#2E5200",
+  addGreenButtonText: "#E3F4CD",
   primaryWhite: "#DEDEDE",
   primaryBlack: "#0D0D0D",
-  lighterPrimaryBlack: "#141414",
+  lighterPrimaryBlack: "#2B2B2B",
 };
 
 export default {
