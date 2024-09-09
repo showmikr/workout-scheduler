@@ -34,7 +34,11 @@ export default function ActiveWorkout() {
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
-      <ScrollView contentContainerStyle={{ alignItems: "center" }}>
+      <ScrollView
+        contentContainerStyle={{
+          alignItems: "center",
+        }}
+      >
         <ThemedText>Active Workout</ThemedText>
         <TouchableOpacity
           onPress={() => {
@@ -56,6 +60,5 @@ export default function ActiveWorkout() {
 const styles = StyleSheet.create({
   safeAreaView: {
     flex: 1,
-    justifyContent: "center",
   },
 });

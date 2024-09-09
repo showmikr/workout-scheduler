@@ -1,8 +1,9 @@
 import { ThemedText } from "@/components/Themed";
 import {
   useActiveWorkoutExercise,
-  useActiveWorkoutSets,
+  useActiveWorkoutSetEntities,
 } from "@/context/active-workout-provider";
+import { useMemo } from "react";
 import { View } from "react-native";
 
 export default function ActiveExerciseCard({
@@ -10,11 +11,16 @@ export default function ActiveExerciseCard({
 }: {
   exerciseId: number;
 }) {
-  const { exerciseClassId, id, setIds } = useActiveWorkoutExercise(exerciseId);
-  const activeSets = useActiveWorkoutSets(id);
+  console.log(`${exerciseId} rendered`);
+  const { exerciseClassId, setIds } = useActiveWorkoutExercise(exerciseId);
+  const allSets = useActiveWorkoutSetEntities();
+  const activeSets = useMemo(
+    () => setIds.map((setId) => allSets[setId]),
+    [setIds]
+  );
   return (
     <View style={{ marginVertical: 12 }}>
-      <ThemedText style={{ fontSize: 24 }}>Id: {id}</ThemedText>
+      <ThemedText style={{ fontSize: 24 }}>Id: {exerciseId}</ThemedText>
       <ThemedText style={{ fontSize: 24 }}>
         ExerciseClassId: {exerciseClassId}
       </ThemedText>

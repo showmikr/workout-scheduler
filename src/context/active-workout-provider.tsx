@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { create } from "zustand";
 
 type ActiveSet = {
@@ -33,7 +34,6 @@ type ActiveWorkout = {
     ids: Array<number>;
     entities: { [id: number]: ActiveSet };
   };
-  exerciseSets: { [exerciseId: number]: Array<ActiveSet> }; // derived state the represents actual sets for each exercise
 };
 
 type ActiveWorkoutActions = {
@@ -71,7 +71,6 @@ const initialActiveWorkout: ActiveWorkout = {
   restingSet: null,
   exercises: { ids: [], entities: {} },
   sets: { ids: [], entities: {} },
-  exerciseSets: {},
 };
 
 type InputWorkout = {
@@ -166,7 +165,6 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
               ids: allSetIds,
               entities: mySets,
             },
-            exerciseSets: myExerciseSets,
             restingSet: null,
             elapsedTime: 0,
             isPaused: !state.isPaused,
@@ -227,19 +225,6 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                 },
               },
             },
-            exerciseSets: {
-              ...state.exerciseSets,
-              [nextExerciseId]: [
-                {
-                  id: nextSetId,
-                  reps: inputSet.reps,
-                  weight: inputSet.weight,
-                  targetRest: inputSet.targetRest,
-                  elapsedRest: inputSet.elapsedRest,
-                  isCompleted: inputSet.isCompleted,
-                },
-              ],
-            },
           } satisfies Partial<ActiveWorkoutState>;
         });
       },
@@ -247,7 +232,6 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
         set((state) => {
           delete state.exercises.entities[exerciseId];
           delete state.sets.entities[exerciseId];
-          delete state.exerciseSets[exerciseId];
           return {
             exercises: {
               ...state.exercises,
@@ -291,20 +275,6 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                 },
               },
             },
-            exerciseSets: {
-              ...state.exerciseSets,
-              [exerciseId]: [
-                ...state.exerciseSets[exerciseId],
-                {
-                  id: nextSetId,
-                  reps: newSet.reps,
-                  weight: newSet.weight,
-                  targetRest: newSet.targetRest,
-                  elapsedRest: newSet.elapsedRest,
-                  isCompleted: false,
-                },
-              ],
-            },
           } satisfies Partial<ActiveWorkoutState>;
         });
       },
@@ -328,12 +298,6 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
               ...state.sets,
               ids: state.sets.ids.filter((id) => id !== setId),
             },
-            exerciseSets: {
-              ...state.exerciseSets,
-              [exerciseId]: state.exerciseSets[exerciseId].filter(
-                (set) => set.id !== setId
-              ),
-            },
           } satisfies Partial<ActiveWorkoutState>;
         });
       },
@@ -350,14 +314,6 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                 },
               },
             },
-            exerciseSets: {
-              ...state.exerciseSets,
-              [exerciseId]: state.exerciseSets[exerciseId].map((exerciseSet) =>
-                exerciseSet.id === setId ?
-                  { ...exerciseSet, reps }
-                : exerciseSet
-              ),
-            },
           } satisfies Partial<ActiveWorkoutState>;
         });
       },
@@ -373,14 +329,6 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                   weight,
                 },
               },
-            },
-            exerciseSets: {
-              ...state.exerciseSets,
-              [exerciseId]: state.exerciseSets[exerciseId].map((exerciseSet) =>
-                exerciseSet.id === setId ?
-                  { ...exerciseSet, weight }
-                : exerciseSet
-              ),
             },
           } satisfies Partial<ActiveWorkoutState>;
         });
@@ -411,11 +359,8 @@ const useActiveWorkoutExercise = (exerciseId: number) => {
   return useActiveWorkoutStore((state) => state.exercises.entities[exerciseId]);
 };
 
-const useActiveWorkoutSets = (exerciseId: number) => {
-  return useActiveWorkoutStore((state) => state.exerciseSets[exerciseId]);
-};
-
-export type { ActiveExercise };
+const useActiveWorkoutSetEntities = () =>
+  useActiveWorkoutStore((state) => state.sets.entities);
 
 export {
   InputWorkout,
@@ -427,5 +372,5 @@ export {
   useActiveWorkoutRestingSet,
   useActiveWorkoutExerciseIds,
   useActiveWorkoutExercise,
-  useActiveWorkoutSets,
+  useActiveWorkoutSetEntities,
 };
