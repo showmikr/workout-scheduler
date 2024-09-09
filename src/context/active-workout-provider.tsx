@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { create } from "zustand";
 
 type ActiveSet = {
@@ -47,7 +46,7 @@ type ActiveWorkoutActions = {
   deleteExercise: (exerciseId: number) => void;
   addSet: (
     exerciseId: number,
-    inputSet: Omit<ActiveSet, "id" | "isCompleted">
+    inputSet?: Omit<ActiveSet, "id" | "isCompleted">
   ) => void;
   deleteSet: (exerciseId: number, setId: number) => void;
   changeReps: (exerciseId: number, setId: number, reps: number) => void;
@@ -247,6 +246,18 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
       addSet: (exerciseId, newSet) => {
         set((state) => {
           const nextSetId = setIncrement();
+          const prevSetId = state.exercises.entities[exerciseId].setIds.at(-1);
+          const placeHolderSet: ActiveSet =
+            prevSetId ?
+              { ...state.sets.entities[prevSetId], id: nextSetId }
+            : {
+                id: nextSetId,
+                reps: 15,
+                weight: 45,
+                targetRest: 180,
+                elapsedRest: 0,
+                isCompleted: false,
+              };
           return {
             exercises: {
               ...state.exercises,
@@ -265,14 +276,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
               ids: [...state.sets.ids, nextSetId],
               entities: {
                 ...state.sets.entities,
-                [nextSetId]: {
-                  id: nextSetId,
-                  reps: newSet.reps,
-                  weight: newSet.weight,
-                  targetRest: newSet.targetRest,
-                  elapsedRest: newSet.elapsedRest,
-                  isCompleted: false,
-                },
+                [nextSetId]: placeHolderSet,
               },
             },
           } satisfies Partial<ActiveWorkoutState>;
@@ -361,6 +365,8 @@ const useActiveWorkoutExercise = (exerciseId: number) => {
 
 const useActiveWorkoutSetEntities = () =>
   useActiveWorkoutStore((state) => state.sets.entities);
+
+export type { ActiveSet };
 
 export {
   InputWorkout,
