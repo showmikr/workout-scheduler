@@ -180,8 +180,8 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
         // reset incremmenters
         setIncrement = createAutoIncrement();
         exerciseIncrement = createAutoIncrement();
-        set((state) => {
-          workoutTimer.togglePlayPause(state.isPaused);
+        set(() => {
+          workoutTimer.togglePlayPause(false);
           return { ...initialActiveWorkout };
         });
       },
