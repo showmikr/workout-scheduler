@@ -85,16 +85,21 @@ type InputWorkout = {
 };
 
 function createTimer(callback: () => void) {
-  let timerInterval: NodeJS.Timeout | null = null;
+  let intervalId: NodeJS.Timeout | null = null;
   const timer = {
-    togglePlayPause: (isPaused: boolean) => {
-      if (isPaused) {
-        timerInterval = setInterval(callback, 1000);
+    start: () => {
+      if (!intervalId) {
+        intervalId = setInterval(callback, 1000);
       } else {
-        if (timerInterval) {
-          clearInterval(timerInterval);
-          timerInterval = null;
-        }
+        console.warn("Trying to start timer when it's already running");
+      }
+    },
+    stop: () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      } else {
+        console.warn("Trying to stop timer when it's not running");
       }
     },
   };
@@ -152,7 +157,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
         }
 
         set((state) => {
-          workoutTimer.togglePlayPause(state.isPaused);
+          workoutTimer.start();
           return {
             ...inputWorkout,
             isActive: true,
@@ -171,17 +176,22 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
         });
       },
       toggleWorkoutTimer: () => {
-        set((state) => {
-          workoutTimer.togglePlayPause(state.isPaused);
-          return { isPaused: !state.isPaused };
-        });
+        const isCurrentlyPaused = get().isPaused;
+        if (isCurrentlyPaused) {
+          workoutTimer.start();
+        } else {
+          workoutTimer.stop();
+        }
+        set({ isPaused: !isCurrentlyPaused });
       },
       cancelWorkout: () => {
         // reset incremmenters
         setIncrement = createAutoIncrement();
         exerciseIncrement = createAutoIncrement();
-        set(() => {
-          workoutTimer.togglePlayPause(false);
+        set((state) => {
+          if (!state.isPaused) {
+            workoutTimer.stop();
+          }
           return { ...initialActiveWorkout };
         });
       },
