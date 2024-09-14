@@ -5,11 +5,11 @@ import {
   ActiveSet,
   useActiveWorkoutActions,
   useActiveWorkoutExercise,
-  useActiveWorkoutSetEntities,
+  useActiveWorkoutSetEntitiesByIds,
 } from "@/context/active-workout-provider";
 import { immediateDebounce } from "@/utils/debounce-utils";
 import { FontAwesome6 } from "@expo/vector-icons";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Animated, {
@@ -25,13 +25,9 @@ export default function ActiveExerciseCard({
 }: {
   exerciseId: number;
 }) {
-  // console.log(`${exerciseId} rendered`);
+  console.log(`${exerciseId} rendered`);
   const { exerciseClassId, setIds } = useActiveWorkoutExercise(exerciseId);
-  const allSets = useActiveWorkoutSetEntities();
-  const activeSets = useMemo(
-    () => setIds.map((setId) => allSets[setId]),
-    [setIds]
-  );
+  const activeSets = useActiveWorkoutSetEntitiesByIds(setIds);
   return (
     <View style={styles.cardContainer}>
       <ThemedText style={{ fontSize: 24 }}>Id: {exerciseId}</ThemedText>

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { createWithEqualityFn } from "zustand/traditional";
 
 type ActiveSet = {
   id: number;
@@ -106,7 +107,10 @@ function createTimer(callback: () => void) {
   return timer;
 }
 
-const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
+const useActiveWorkoutStore = createWithEqualityFn<ActiveWorkoutState>()((
+  set,
+  get
+) => {
   let exerciseIncrement = createAutoIncrement();
   let setIncrement = createAutoIncrement();
 
@@ -373,8 +377,11 @@ const useActiveWorkoutExercise = (exerciseId: number) => {
   return useActiveWorkoutStore((state) => state.exercises.entities[exerciseId]);
 };
 
-const useActiveWorkoutSetEntities = () =>
-  useActiveWorkoutStore((state) => state.sets.entities);
+const useActiveWorkoutSetEntitiesByIds = (setIds: Array<number>) =>
+  useActiveWorkoutStore(
+    (state) => setIds.map((setId) => state.sets.entities[setId]),
+    (a, b) => a.length === b.length
+  );
 
 export type { ActiveSet };
 
@@ -388,5 +395,5 @@ export {
   useActiveWorkoutRestingSet,
   useActiveWorkoutExerciseIds,
   useActiveWorkoutExercise,
-  useActiveWorkoutSetEntities,
+  useActiveWorkoutSetEntitiesByIds,
 };
