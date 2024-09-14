@@ -7,7 +7,7 @@ import {
 } from "@/context/active-workout-provider";
 import { ThemedText } from "@/components/Themed";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { router } from "expo-router";
+import { Redirect, router } from "expo-router";
 import ActiveExerciseCard from "./_components/ActiveExerciseCard";
 
 const AddExerciseButton = () => {
@@ -29,7 +29,8 @@ export default function ActiveWorkout() {
   const { cancelWorkout } = useActiveWorkoutActions();
 
   if (!isActive) {
-    throw new Error("No active workout. This should not happen");
+    // Return to previous page
+    return <Redirect href=".." />;
   }
 
   return (
