@@ -20,11 +20,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 
-export default function ActiveExerciseCard({
-  exerciseId,
-}: {
-  exerciseId: number;
-}) {
+const ActiveExerciseCard = ({ exerciseId }: { exerciseId: number }) => {
   console.log(`${exerciseId} rendered`);
   const { exerciseClassId, setIds } = useActiveWorkoutExercise(exerciseId);
   const activeSets = useActiveWorkoutSetEntitiesByIds(setIds);
@@ -41,7 +37,7 @@ export default function ActiveExerciseCard({
       <AddSetButton exerciseId={exerciseId} />
     </View>
   );
-}
+};
 
 const ActiveSetHeader = () => {
   return (
@@ -241,3 +237,5 @@ const styles = StyleSheet.create({
     color: colorBox.green000,
   },
 });
+
+export default ActiveExerciseCard;

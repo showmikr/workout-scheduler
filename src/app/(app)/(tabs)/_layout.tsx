@@ -1,5 +1,5 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, Redirect, router, Tabs } from "expo-router";
+import { Link, Redirect, Tabs } from "expo-router";
 import { Pressable, useColorScheme, View } from "react-native";
 
 import Colors, { figmaColors } from "@/constants/Colors";
@@ -8,6 +8,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { BottomTabBar } from "@react-navigation/bottom-tabs";
 import { ThemedText } from "@/components/Themed";
+
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
  */
@@ -25,6 +26,7 @@ import {
   useActiveWorkoutStatus,
   useActiveWorkoutTitle,
 } from "@/context/active-workout-provider";
+import ActiveWorkoutModal from "@/components/active-workout/ActiveWorkoutModal";
 
 const MiniWorkoutPlayer = ({
   title,
@@ -61,6 +63,7 @@ export default function TabLayout() {
   useDrizzleStudio(db);
   const isWorkoutInProgress = useActiveWorkoutStatus();
   const activeWorkoutTitle = useActiveWorkoutTitle();
+  const { setModalVisible } = useActiveWorkoutActions();
 
   // Only require authentication within the (app) group's layout as users
   // need to be able to access the (auth) group and sign in again.
@@ -71,64 +74,68 @@ export default function TabLayout() {
   }
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-      }}
-      tabBar={(props) => {
-        return (
-          <View>
-            {isWorkoutInProgress && (
-              <MiniWorkoutPlayer
-                title={activeWorkoutTitle}
-                onPress={() => {
-                  router.push("/active-workout");
-                }}
-              />
-            )}
-            <BottomTabBar {...props} />
-          </View>
-        );
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Summary",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+    <View style={{ flex: 1 }}>
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         }}
-      />
+        tabBar={(props) => {
+          return (
+            <View>
+              {isWorkoutInProgress && (
+                <MiniWorkoutPlayer
+                  title={activeWorkoutTitle}
+                  onPress={() => {
+                    setModalVisible(true);
+                    // router.push("/active-workout");
+                  }}
+                />
+              )}
+              <BottomTabBar {...props} />
+            </View>
+          );
+        }}
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "Summary",
+            tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          }}
+        />
 
-      <Tabs.Screen
-        name="workouts"
-        options={{
-          title: "Workouts",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerShown: false,
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: "Settings",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? "light"].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
-        }}
-      />
-    </Tabs>
+        <Tabs.Screen
+          name="workouts"
+          options={{
+            title: "Workouts",
+            tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{
+            title: "Settings",
+            tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+            headerRight: () => (
+              <Link href="/modal" asChild>
+                <Pressable>
+                  {({ pressed }) => (
+                    <FontAwesome
+                      name="info-circle"
+                      size={25}
+                      color={Colors[colorScheme ?? "light"].text}
+                      style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+                    />
+                  )}
+                </Pressable>
+              </Link>
+            ),
+          }}
+        />
+      </Tabs>
+      <ActiveWorkoutModal />
+    </View>
   );
 }
 

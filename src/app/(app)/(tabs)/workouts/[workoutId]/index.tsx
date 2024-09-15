@@ -150,7 +150,7 @@ const StartWorkoutButton = ({
             })),
           })),
         });
-        router.push("/active-workout");
+        // router.push("/active-workout");
       }}
     >
       <Text style={styles.startWorkoutButtonText}>Start Workout</Text>
