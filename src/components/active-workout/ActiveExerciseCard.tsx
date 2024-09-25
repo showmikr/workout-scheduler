@@ -1,5 +1,5 @@
 import { CardOptionsUnderlay } from "@/components/CardUnderlay";
-import { ThemedText } from "@/components/Themed";
+import { ThemedText, ThemedTextInput } from "@/components/Themed";
 import { colorBox, figmaColors } from "@/constants/Colors";
 import {
   ActiveSet,
@@ -63,7 +63,7 @@ const ActiveSetItem = ({
   exerciseId: number;
   set: ActiveSet;
 }) => {
-  const { deleteSet } = useActiveWorkoutActions();
+  const { deleteSet, changeReps } = useActiveWorkoutActions();
   const debouncedDelete = useCallback(
     immediateDebounce(() => deleteSet(exerciseId, set.id), 100),
     [exerciseId, set.id]
@@ -92,13 +92,19 @@ const ActiveSetItem = ({
           </ThemedText>
         </View>
         <View style={styles.dataCell}>
-          <ThemedText
+          <ThemedTextInput
             numberOfLines={1}
-            ellipsizeMode="tail"
+            maxLength={6}
+            inputMode="numeric"
+            placeholder={set.reps.toString()}
+            returnKeyType="done"
             style={styles.dataText}
-          >
-            {set.reps}
-          </ThemedText>
+            onChangeText={(text) => {
+              console.log("onChangeText", text);
+              changeReps(set.id, parseInt(text));
+            }}
+            value={set.reps.toString()}
+          />
         </View>
         <View
           style={[
