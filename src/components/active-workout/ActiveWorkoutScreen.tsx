@@ -21,25 +21,29 @@ const AddExerciseButton = () => {
   );
 };
 
-const ActiveWorkoutList = () => {
+const ActiveWorkoutHeader = () => {
   const { cancelWorkout } = useActiveWorkoutActions();
+  return (
+    <View>
+      <ThemedText style={{ fontSize: 24 }}>Active Workout</ThemedText>
+      <TouchableOpacity
+        onPress={() => {
+          router.dismiss();
+          cancelWorkout();
+        }}
+      >
+        <ThemedText style={{ fontSize: 24 }}>Cancel Workout</ThemedText>
+      </TouchableOpacity>
+      <AddExerciseButton />
+    </View>
+  );
+};
+
+const ActiveWorkoutList = () => {
   const exerciseIds = useActiveWorkoutExerciseIds();
   return (
     <FlatList
-      ListHeaderComponent={() => (
-        <View>
-          <ThemedText>Active Workout</ThemedText>
-          <TouchableOpacity
-            onPress={() => {
-              router.dismiss();
-              cancelWorkout();
-            }}
-          >
-            <ThemedText style={{ fontSize: 24 }}>Cancel Workout</ThemedText>
-          </TouchableOpacity>
-          <AddExerciseButton />
-        </View>
-      )}
+      ListHeaderComponent={<ActiveWorkoutHeader />}
       contentContainerStyle={{
         gap: 24,
         paddingHorizontal: 24,
@@ -48,7 +52,7 @@ const ActiveWorkoutList = () => {
       initialNumToRender={3} // This vastly improves loading performance when there are many exercises
       data={exerciseIds}
       keyExtractor={(a) => a.toString()}
-      renderItem={({ item }) => <ActiveExerciseCard exerciseId={item} />}
+      renderItem={({ item: id }) => <ActiveExerciseCard exerciseId={id} />}
     />
   );
 };
