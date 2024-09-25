@@ -49,7 +49,7 @@ const ActiveSetHeader = () => {
       <View style={styles.headerCheckBox}>
         <FontAwesome6
           name="check"
-          size={CHECK_ICON_SIZE}
+          size={CHECKMARK_ICON_SIZE}
           color={figmaColors.greyLighter}
         />
       </View>
@@ -185,7 +185,8 @@ const AddSetButton = ({ exerciseId }: { exerciseId: number }) => {
 };
 
 const ROW_ITEM_MIN_HEIGHT = 28;
-const CHECK_ICON_SIZE = Math.floor((2 / 3) * ROW_ITEM_MIN_HEIGHT);
+/// The size of the checkmark icon, calculated as a fraction of the minimum row item height.
+const CHECKMARK_ICON_SIZE = Math.floor((2 / 3) * ROW_ITEM_MIN_HEIGHT);
 const styles = StyleSheet.create({
   cardContainer: {
     alignItems: "flex-start",
@@ -221,18 +222,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   headerCheckBox: {
-    width: ROW_ITEM_MIN_HEIGHT,
+    aspectRatio: 1,
     height: ROW_ITEM_MIN_HEIGHT,
     alignItems: "center",
   },
   checkBox: {
-    width: ROW_ITEM_MIN_HEIGHT,
+    aspectRatio: 1,
     height: ROW_ITEM_MIN_HEIGHT,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 4,
     borderWidth: 1,
-    borderBottomColor: figmaColors.greyDarkBorder,
   },
   addSetButton: {
     flex: 1,
