@@ -45,6 +45,7 @@ const ActiveWorkoutList = () => {
         paddingHorizontal: 24,
         paddingBottom: 200,
       }}
+      initialNumToRender={3} // This vastly improves loading performance when there are many exercises
       data={exerciseIds}
       keyExtractor={(a) => a.toString()}
       renderItem={({ item }) => <ActiveExerciseCard exerciseId={item} />}
