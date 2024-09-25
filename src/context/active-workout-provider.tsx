@@ -1,5 +1,5 @@
 import { createWithEqualityFn } from "zustand/traditional";
-import { shallow } from "zustand/shallow";
+import { create } from "zustand";
 
 type ActiveSet = {
   id: number;
@@ -107,254 +107,250 @@ function createTimer(callback: () => void) {
   return timer;
 }
 
-const useActiveWorkoutStore = createWithEqualityFn<ActiveWorkoutState>()(
-  (set, get) => {
-    let exerciseIncrement = createAutoIncrement();
-    let setIncrement = createAutoIncrement();
+const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
+  let exerciseIncrement = createAutoIncrement();
+  let setIncrement = createAutoIncrement();
 
-    const workoutTimer = createTimer(() => {
-      set((state) => ({
-        elapsedTime: state.elapsedTime + 1,
-      }));
-    });
+  const workoutTimer = createTimer(() => {
+    set((state) => ({
+      elapsedTime: state.elapsedTime + 1,
+    }));
+  });
 
-    return {
-      ...initialActiveWorkout,
-      actions: {
-        startWorkout: (inputWorkout: InputWorkout) => {
-          const allExerciseIds: Array<number> = [];
-          const allSetIds: Array<number> = [];
-          const myExercises: { [id: number]: ActiveExercise } = {};
-          const mySets: { [id: number]: ActiveSet } = {};
-          const myExerciseSets: { [exerciseId: number]: ActiveSet[] } = {};
+  return {
+    ...initialActiveWorkout,
+    actions: {
+      startWorkout: (inputWorkout: InputWorkout) => {
+        const allExerciseIds: Array<number> = [];
+        const allSetIds: Array<number> = [];
+        const myExercises: { [id: number]: ActiveExercise } = {};
+        const mySets: { [id: number]: ActiveSet } = {};
+        const myExerciseSets: { [exerciseId: number]: ActiveSet[] } = {};
 
-          for (const exercise of inputWorkout.exercises) {
-            const setIds = exercise.sets.map((set) => setIncrement());
-            const nextExerciseId = exerciseIncrement();
+        for (const exercise of inputWorkout.exercises) {
+          const setIds = exercise.sets.map((set) => setIncrement());
+          const nextExerciseId = exerciseIncrement();
 
-            myExercises[nextExerciseId] = {
-              id: nextExerciseId,
-              exerciseClassId: exercise.exerciseClassId,
-              setIds,
+          myExercises[nextExerciseId] = {
+            id: nextExerciseId,
+            exerciseClassId: exercise.exerciseClassId,
+            setIds,
+          };
+
+          allExerciseIds.push(nextExerciseId);
+
+          myExerciseSets[nextExerciseId] = [];
+
+          for (let i = 0; i < setIds.length; i++) {
+            allSetIds.push(setIds[i]);
+
+            mySets[setIds[i]] = {
+              id: setIds[i],
+              reps: exercise.sets[i].reps,
+              weight: exercise.sets[i].weight,
+              targetRest: exercise.sets[i].targetRest,
+              elapsedRest: 0,
+              isCompleted: false,
             };
 
-            allExerciseIds.push(nextExerciseId);
+            myExerciseSets[nextExerciseId].push(mySets[setIds[i]]);
+          }
+        }
 
-            myExerciseSets[nextExerciseId] = [];
-
-            for (let i = 0; i < setIds.length; i++) {
-              allSetIds.push(setIds[i]);
-
-              mySets[setIds[i]] = {
-                id: setIds[i],
-                reps: exercise.sets[i].reps,
-                weight: exercise.sets[i].weight,
-                targetRest: exercise.sets[i].targetRest,
+        set((state) => {
+          workoutTimer.start();
+          return {
+            ...inputWorkout,
+            isActive: true,
+            exercises: {
+              ids: allExerciseIds,
+              entities: myExercises,
+            },
+            sets: {
+              ids: allSetIds,
+              entities: mySets,
+            },
+            restingSet: null,
+            elapsedTime: 0,
+            isPaused: !state.isPaused,
+          } satisfies ActiveWorkout;
+        });
+      },
+      toggleWorkoutTimer: () => {
+        const isCurrentlyPaused = get().isPaused;
+        if (isCurrentlyPaused) {
+          workoutTimer.start();
+        } else {
+          workoutTimer.stop();
+        }
+        set({ isPaused: !isCurrentlyPaused });
+      },
+      cancelWorkout: () => {
+        // reset incrementers
+        setIncrement = createAutoIncrement();
+        exerciseIncrement = createAutoIncrement();
+        set((state) => {
+          if (!state.isPaused) {
+            workoutTimer.stop();
+          }
+          return { ...initialActiveWorkout };
+        });
+      },
+      addExercise: (
+        inputExercise,
+        inputSet = {
+          reps: 1,
+          weight: 20,
+          targetRest: 0,
+          elapsedRest: 0,
+          isCompleted: false,
+        }
+      ) => {
+        set((state) => {
+          const nextSetId = setIncrement();
+          const nextExerciseId = exerciseIncrement();
+          return {
+            exercises: {
+              ids: [...state.exercises.ids, nextExerciseId],
+              entities: {
+                ...state.exercises.entities,
+                [nextExerciseId]: {
+                  id: nextExerciseId,
+                  exerciseClassId: inputExercise.exerciseClassId,
+                  setIds: [nextSetId],
+                },
+              },
+            },
+            sets: {
+              ids: [...state.sets.ids, nextSetId],
+              entities: {
+                ...state.sets.entities,
+                [nextSetId]: {
+                  id: nextSetId,
+                  reps: inputSet.reps,
+                  weight: inputSet.weight,
+                  targetRest: inputSet.targetRest,
+                  elapsedRest: inputSet.elapsedRest,
+                  isCompleted: inputSet.isCompleted,
+                },
+              },
+            },
+          } satisfies Partial<ActiveWorkoutState>;
+        });
+      },
+      deleteExercise: (exerciseId) => {
+        set((state) => {
+          delete state.exercises.entities[exerciseId];
+          delete state.sets.entities[exerciseId];
+          return {
+            exercises: {
+              ...state.exercises,
+              ids: state.exercises.ids.filter((id) => id !== exerciseId),
+            },
+            sets: {
+              ...state.sets,
+              ids: state.sets.ids.filter((id) => id !== exerciseId),
+            },
+          } satisfies Partial<ActiveWorkoutState>;
+        });
+      },
+      addSet: (exerciseId, newSet) => {
+        set((state) => {
+          const nextSetId = setIncrement();
+          const prevSetId = state.exercises.entities[exerciseId].setIds.at(-1);
+          const placeHolderSet: ActiveSet =
+            prevSetId ?
+              { ...state.sets.entities[prevSetId], id: nextSetId }
+            : {
+                id: nextSetId,
+                reps: 15,
+                weight: 45,
+                targetRest: 180,
                 elapsedRest: 0,
                 isCompleted: false,
               };
-
-              myExerciseSets[nextExerciseId].push(mySets[setIds[i]]);
-            }
-          }
-
-          set((state) => {
-            workoutTimer.start();
-            return {
-              ...inputWorkout,
-              isActive: true,
-              exercises: {
-                ids: allExerciseIds,
-                entities: myExercises,
-              },
-              sets: {
-                ids: allSetIds,
-                entities: mySets,
-              },
-              restingSet: null,
-              elapsedTime: 0,
-              isPaused: !state.isPaused,
-            } satisfies ActiveWorkout;
-          });
-        },
-        toggleWorkoutTimer: () => {
-          const isCurrentlyPaused = get().isPaused;
-          if (isCurrentlyPaused) {
-            workoutTimer.start();
-          } else {
-            workoutTimer.stop();
-          }
-          set({ isPaused: !isCurrentlyPaused });
-        },
-        cancelWorkout: () => {
-          // reset incrementers
-          setIncrement = createAutoIncrement();
-          exerciseIncrement = createAutoIncrement();
-          set((state) => {
-            if (!state.isPaused) {
-              workoutTimer.stop();
-            }
-            return { ...initialActiveWorkout };
-          });
-        },
-        addExercise: (
-          inputExercise,
-          inputSet = {
-            reps: 1,
-            weight: 20,
-            targetRest: 0,
-            elapsedRest: 0,
-            isCompleted: false,
-          }
-        ) => {
-          set((state) => {
-            const nextSetId = setIncrement();
-            const nextExerciseId = exerciseIncrement();
-            return {
-              exercises: {
-                ids: [...state.exercises.ids, nextExerciseId],
-                entities: {
-                  ...state.exercises.entities,
-                  [nextExerciseId]: {
-                    id: nextExerciseId,
-                    exerciseClassId: inputExercise.exerciseClassId,
-                    setIds: [nextSetId],
-                  },
+          return {
+            exercises: {
+              ...state.exercises,
+              entities: {
+                ...state.exercises.entities,
+                [exerciseId]: {
+                  ...state.exercises.entities[exerciseId],
+                  setIds: [
+                    ...state.exercises.entities[exerciseId].setIds,
+                    nextSetId,
+                  ],
                 },
               },
-              sets: {
-                ids: [...state.sets.ids, nextSetId],
-                entities: {
-                  ...state.sets.entities,
-                  [nextSetId]: {
-                    id: nextSetId,
-                    reps: inputSet.reps,
-                    weight: inputSet.weight,
-                    targetRest: inputSet.targetRest,
-                    elapsedRest: inputSet.elapsedRest,
-                    isCompleted: inputSet.isCompleted,
-                  },
-                },
+            },
+            sets: {
+              ids: [...state.sets.ids, nextSetId],
+              entities: {
+                ...state.sets.entities,
+                [nextSetId]: placeHolderSet,
               },
-            } satisfies Partial<ActiveWorkoutState>;
-          });
-        },
-        deleteExercise: (exerciseId) => {
-          set((state) => {
-            delete state.exercises.entities[exerciseId];
-            delete state.sets.entities[exerciseId];
-            return {
-              exercises: {
-                ...state.exercises,
-                ids: state.exercises.ids.filter((id) => id !== exerciseId),
-              },
-              sets: {
-                ...state.sets,
-                ids: state.sets.ids.filter((id) => id !== exerciseId),
-              },
-            } satisfies Partial<ActiveWorkoutState>;
-          });
-        },
-        addSet: (exerciseId, newSet) => {
-          set((state) => {
-            const nextSetId = setIncrement();
-            const prevSetId =
-              state.exercises.entities[exerciseId].setIds.at(-1);
-            const placeHolderSet: ActiveSet =
-              prevSetId ?
-                { ...state.sets.entities[prevSetId], id: nextSetId }
-              : {
-                  id: nextSetId,
-                  reps: 15,
-                  weight: 45,
-                  targetRest: 180,
-                  elapsedRest: 0,
-                  isCompleted: false,
-                };
-            return {
-              exercises: {
-                ...state.exercises,
-                entities: {
-                  ...state.exercises.entities,
-                  [exerciseId]: {
-                    ...state.exercises.entities[exerciseId],
-                    setIds: [
-                      ...state.exercises.entities[exerciseId].setIds,
-                      nextSetId,
-                    ],
-                  },
-                },
-              },
-              sets: {
-                ids: [...state.sets.ids, nextSetId],
-                entities: {
-                  ...state.sets.entities,
-                  [nextSetId]: placeHolderSet,
-                },
-              },
-            } satisfies Partial<ActiveWorkoutState>;
-          });
-        },
-        deleteSet: (exerciseId, setId) => {
-          set((state) => {
-            delete state.sets.entities[setId];
-            return {
-              exercises: {
-                ...state.exercises,
-                entities: {
-                  ...state.exercises.entities,
-                  [exerciseId]: {
-                    ...state.exercises.entities[exerciseId],
-                    setIds: state.exercises.entities[exerciseId].setIds.filter(
-                      (id) => id !== setId
-                    ),
-                  },
-                },
-              },
-              sets: {
-                ...state.sets,
-                ids: state.sets.ids.filter((id) => id !== setId),
-              },
-            } satisfies Partial<ActiveWorkoutState>;
-          });
-        },
-        changeReps: (setId, reps) => {
-          set((state) => {
-            return {
-              sets: {
-                ...state.sets,
-                entities: {
-                  ...state.sets.entities,
-                  [setId]: {
-                    ...state.sets.entities[setId],
-                    reps,
-                  },
-                },
-              },
-            } satisfies Partial<ActiveWorkoutState>;
-          });
-        },
-        changeWeight: (exerciseId, setId, weight) => {
-          set((state) => {
-            return {
-              sets: {
-                ...state.sets,
-                entities: {
-                  ...state.sets.entities,
-                  [setId]: {
-                    ...state.sets.entities[setId],
-                    weight,
-                  },
-                },
-              },
-            } satisfies Partial<ActiveWorkoutState>;
-          });
-        },
+            },
+          } satisfies Partial<ActiveWorkoutState>;
+        });
       },
-    } satisfies ActiveWorkoutState;
-  },
-  shallow
-);
+      deleteSet: (exerciseId, setId) => {
+        set((state) => {
+          delete state.sets.entities[setId];
+          return {
+            exercises: {
+              ...state.exercises,
+              entities: {
+                ...state.exercises.entities,
+                [exerciseId]: {
+                  ...state.exercises.entities[exerciseId],
+                  setIds: state.exercises.entities[exerciseId].setIds.filter(
+                    (id) => id !== setId
+                  ),
+                },
+              },
+            },
+            sets: {
+              ...state.sets,
+              ids: state.sets.ids.filter((id) => id !== setId),
+            },
+          } satisfies Partial<ActiveWorkoutState>;
+        });
+      },
+      changeReps: (setId, reps) => {
+        set((state) => {
+          return {
+            sets: {
+              ...state.sets,
+              entities: {
+                ...state.sets.entities,
+                [setId]: {
+                  ...state.sets.entities[setId],
+                  reps,
+                },
+              },
+            },
+          } satisfies Partial<ActiveWorkoutState>;
+        });
+      },
+      changeWeight: (exerciseId, setId, weight) => {
+        set((state) => {
+          return {
+            sets: {
+              ...state.sets,
+              entities: {
+                ...state.sets.entities,
+                [setId]: {
+                  ...state.sets.entities[setId],
+                  weight,
+                },
+              },
+            },
+          } satisfies Partial<ActiveWorkoutState>;
+        });
+      },
+    },
+  } satisfies ActiveWorkoutState;
+});
 
 const useActiveWorkoutStatus = () =>
   useActiveWorkoutStore((state) => state.isActive);
@@ -378,11 +374,18 @@ const useActiveWorkoutExercise = (exerciseId: number) => {
   return useActiveWorkoutStore((state) => state.exercises.entities[exerciseId]);
 };
 
-const useActiveWorkoutSetEntitiesByIds = (setIds: Array<number>) =>
-  useActiveWorkoutStore(
-    (state) => setIds.map((setId) => state.sets.entities[setId])
-    // (a, b) => a.length === b.length
-  );
+// getters for exercise set properties
+const useActiveWorkoutSetReps = (setId: number) =>
+  useActiveWorkoutStore((state) => state.sets.entities[setId].reps);
+
+const useActiveWorkoutSetWeight = (setId: number) =>
+  useActiveWorkoutStore((state) => state.sets.entities[setId].weight);
+
+const useActiveWorkoutSetTargetRest = (setId: number) =>
+  useActiveWorkoutStore((state) => state.sets.entities[setId].targetRest);
+
+const useActiveWorkoutSetIsCompleted = (setId: number) =>
+  useActiveWorkoutStore((state) => state.sets.entities[setId].isCompleted);
 
 export type { ActiveSet };
 
@@ -396,5 +399,8 @@ export {
   useActiveWorkoutRestingSet,
   useActiveWorkoutExerciseIds,
   useActiveWorkoutExercise,
-  useActiveWorkoutSetEntitiesByIds,
+  useActiveWorkoutSetReps,
+  useActiveWorkoutSetWeight,
+  useActiveWorkoutSetTargetRest,
+  useActiveWorkoutSetIsCompleted,
 };

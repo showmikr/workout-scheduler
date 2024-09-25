@@ -2,14 +2,16 @@ import { CardOptionsUnderlay } from "@/components/CardUnderlay";
 import { ThemedText, ThemedTextInput } from "@/components/Themed";
 import { colorBox, figmaColors } from "@/constants/Colors";
 import {
-  ActiveSet,
   useActiveWorkoutActions,
   useActiveWorkoutExercise,
-  useActiveWorkoutSetEntitiesByIds,
+  useActiveWorkoutSetIsCompleted,
+  useActiveWorkoutSetReps,
+  useActiveWorkoutSetTargetRest,
+  useActiveWorkoutSetWeight,
 } from "@/context/active-workout-provider";
 import { immediateDebounce } from "@/utils/debounce-utils";
 import { FontAwesome6 } from "@expo/vector-icons";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Animated, {
@@ -23,7 +25,6 @@ import Animated, {
 const ActiveExerciseCard = ({ exerciseId }: { exerciseId: number }) => {
   console.log(`${exerciseId} rendered`);
   const { exerciseClassId, setIds } = useActiveWorkoutExercise(exerciseId);
-  const activeSets = useActiveWorkoutSetEntitiesByIds(setIds);
   return (
     <View style={styles.cardContainer}>
       <ThemedText style={{ fontSize: 24 }}>Id: {exerciseId}</ThemedText>
@@ -31,8 +32,8 @@ const ActiveExerciseCard = ({ exerciseId }: { exerciseId: number }) => {
         ExerciseClassId: {exerciseClassId}
       </ThemedText>
       <ActiveSetHeader />
-      {activeSets.map((set) => (
-        <ActiveSetItem key={set.id} exerciseId={exerciseId} set={set} />
+      {setIds.map((setId) => (
+        <ActiveSetItem key={setId} exerciseId={exerciseId} setId={setId} />
       ))}
       <AddSetButton exerciseId={exerciseId} />
     </View>
@@ -58,15 +59,21 @@ const ActiveSetHeader = () => {
 
 const ActiveSetItem = ({
   exerciseId,
-  set,
+  setId,
 }: {
   exerciseId: number;
-  set: ActiveSet;
+  setId: number;
 }) => {
+  const reps = useActiveWorkoutSetReps(setId);
+  const weight = useActiveWorkoutSetWeight(setId);
+  const targetRest = useActiveWorkoutSetTargetRest(setId);
+  const isCompleted = useActiveWorkoutSetIsCompleted(setId);
+
   const { deleteSet, changeReps } = useActiveWorkoutActions();
+
   const debouncedDelete = useCallback(
-    immediateDebounce(() => deleteSet(exerciseId, set.id), 100),
-    [exerciseId, set.id]
+    immediateDebounce(() => deleteSet(exerciseId, setId), 100),
+    [exerciseId, setId]
   );
   return (
     <Swipeable
@@ -80,7 +87,7 @@ const ActiveSetItem = ({
     >
       <View style={styles.setContainer}>
         <View style={styles.dataCell}>
-          <ThemedText style={styles.dataText}>{set.targetRest}</ThemedText>
+          <ThemedText style={styles.dataText}>{targetRest}</ThemedText>
         </View>
         <View style={styles.dataCell}>
           <ThemedText
@@ -88,7 +95,7 @@ const ActiveSetItem = ({
             ellipsizeMode="tail"
             style={styles.dataText}
           >
-            {set.weight}
+            {weight}
           </ThemedText>
         </View>
         <View style={styles.dataCell}>
@@ -96,14 +103,14 @@ const ActiveSetItem = ({
             numberOfLines={1}
             maxLength={6}
             inputMode="numeric"
-            placeholder={set.reps.toString()}
+            placeholder={reps.toString()}
+            value={reps.toString()}
             returnKeyType="done"
             style={styles.dataText}
             onChangeText={(text) => {
               console.log("onChangeText", text);
-              changeReps(set.id, parseInt(text));
+              changeReps(setId, parseInt(text));
             }}
-            value={set.reps.toString()}
           />
         </View>
         <View
@@ -111,7 +118,7 @@ const ActiveSetItem = ({
             styles.checkBox,
             {
               backgroundColor:
-                set.isCompleted ? figmaColors.orangeAccent : colorBox.grey800,
+                isCompleted ? figmaColors.orangeAccent : colorBox.grey800,
             },
           ]}
         />
