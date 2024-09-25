@@ -17,7 +17,7 @@ import FloatingAddButton, {
   floatingAddButtonStyles,
 } from "@/components/FloatingAddButton";
 import { MaterialIcons } from "@expo/vector-icons";
-import BottomMenu from "@/components/SetOptionsMenu";
+import SetOptionsMenu from "@/components/SetOptionsMenu";
 import { useCallback, useRef } from "react";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { immediateDebounce } from "@/utils/debounce-utils";
@@ -199,7 +199,7 @@ const ResistanceSet = ({
   const optionsSheet = useRef<BottomSheetModal>(null);
   return (
     <TableRow style={{ marginBottom: 2 * 14 }}>
-      <BottomMenu
+      <SetOptionsMenu
         exerciseId={exerciseId}
         workoutId={workoutId}
         ref={optionsSheet}
