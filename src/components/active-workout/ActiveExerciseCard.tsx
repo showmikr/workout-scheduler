@@ -42,9 +42,9 @@ const ActiveExerciseCard = ({ exerciseId }: { exerciseId: number }) => {
 const ActiveSetHeader = () => {
   return (
     <View style={styles.setsHeaderContainer}>
-      <ThemedText style={styles.headerText}>Reps</ThemedText>
-      <ThemedText style={styles.headerText}>kg</ThemedText>
       <ThemedText style={styles.headerText}>Rest</ThemedText>
+      <ThemedText style={styles.headerText}>Kg</ThemedText>
+      <ThemedText style={styles.headerText}>Reps</ThemedText>
       <View style={styles.headerCheckBox}>
         <FontAwesome6
           name="check"
@@ -80,13 +80,7 @@ const ActiveSetItem = ({
     >
       <View style={styles.setContainer}>
         <View style={styles.dataCell}>
-          <ThemedText
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={styles.dataText}
-          >
-            {set.reps}
-          </ThemedText>
+          <ThemedText style={styles.dataText}>{set.targetRest}</ThemedText>
         </View>
         <View style={styles.dataCell}>
           <ThemedText
@@ -98,7 +92,13 @@ const ActiveSetItem = ({
           </ThemedText>
         </View>
         <View style={styles.dataCell}>
-          <ThemedText style={styles.dataText}>{set.targetRest}</ThemedText>
+          <ThemedText
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={styles.dataText}
+          >
+            {set.reps}
+          </ThemedText>
         </View>
         <View
           style={[
