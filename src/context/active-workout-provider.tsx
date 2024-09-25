@@ -51,7 +51,7 @@ type ActiveWorkoutActions = {
   ) => void;
   deleteSet: (exerciseId: number, setId: number) => void;
   changeReps: (setId: number, reps: number) => void;
-  changeWeight: (exerciseId: number, setId: number, weight: number) => void;
+  changeWeight: (setId: number, weight: number) => void;
 };
 
 type ActiveWorkoutState = ActiveWorkout & {
@@ -332,7 +332,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
           } satisfies Partial<ActiveWorkoutState>;
         });
       },
-      changeWeight: (exerciseId, setId, weight) => {
+      changeWeight: (setId, weight) => {
         set((state) => {
           return {
             sets: {

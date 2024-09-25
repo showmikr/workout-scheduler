@@ -11,7 +11,7 @@ import {
 } from "@/context/active-workout-provider";
 import { immediateDebounce } from "@/utils/debounce-utils";
 import { FontAwesome6 } from "@expo/vector-icons";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Animated, {
@@ -64,13 +64,7 @@ const ActiveSetItem = ({
   exerciseId: number;
   setId: number;
 }) => {
-  const reps = useActiveWorkoutSetReps(setId);
-  const weight = useActiveWorkoutSetWeight(setId);
-  const targetRest = useActiveWorkoutSetTargetRest(setId);
-  const isCompleted = useActiveWorkoutSetIsCompleted(setId);
-
-  const { deleteSet, changeReps } = useActiveWorkoutActions();
-
+  const { deleteSet } = useActiveWorkoutActions();
   const debouncedDelete = useCallback(
     immediateDebounce(() => deleteSet(exerciseId, setId), 100),
     [exerciseId, setId]
@@ -86,44 +80,92 @@ const ActiveSetItem = ({
       containerStyle={{ width: "100%" }}
     >
       <View style={styles.setContainer}>
-        <View style={styles.dataCell}>
-          <ThemedText style={styles.dataText}>{targetRest}</ThemedText>
-        </View>
-        <View style={styles.dataCell}>
-          <ThemedText
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={styles.dataText}
-          >
-            {weight}
-          </ThemedText>
-        </View>
-        <View style={styles.dataCell}>
-          <ThemedTextInput
-            numberOfLines={1}
-            maxLength={6}
-            inputMode="numeric"
-            placeholder={reps.toString()}
-            value={reps.toString()}
-            returnKeyType="done"
-            style={styles.dataText}
-            onChangeText={(text) => {
-              console.log("onChangeText", text);
-              changeReps(setId, parseInt(text));
-            }}
-          />
-        </View>
-        <View
-          style={[
-            styles.checkBox,
-            {
-              backgroundColor:
-                isCompleted ? figmaColors.orangeAccent : colorBox.grey800,
-            },
-          ]}
-        />
+        <RestCelll setId={setId} />
+        <WeightCell setId={setId} />
+        <RepsCell setId={setId} />
+        <CheckboxCell setId={setId} />
       </View>
     </Swipeable>
+  );
+};
+
+const WeightCell = ({ setId }: { setId: number }) => {
+  const { changeWeight } = useActiveWorkoutActions();
+  const weight = useActiveWorkoutSetWeight(setId);
+  return (
+    <View style={styles.dataCell}>
+      <ThemedTextInput
+        numberOfLines={1}
+        maxLength={5}
+        inputMode="decimal"
+        placeholder={weight.toString()}
+        value={weight.toString()}
+        returnKeyType="done"
+        style={styles.dataText}
+        onChangeText={(text) => {
+          console.log("onChangeText", text);
+          changeWeight(setId, parseInt(text));
+        }}
+      />
+    </View>
+  );
+};
+
+const RepsCell = ({ setId }: { setId: number }) => {
+  const { changeReps } = useActiveWorkoutActions();
+  const reps = useActiveWorkoutSetReps(setId);
+  return (
+    <View style={styles.dataCell}>
+      <ThemedTextInput
+        numberOfLines={1}
+        maxLength={6}
+        inputMode="numeric"
+        placeholder={reps.toString()}
+        value={reps.toString()}
+        returnKeyType="done"
+        style={styles.dataText}
+        onChangeText={(text) => {
+          console.log("onChangeText", text);
+          changeReps(setId, parseInt(text));
+        }}
+      />
+    </View>
+  );
+};
+
+const RestCelll = ({ setId }: { setId: number }) => {
+  // TODO: Implement logic for changing rest
+  const rest = useActiveWorkoutSetTargetRest(setId);
+  return (
+    <View style={styles.dataCell}>
+      <ThemedTextInput
+        numberOfLines={1}
+        maxLength={6}
+        inputMode="numeric"
+        placeholder={rest.toString()}
+        value={rest.toString()}
+        returnKeyType="done"
+        style={styles.dataText}
+        onChangeText={(text) => {
+          console.log("onChangeText", text);
+        }}
+      />
+    </View>
+  );
+};
+
+const CheckboxCell = ({ setId }: { setId: number }) => {
+  const isCompleted = useActiveWorkoutSetIsCompleted(setId);
+  return (
+    <View
+      style={[
+        styles.checkBox,
+        {
+          backgroundColor:
+            isCompleted ? figmaColors.orangeAccent : colorBox.grey800,
+        },
+      ]}
+    />
   );
 };
 
