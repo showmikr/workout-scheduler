@@ -1,5 +1,5 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, Redirect, Tabs } from "expo-router";
+import { Link, Redirect, router, Tabs, useRouter } from "expo-router";
 import { Pressable, useColorScheme, View } from "react-native";
 
 import Colors, { figmaColors } from "@/constants/Colors";
@@ -26,7 +26,6 @@ import {
   useActiveWorkoutStatus,
   useActiveWorkoutTitle,
 } from "@/context/active-workout-provider";
-import ActiveWorkoutModal from "@/components/active-workout/ActiveWorkoutModal";
 
 const MiniWorkoutPlayer = ({
   title,
@@ -63,7 +62,6 @@ export default function TabLayout() {
   useDrizzleStudio(db);
   const isWorkoutInProgress = useActiveWorkoutStatus();
   const activeWorkoutTitle = useActiveWorkoutTitle();
-  const { setModalVisible } = useActiveWorkoutActions();
 
   // Only require authentication within the (app) group's layout as users
   // need to be able to access the (auth) group and sign in again.
@@ -86,8 +84,8 @@ export default function TabLayout() {
                 <MiniWorkoutPlayer
                   title={activeWorkoutTitle}
                   onPress={() => {
-                    setModalVisible(true);
-                    // router.push("/active-workout");
+                    // setModalVisible(true);
+                    router.push("/active-workout");
                   }}
                 />
               )}
@@ -134,7 +132,6 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-      <ActiveWorkoutModal />
     </View>
   );
 }

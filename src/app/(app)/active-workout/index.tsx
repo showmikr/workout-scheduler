@@ -1,21 +1,17 @@
-import { SafeAreaView, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import { useActiveWorkoutStatus } from "@/context/active-workout-provider";
-import { Redirect } from "expo-router";
-import ActiveWorkoutList from "@/components/active-workout/ActiveWorkoutList";
+import { router } from "expo-router";
+import ActiveWorkoutScreen from "@/components/active-workout/ActiveWorkoutScreen";
 
 export default function ActiveWorkoutPage() {
   const isActive = useActiveWorkoutStatus();
 
   if (!isActive) {
     // Return to previous page
-    return <Redirect href=".." />;
+    router.dismiss();
   }
 
-  return (
-    <SafeAreaView style={styles.safeAreaView}>
-      <ActiveWorkoutList />
-    </SafeAreaView>
-  );
+  return <ActiveWorkoutScreen />;
 }
 
 const styles = StyleSheet.create({

@@ -17,7 +17,6 @@ type ActiveExercise = {
 
 type ActiveWorkout = {
   isActive: boolean;
-  isModalVisible: boolean;
   title: string;
   elapsedTime: number; // measured in seconds
   isPaused: boolean;
@@ -52,7 +51,6 @@ type ActiveWorkoutActions = {
   deleteSet: (exerciseId: number, setId: number) => void;
   changeReps: (exerciseId: number, setId: number, reps: number) => void;
   changeWeight: (exerciseId: number, setId: number, weight: number) => void;
-  setModalVisible: (isVisible: boolean) => void;
 };
 
 type ActiveWorkoutState = ActiveWorkout & {
@@ -66,7 +64,6 @@ function createAutoIncrement(initialValue: number = 0) {
 
 const initialActiveWorkout: ActiveWorkout = {
   isActive: false,
-  isModalVisible: false,
   title: "",
   elapsedTime: 0,
   isPaused: true,
@@ -167,7 +164,6 @@ const useActiveWorkoutStore = createWithEqualityFn<ActiveWorkoutState>()((
           return {
             ...inputWorkout,
             isActive: true,
-            isModalVisible: true,
             exercises: {
               ids: allExerciseIds,
               entities: myExercises,
@@ -182,9 +178,6 @@ const useActiveWorkoutStore = createWithEqualityFn<ActiveWorkoutState>()((
           } satisfies ActiveWorkout;
         });
       },
-      setModalVisible: (isVisible) => {
-        set({ isModalVisible: isVisible });
-      },
       toggleWorkoutTimer: () => {
         const isCurrentlyPaused = get().isPaused;
         if (isCurrentlyPaused) {
@@ -195,7 +188,7 @@ const useActiveWorkoutStore = createWithEqualityFn<ActiveWorkoutState>()((
         set({ isPaused: !isCurrentlyPaused });
       },
       cancelWorkout: () => {
-        // reset incremmenters
+        // reset incrementers
         setIncrement = createAutoIncrement();
         exerciseIncrement = createAutoIncrement();
         set((state) => {
@@ -364,9 +357,6 @@ const useActiveWorkoutStore = createWithEqualityFn<ActiveWorkoutState>()((
 const useActiveWorkoutStatus = () =>
   useActiveWorkoutStore((state) => state.isActive);
 
-const useIsActiveWorkoutVisible = () =>
-  useActiveWorkoutStore((state) => state.isModalVisible);
-
 const useActiveWorkoutActions = () =>
   useActiveWorkoutStore((state) => state.actions);
 
@@ -399,7 +389,6 @@ export {
   initialActiveWorkout,
   useActiveWorkoutActions,
   useActiveWorkoutStatus,
-  useIsActiveWorkoutVisible,
   useActiveWorkoutTitle,
   useActiveWorkoutElapsedTime,
   useActiveWorkoutRestingSet,
