@@ -4,11 +4,10 @@ import {
 } from "@/context/active-workout-provider";
 import { FlatList, TouchableOpacity, View } from "react-native";
 import { ThemedText } from "../Themed";
-import { router, useRouter } from "expo-router";
+import { router } from "expo-router";
 import ActiveExerciseCard from "./ActiveExerciseCard";
 
 const AddExerciseButton = () => {
-  const router = useRouter();
   return (
     <TouchableOpacity
       style={{ marginVertical: 20 }}
