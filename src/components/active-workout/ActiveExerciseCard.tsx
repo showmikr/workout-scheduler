@@ -77,7 +77,8 @@ const ActiveSetItem = ({
       friction={1.8}
       rightThreshold={20}
       dragOffsetFromLeftEdge={30}
-      containerStyle={{ width: "100%" }}
+      childrenContainerStyle={{ flex: 1 }}
+      containerStyle={{ flexDirection: "row" }}
     >
       <View style={styles.setContainer}>
         <RestCelll setId={setId} />
