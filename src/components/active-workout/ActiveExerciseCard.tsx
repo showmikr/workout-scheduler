@@ -11,8 +11,8 @@ import {
 } from "@/context/active-workout-provider";
 import { immediateDebounce } from "@/utils/debounce-utils";
 import { FontAwesome6 } from "@expo/vector-icons";
-import { useCallback } from "react";
-import { View, StyleSheet, Pressable } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { View, StyleSheet, Pressable, Keyboard } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Animated, {
   useAnimatedStyle,
@@ -134,21 +134,36 @@ const RepsCell = ({ setId }: { setId: number }) => {
   );
 };
 
+const DIGITS_SET = new Set(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
 const RestCelll = ({ setId }: { setId: number }) => {
   // TODO: Implement logic for changing rest
+  const cursorRange = { start: 5, end: 5 };
   const rest = useActiveWorkoutSetTargetRest(setId);
+  const minutes = Math.trunc(rest / 60);
+  const seconds = rest - (minutes * 60);
+  const minutesString = minutes < 10 ? '0' + String(minutes) : String(minutes);
+  const secondsString = seconds < 10 ? '0' + String(seconds) : String(seconds);
+  const [digitChars, setDigitChars] = useState([...minutesString, ...secondsString]);
+  const textOutput = digitChars[0] + digitChars[1] + ":" + digitChars[2] + digitChars[3];
+
   return (
     <View style={styles.dataCell}>
       <ThemedTextInput
         numberOfLines={1}
-        maxLength={6}
+        maxLength={5}
         inputMode="numeric"
         placeholder={rest.toString()}
-        value={rest.toString()}
+        value={textOutput}
+        selection={cursorRange}
         returnKeyType="done"
         style={styles.dataText}
-        onChangeText={(text) => {
-          console.log("onChangeText", text);
+        onKeyPress={(e) => {
+          const key = e.nativeEvent.key
+          if (DIGITS_SET.has(key)) {
+            setDigitChars([...digitChars.slice(1), key]);
+          } else if (key === "Backspace") {
+            setDigitChars(['0', ...digitChars.slice(0, -1)])
+          }
         }}
       />
     </View>
