@@ -90,22 +90,30 @@ const ActiveSetItem = ({
   );
 };
 
+const weightRegex = /^\d*\.?\d+/;
 const WeightCell = ({ setId }: { setId: number }) => {
   const { changeWeight } = useActiveWorkoutActions();
   const weight = useActiveWorkoutSetWeight(setId);
+  const [weightText, setWeightText] = useState(() => weight.toString());
   return (
     <View style={styles.dataCell}>
       <ThemedTextInput
         numberOfLines={1}
-        maxLength={5}
+        maxLength={6}
         inputMode="decimal"
-        placeholder={weight.toString()}
-        value={weight.toString()}
+        value={weightText}
         returnKeyType="done"
         style={styles.dataText}
         onChangeText={(text) => {
-          console.log("onChangeText", text);
-          changeWeight(setId, parseInt(text));
+          setWeightText(text);
+        }}
+        onEndEditing={(e) => {
+          const parsedWeight = Number(
+            e.nativeEvent.text.match(weightRegex)?.at(0) ?? "0"
+          );
+          const truncatedWeight = Math.round(parsedWeight * 10) / 10;
+          setWeightText(truncatedWeight.toString());
+          changeWeight(setId, truncatedWeight);
         }}
       />
     </View>
