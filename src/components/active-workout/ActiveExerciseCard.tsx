@@ -200,8 +200,11 @@ const RestCelll = ({ setId }: { setId: number }) => {
 
 const CheckboxCell = ({ setId }: { setId: number }) => {
   const isCompleted = useActiveWorkoutSetIsCompleted(setId);
+  const { toggleSetDone } = useActiveWorkoutActions();
   return (
-    <View
+    <Pressable
+      hitSlop={24}
+      onPress={() => toggleSetDone(setId)}
       style={[
         styles.checkBox,
         {
@@ -209,7 +212,9 @@ const CheckboxCell = ({ setId }: { setId: number }) => {
             isCompleted ? figmaColors.orangeAccent : colorBox.grey800,
         },
       ]}
-    />
+    >
+      {isCompleted && <FontAwesome6 name="check" size={16} />}
+    </Pressable>
   );
 };
 

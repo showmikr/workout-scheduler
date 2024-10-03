@@ -1,4 +1,3 @@
-import { createWithEqualityFn } from "zustand/traditional";
 import { create } from "zustand";
 
 type ActiveSet = {
@@ -52,6 +51,7 @@ type ActiveWorkoutActions = {
   deleteSet: (exerciseId: number, setId: number) => void;
   changeReps: (setId: number, reps: number) => void;
   changeWeight: (setId: number, weight: number) => void;
+  toggleSetDone: (setId: number) => void;
 };
 
 type ActiveWorkoutState = ActiveWorkout & {
@@ -342,6 +342,22 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                 [setId]: {
                   ...state.sets.entities[setId],
                   weight,
+                },
+              },
+            },
+          } satisfies Partial<ActiveWorkoutState>;
+        });
+      },
+      toggleSetDone: (setId) => {
+        set((state) => {
+          return {
+            sets: {
+              ...state.sets,
+              entities: {
+                ...state.sets.entities,
+                [setId]: {
+                  ...state.sets.entities[setId],
+                  isCompleted: !state.sets.entities[setId].isCompleted,
                 },
               },
             },
