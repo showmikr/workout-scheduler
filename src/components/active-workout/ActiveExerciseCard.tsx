@@ -120,22 +120,28 @@ const WeightCell = ({ setId }: { setId: number }) => {
   );
 };
 
+const repsRegex = /^0*(\d+)/;
 const RepsCell = ({ setId }: { setId: number }) => {
   const { changeReps } = useActiveWorkoutActions();
   const reps = useActiveWorkoutSetReps(setId);
+  const [repsText, setRepsText] = useState(() => reps.toString());
   return (
     <View style={styles.dataCell}>
       <ThemedTextInput
         numberOfLines={1}
-        maxLength={6}
+        maxLength={3}
         inputMode="numeric"
-        placeholder={reps.toString()}
-        value={reps.toString()}
+        value={repsText}
         returnKeyType="done"
         style={styles.dataText}
         onChangeText={(text) => {
-          console.log("onChangeText", text);
-          changeReps(setId, parseInt(text));
+          const matchedText = text.match(repsRegex)?.at(0) ?? "";
+          setRepsText(matchedText);
+        }}
+        onEndEditing={() => {
+          const parsedReps = Number(repsText); // Note, Number(<empty string>) = 0
+          setRepsText(parsedReps.toString());
+          changeReps(setId, parsedReps);
         }}
       />
     </View>
