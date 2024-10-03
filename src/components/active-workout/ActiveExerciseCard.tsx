@@ -96,27 +96,25 @@ const WeightCell = ({ setId }: { setId: number }) => {
   const weight = useActiveWorkoutSetWeight(setId);
   const [weightText, setWeightText] = useState(() => weight.toString());
   return (
-    <View style={styles.dataCell}>
-      <ThemedTextInput
-        numberOfLines={1}
-        maxLength={6}
-        inputMode="decimal"
-        value={weightText}
-        returnKeyType="done"
-        style={styles.dataText}
-        onChangeText={(text) => {
-          setWeightText(text);
-        }}
-        onEndEditing={(e) => {
-          const parsedWeight = Number(
-            e.nativeEvent.text.match(weightRegex)?.at(0) ?? "0"
-          );
-          const truncatedWeight = Math.round(parsedWeight * 10) / 10;
-          setWeightText(truncatedWeight.toString());
-          changeWeight(setId, truncatedWeight);
-        }}
-      />
-    </View>
+    <ThemedTextInput
+      numberOfLines={1}
+      maxLength={6}
+      inputMode="decimal"
+      value={weightText}
+      returnKeyType="done"
+      style={[styles.dataCell, styles.dataText]}
+      onChangeText={(text) => {
+        setWeightText(text);
+      }}
+      onEndEditing={(e) => {
+        const parsedWeight = Number(
+          e.nativeEvent.text.match(weightRegex)?.at(0) ?? "0"
+        );
+        const truncatedWeight = Math.round(parsedWeight * 10) / 10;
+        setWeightText(truncatedWeight.toString());
+        changeWeight(setId, truncatedWeight);
+      }}
+    />
   );
 };
 
@@ -126,25 +124,23 @@ const RepsCell = ({ setId }: { setId: number }) => {
   const reps = useActiveWorkoutSetReps(setId);
   const [repsText, setRepsText] = useState(() => reps.toString());
   return (
-    <View style={styles.dataCell}>
-      <ThemedTextInput
-        numberOfLines={1}
-        maxLength={3}
-        inputMode="numeric"
-        value={repsText}
-        returnKeyType="done"
-        style={styles.dataText}
-        onChangeText={(text) => {
-          const matchedText = text.match(repsRegex)?.at(0) ?? "";
-          setRepsText(matchedText);
-        }}
-        onEndEditing={() => {
-          const parsedReps = Number(repsText); // Note, Number(<empty string>) = 0
-          setRepsText(parsedReps.toString());
-          changeReps(setId, parsedReps);
-        }}
-      />
-    </View>
+    <ThemedTextInput
+      numberOfLines={1}
+      maxLength={3}
+      inputMode="numeric"
+      value={repsText}
+      returnKeyType="done"
+      style={[styles.dataCell, styles.dataText]}
+      onChangeText={(text) => {
+        const matchedText = text.match(repsRegex)?.at(0) ?? "";
+        setRepsText(matchedText);
+      }}
+      onEndEditing={() => {
+        const parsedReps = Number(repsText); // Note, Number(<empty string>) = 0
+        setRepsText(parsedReps.toString());
+        changeReps(setId, parsedReps);
+      }}
+    />
   );
 };
 
@@ -164,43 +160,41 @@ const RestCelll = ({ setId }: { setId: number }) => {
     digitChars[0] + digitChars[1] + ":" + digitChars[2] + digitChars[3];
 
   return (
-    <View style={styles.dataCell}>
-      <ThemedTextInput
-        numberOfLines={1}
-        maxLength={5}
-        inputMode="numeric"
-        value={textOutput}
-        selection={cursorRange}
-        returnKeyType="done"
-        style={styles.dataText}
-        onKeyPress={(e) => {
-          const key = e.nativeEvent.key;
-          const digitPressed = key.match(singleDigitRegex)?.at(0) !== undefined;
-          if (digitPressed) {
-            setDigitChars([...digitChars.slice(1), key]);
-          } else if (key === "Backspace") {
-            setDigitChars(["0", ...digitChars.slice(0, -1)]);
-          }
-        }}
-        onEndEditing={() => {
-          // handle seconds overflow
-          const minutes = parseInt(digitChars[0] + digitChars[1]);
-          const seconds = parseInt(digitChars[2] + digitChars[3]);
-          const overflow = seconds - 59;
-          if (overflow > 0) {
-            const adjustedOverflow = minutes >= 99 ? 59 : overflow;
-            const adjustedMinutes = Math.min(minutes + 1, 99);
-            const minutesString = adjustedMinutes.toString().padStart(2, "0");
-            const secondsString = adjustedOverflow.toString().padStart(2, "0");
-            const [minutesArray, secondsArray] = [
-              [...minutesString],
-              [...secondsString],
-            ];
-            setDigitChars([...minutesArray, ...secondsArray]);
-          }
-        }}
-      />
-    </View>
+    <ThemedTextInput
+      numberOfLines={1}
+      maxLength={5}
+      inputMode="numeric"
+      value={textOutput}
+      selection={cursorRange}
+      returnKeyType="done"
+      style={[styles.dataCell, styles.dataText]}
+      onKeyPress={(e) => {
+        const key = e.nativeEvent.key;
+        const digitPressed = key.match(singleDigitRegex)?.at(0) !== undefined;
+        if (digitPressed) {
+          setDigitChars([...digitChars.slice(1), key]);
+        } else if (key === "Backspace") {
+          setDigitChars(["0", ...digitChars.slice(0, -1)]);
+        }
+      }}
+      onEndEditing={() => {
+        // handle seconds overflow
+        const minutes = parseInt(digitChars[0] + digitChars[1]);
+        const seconds = parseInt(digitChars[2] + digitChars[3]);
+        const overflow = seconds - 59;
+        if (overflow > 0) {
+          const adjustedOverflow = minutes >= 99 ? 59 : overflow;
+          const adjustedMinutes = Math.min(minutes + 1, 99);
+          const minutesString = adjustedMinutes.toString().padStart(2, "0");
+          const secondsString = adjustedOverflow.toString().padStart(2, "0");
+          const [minutesArray, secondsArray] = [
+            [...minutesString],
+            [...secondsString],
+          ];
+          setDigitChars([...minutesArray, ...secondsArray]);
+        }
+      }}
+    />
   );
 };
 
