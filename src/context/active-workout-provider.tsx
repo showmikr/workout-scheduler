@@ -44,10 +44,7 @@ type ActiveWorkoutActions = {
     inputSet?: Omit<ActiveSet, "id">
   ) => void;
   deleteExercise: (exerciseId: number) => void;
-  addSet: (
-    exerciseId: number,
-    inputSet?: Omit<ActiveSet, "id" | "isCompleted">
-  ) => void;
+  addSet: (exerciseId: number) => void;
   deleteSet: (exerciseId: number, setId: number) => void;
   changeReps: (setId: number, reps: number) => void;
   changeWeight: (setId: number, weight: number) => void;
@@ -128,7 +125,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
         const myExerciseSets: { [exerciseId: number]: ActiveSet[] } = {};
 
         for (const exercise of inputWorkout.exercises) {
-          const setIds = exercise.sets.map((set) => setIncrement());
+          const setIds = exercise.sets.map(() => setIncrement());
           const nextExerciseId = exerciseIncrement();
 
           myExercises[nextExerciseId] = {
@@ -254,13 +251,21 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
           } satisfies Partial<ActiveWorkoutState>;
         });
       },
-      addSet: (exerciseId, newSet) => {
+      addSet: (exerciseId) => {
+        if (get().exercises.entities[exerciseId] === undefined) {
+          console.warn("Exercise not found for exerciseId", exerciseId);
+          return;
+        }
         set((state) => {
           const nextSetId = setIncrement();
-          const prevSetId = state.exercises.entities[exerciseId].setIds.at(-1);
+          const lastSetId = state.exercises.entities[exerciseId]?.setIds.at(-1);
           const placeHolderSet: ActiveSet =
-            prevSetId ?
-              { ...state.sets.entities[prevSetId], id: nextSetId }
+            lastSetId !== undefined ?
+              {
+                ...state.sets.entities[lastSetId],
+                id: nextSetId,
+                isCompleted: false,
+              }
             : {
                 id: nextSetId,
                 reps: 15,
