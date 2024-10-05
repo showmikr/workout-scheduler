@@ -93,7 +93,7 @@ const ActiveSetItem = ({
       containerStyle={{ flexDirection: "row" }}
     >
       <View style={styles.setContainer}>
-        <RestCelll setId={setId} />
+        <RestCell setId={setId} />
         <WeightCell setId={setId} />
         <RepsCell setId={setId} />
         <CheckboxCell setId={setId} />
@@ -156,7 +156,7 @@ const RepsCell = ({ setId }: { setId: number }) => {
   );
 };
 
-const RestCelll = ({ setId }: { setId: number }) => {
+const RestCell = ({ setId }: { setId: number }) => {
   const singleDigitRegex = /^\d$/;
   const cursorRange = { start: 5, end: 5 };
   const rest = useActiveWorkoutSetTargetRest(setId);
