@@ -24,9 +24,21 @@ import Animated, {
 
 const ActiveExerciseCard = ({ exerciseId }: { exerciseId: number }) => {
   console.log(`${exerciseId} rendered`);
-  const { exerciseClassId, setIds } = useActiveWorkoutExercise(exerciseId);
+  const {
+    exerciseClass: { id: exerciseClassId, title },
+    setIds,
+  } = useActiveWorkoutExercise(exerciseId);
+  console.log("ExerciseClassId", exerciseClassId);
   return (
     <View style={styles.cardContainer}>
+      <ThemedText
+        style={{
+          fontSize: 20,
+          fontWeight: 600,
+        }}
+      >
+        {title}
+      </ThemedText>
       <ThemedText style={{ fontSize: 24 }}>Id: {exerciseId}</ThemedText>
       <ThemedText style={{ fontSize: 24 }}>
         ExerciseClassId: {exerciseClassId}

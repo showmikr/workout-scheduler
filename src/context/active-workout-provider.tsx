@@ -11,7 +11,7 @@ type ActiveSet = {
 
 type ActiveExercise = {
   id: number;
-  exerciseClassId: number;
+  exerciseClass: { id: number; title: string };
   setIds: Array<number>;
 };
 
@@ -40,7 +40,7 @@ type ActiveWorkoutActions = {
   toggleWorkoutTimer: () => void;
   cancelWorkout: () => void;
   addExercise: (
-    inputExercise: Omit<ActiveExercise, "id" | "setIds">,
+    inputExercise: ActiveExercise["exerciseClass"],
     inputSet?: Omit<ActiveSet, "id">
   ) => void;
   deleteExercise: (exerciseId: number) => void;
@@ -73,7 +73,7 @@ const initialActiveWorkout: ActiveWorkout = {
 type InputWorkout = {
   title: string;
   exercises: Array<{
-    exerciseClassId: number;
+    exerciseClass: { id: number; title: string };
     sets: Array<{
       reps: number;
       weight: number;
@@ -130,7 +130,10 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
 
           myExercises[nextExerciseId] = {
             id: nextExerciseId,
-            exerciseClassId: exercise.exerciseClassId,
+            exerciseClass: {
+              id: exercise.exerciseClass.id,
+              title: exercise.exerciseClass.title,
+            },
             setIds,
           };
 
@@ -213,7 +216,10 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                 ...state.exercises.entities,
                 [nextExerciseId]: {
                   id: nextExerciseId,
-                  exerciseClassId: inputExercise.exerciseClassId,
+                  exerciseClass: {
+                    id: inputExercise.id,
+                    title: inputExercise.title,
+                  },
                   setIds: [nextSetId],
                 },
               },

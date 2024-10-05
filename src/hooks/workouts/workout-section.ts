@@ -49,7 +49,7 @@ const getWorkoutSection = async (
 ): Promise<WorkoutSection> => {
   const exerciseRows = await db.getAllAsync<Omit<ResistanceSection, "sets">>(
     `
-    SELECT ex.id AS exercise_id, ex_class.title, ex_class.exercise_type_id
+    SELECT ex.id AS exercise_id, ex_class.title, ex_class.exercise_type_id, ex_class.id AS exercise_class_id
     FROM exercise AS ex
     INNER JOIN
       exercise_class AS ex_class ON ex.exercise_class_id = ex_class.id

@@ -108,7 +108,7 @@ function ExercisePressableContainer({
   });
   const onPressHandler = () => {
     router.push({
-      pathname: "workouts/[workoutId]/[exerciseId]",
+      pathname: "/workouts/[workoutId]/[exerciseId]",
       params: {
         workoutId: workoutId,
         exerciseId: exercise.exercise_id,

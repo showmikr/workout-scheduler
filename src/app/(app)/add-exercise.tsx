@@ -1,3 +1,6 @@
+/**
+ * This page is the entry point for adding exercises to the active workout.
+ */
 import { SafeAreaView } from "react-native";
 import { Redirect, router } from "expo-router";
 import { figmaColors } from "@/constants/Colors";
@@ -22,7 +25,7 @@ export default function AddExerciseIndex() {
   // onPress handler when user navigates to this page from the active workout screen
   const onPressAddActiveExercise = (exerciseClass: ExerciseClass) => {
     router.navigate("/active-workout");
-    addActiveExercise({ exerciseClassId: exerciseClass.id });
+    addActiveExercise({ id: exerciseClass.id, title: exerciseClass.title });
   };
 
   return (

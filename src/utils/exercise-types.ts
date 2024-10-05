@@ -80,11 +80,17 @@ export type CardioSetParams = {
 export type UnifiedResistanceSet = ExerciseSetParams & ResistanceSetParams;
 export type UnifiedCardioSet = ExerciseSetParams & CardioSetParams;
 
+/**
+ * Really represent a resistance exercise
+ * It's a combination of the exercise_class table and the exercise_set table
+ * Exercise_class table contains the exercise title and the exercise_type_id
+ * exercise_set table contains the exercise_set_id, list_order, reps, rest_time, title
+ */
 export type ResistanceSection = {
   exercise_type_id: ExerciseEnums["RESISTANCE_ENUM"];
   exercise_class_id: number;
   exercise_id: number;
-  title: string;
+  title: string; // exercise title from exercise_class table
   sets: UnifiedResistanceSet[];
 };
 

@@ -139,10 +139,16 @@ const StartWorkoutButton = ({
           return;
         }
         // otherwise start the workout
+        for (const ex of exercises) {
+          console.log("ExerciseClassId:", ex.exercise_class_id);
+        }
         startWorkout({
           title: workoutTitle,
           exercises: exercises.map((exercise) => ({
-            exerciseClassId: exercise.exercise_id,
+            exerciseClass: {
+              id: exercise.exercise_class_id,
+              title: exercise.title,
+            },
             sets: exercise.sets.map((set) => ({
               weight: set.total_weight,
               reps: set.reps,
