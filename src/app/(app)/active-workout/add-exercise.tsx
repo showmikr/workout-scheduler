@@ -24,7 +24,7 @@ export default function AddExerciseIndex() {
 
   // onPress handler when user navigates to this page from the active workout screen
   const onPressAddActiveExercise = (exerciseClass: ExerciseClass) => {
-    router.navigate("/active-workout");
+    router.back();
     addActiveExercise({ id: exerciseClass.id, title: exerciseClass.title });
   };
 

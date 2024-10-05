@@ -28,7 +28,6 @@ const ActiveExerciseCard = ({ exerciseId }: { exerciseId: number }) => {
     exerciseClass: { id: exerciseClassId, title },
     setIds,
   } = useActiveWorkoutExercise(exerciseId);
-  console.log("ExerciseClassId", exerciseClassId);
   return (
     <View style={styles.cardContainer}>
       <ThemedText

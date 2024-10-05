@@ -15,11 +15,12 @@ export default function AppLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />
         <Stack.Screen
-          name="add-exercise"
-          options={{
-            presentation: "modal",
-            headerTitle: "Choose an exercise",
-          }}
+          name="active-workout/index"
+          options={{ title: "Active Workout" }}
+        />
+        <Stack.Screen
+          name="active-workout/add-exercise"
+          options={{ presentation: "modal", title: "Choose an exercise" }}
         />
         <Stack.Screen
           name="hello"

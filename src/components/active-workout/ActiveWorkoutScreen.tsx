@@ -12,7 +12,7 @@ const AddExerciseButton = () => {
     <TouchableOpacity
       style={{ marginVertical: 20 }}
       onPress={() => {
-        router.push("/add-exercise");
+        router.push("/active-workout/add-exercise");
       }}
     >
       <ThemedText style={{ fontSize: 28 }}>Add Exercise</ThemedText>
