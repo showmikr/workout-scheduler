@@ -183,7 +183,10 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
         } else {
           workoutTimer.stop();
         }
-        set({ isPaused: !isCurrentlyPaused });
+        set({ isPaused: !isCurrentlyPaused } satisfies Pick<
+          ActiveWorkout,
+          "isPaused"
+        >);
       },
       cancelWorkout: () => {
         // reset incrementers
@@ -193,7 +196,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
           if (!state.isPaused) {
             workoutTimer.stop();
           }
-          return { ...initialActiveWorkout };
+          return { ...initialActiveWorkout } satisfies ActiveWorkout;
         });
       },
       addExercise: (
@@ -238,7 +241,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                 },
               },
             },
-          } satisfies Partial<ActiveWorkoutState>;
+          } satisfies Pick<ActiveWorkout, "exercises" | "sets">;
         });
       },
       deleteExercise: (exerciseId) => {
@@ -254,7 +257,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
               ...state.sets,
               ids: state.sets.ids.filter((id) => id !== exerciseId),
             },
-          } satisfies Partial<ActiveWorkoutState>;
+          } satisfies Pick<ActiveWorkout, "exercises" | "sets">;
         });
       },
       addSet: (exerciseId) => {
@@ -301,7 +304,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                 [nextSetId]: placeHolderSet,
               },
             },
-          } satisfies Partial<ActiveWorkoutState>;
+          } satisfies Pick<ActiveWorkout, "exercises" | "sets">;
         });
       },
       deleteSet: (exerciseId, setId) => {
@@ -324,7 +327,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
               ...state.sets,
               ids: state.sets.ids.filter((id) => id !== setId),
             },
-          } satisfies Partial<ActiveWorkoutState>;
+          } satisfies Pick<ActiveWorkout, "exercises" | "sets">;
         });
       },
       changeReps: (setId, reps) => {
@@ -340,7 +343,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                 },
               },
             },
-          } satisfies Partial<ActiveWorkoutState>;
+          } satisfies Pick<ActiveWorkout, "sets">;
         });
       },
       changeWeight: (setId, weight) => {
@@ -356,7 +359,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                 },
               },
             },
-          } satisfies Partial<ActiveWorkoutState>;
+          } satisfies Pick<ActiveWorkout, "sets">;
         });
       },
       toggleSetDone: (setId) => {
@@ -372,7 +375,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
                 },
               },
             },
-          } satisfies Partial<ActiveWorkoutState>;
+          } satisfies Pick<ActiveWorkout, "sets">;
         });
       },
     },
