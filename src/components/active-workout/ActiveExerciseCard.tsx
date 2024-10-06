@@ -32,15 +32,11 @@ const ActiveExerciseCard = ({ exerciseId }: { exerciseId: number }) => {
     <View style={styles.cardContainer}>
       <ThemedText
         style={{
-          fontSize: 20,
+          fontSize: 24,
           fontWeight: 600,
         }}
       >
         {title}
-      </ThemedText>
-      <ThemedText style={{ fontSize: 24 }}>Id: {exerciseId}</ThemedText>
-      <ThemedText style={{ fontSize: 24 }}>
-        ExerciseClassId: {exerciseClassId}
       </ThemedText>
       <ActiveSetHeader />
       {setIds.map((setId) => (
