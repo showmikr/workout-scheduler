@@ -1,9 +1,6 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
+import { ThemeProvider } from "@react-navigation/native";
+import { customDarkTheme, customLightTheme } from "@/constants/Colors";
 import { useFonts } from "expo-font";
 import { Slot, SplashScreen } from "expo-router";
 import { useEffect } from "react";
@@ -53,7 +50,9 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <ThemeProvider
+      value={colorScheme === "dark" ? customDarkTheme : customLightTheme}
+    >
       <QueryClientProvider client={queryClient}>
         <SessionProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>

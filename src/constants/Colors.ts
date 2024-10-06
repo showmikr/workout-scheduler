@@ -1,3 +1,5 @@
+import { Theme } from "@react-navigation/native";
+
 const tintColorLight = "#2f95dc";
 const tintColorDark = "#fff";
 
@@ -57,6 +59,45 @@ const colorBox = {
   green950: "#081200",
 } as const;
 
+/**
+ * Most of the components provided by Expo Router (Tabs, Stacks, Slots, etc)
+ * are using the React Navigation Library under the hood which means that the only (convenient)
+ * way to style them (change background colors based on color scheme) is to supply a set of Theme
+ * objects to the React Navigation Library's ThemeProvider component. React Navigation has some default
+ * themes for both dark and light color schemes. We're going to go ahead and provide our own color schemes
+ * here.
+ */
+const customDarkTheme: Theme = {
+  // Some values are sourced from the Default DarkTheme in "@react-navigation/native"
+  dark: true,
+  colors: {
+    primary: "rgb(0, 122, 255)", // (default) for the back buttons text on the top bar
+    // primary: colorBox.green400,
+    background: figmaColors.primaryBlack,
+    card: figmaColors.primaryBlack, // background color for tab bar
+    text: figmaColors.primaryWhite,
+    border: colorBox.grey800, // for the border on the tabs and headers
+    notification: "rgb(255, 69, 58)", // idk yet
+  },
+};
+
+/**
+ * Same idea as custom dark theme. Controls the color styling for the react navigation components
+ */
+const customLightTheme: Theme = {
+  // Some values are sourced from the DefaultTheme in "@react-navigation/native"
+  dark: false,
+  colors: {
+    primary: "rgb(0, 122, 255)", // (default) for the back buttons text on the top bar
+    // primary: colorBox.green400,
+    background: figmaColors.primaryWhite,
+    card: figmaColors.primaryWhite, // background color for tab bar
+    text: figmaColors.primaryBlack,
+    border: colorBox.grey200, // for the border on the tabs and headers
+    notification: "rgb(255, 59, 48)", //idk yet
+  },
+};
+
 export default {
   light: {
     text: "#000",
@@ -74,4 +115,4 @@ export default {
   },
 };
 
-export { twColors, figmaColors, colorBox };
+export { twColors, figmaColors, colorBox, customDarkTheme, customLightTheme };
