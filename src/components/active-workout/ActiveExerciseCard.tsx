@@ -97,7 +97,7 @@ const ActiveSetItem = ({
   );
 };
 
-const weightRegex = /^\d*\.?\d+/;
+const WEIGHT_REGEX = /^\d*\.?\d+/;
 const WeightCell = ({ setId }: { setId: number }) => {
   const { changeWeight } = useActiveWorkoutActions();
   const weight = useActiveWorkoutSetWeight(setId);
@@ -115,7 +115,7 @@ const WeightCell = ({ setId }: { setId: number }) => {
       }}
       onEndEditing={(e) => {
         const parsedWeight = Number(
-          e.nativeEvent.text.match(weightRegex)?.at(0) ?? "0"
+          e.nativeEvent.text.match(WEIGHT_REGEX)?.at(0) ?? "0"
         );
         const truncatedWeight = Math.round(parsedWeight * 10) / 10;
         setWeightText(truncatedWeight.toString());
@@ -125,7 +125,7 @@ const WeightCell = ({ setId }: { setId: number }) => {
   );
 };
 
-const repsRegex = /^0*(\d+)/;
+const REPS_REGEX = /^0*(\d+)/;
 const RepsCell = ({ setId }: { setId: number }) => {
   const { changeReps } = useActiveWorkoutActions();
   const reps = useActiveWorkoutSetReps(setId);
@@ -139,7 +139,7 @@ const RepsCell = ({ setId }: { setId: number }) => {
       returnKeyType="done"
       style={[styles.dataCell, styles.dataText]}
       onChangeText={(text) => {
-        const matchedText = text.match(repsRegex)?.at(0) ?? "";
+        const matchedText = text.match(REPS_REGEX)?.at(0) ?? "";
         setRepsText(matchedText);
       }}
       onEndEditing={() => {
