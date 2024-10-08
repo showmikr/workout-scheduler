@@ -354,3 +354,5 @@ const styles = StyleSheet.create({
 });
 
 export default ActiveExerciseCard;
+
+export { styles as activeExStyles };

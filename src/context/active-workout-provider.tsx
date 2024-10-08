@@ -21,7 +21,6 @@ type ActiveWorkout = {
   elapsedTime: number; // measured in seconds
   isPaused: boolean;
   restingSet: {
-    exerciseId: number;
     setId: number;
     elapsedRest: number;
   } | null;
@@ -83,25 +82,24 @@ type InputWorkout = {
   }>;
 };
 
-function createTimer(callback: () => void) {
+function createTimer(callback: (stop: () => void) => void) {
   let intervalId: NodeJS.Timeout | null = null;
-  const timer = {
-    start: () => {
-      if (!intervalId) {
-        intervalId = setInterval(callback, 1000);
-      } else {
-        console.warn("Trying to start timer when it's already running");
-      }
-    },
-    stop: () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-        intervalId = null;
-      } else {
-        console.warn("Trying to stop timer when it's not running");
-      }
-    },
+  const stopFn = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    } else {
+      console.warn("Trying to stop timer when it's not running");
+    }
   };
+  const startFn = () => {
+    if (!intervalId) {
+      intervalId = setInterval(() => callback(stopFn), 1000);
+    } else {
+      console.warn("Trying to start timer when it's already running");
+    }
+  };
+  const timer = { start: startFn, stop: stopFn };
   return timer;
 }
 
@@ -113,6 +111,26 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
     set((state) => ({
       elapsedTime: state.elapsedTime + 1,
     }));
+  });
+
+  const restTimer = createTimer((stop) => {
+    const restingSet = get().restingSet;
+    if (!restingSet) {
+      console.warn(
+        "resting set is null! This shouldn't happen. Stopping timer"
+      );
+      stop();
+      return;
+    }
+    const targetRest = get().sets.entities[restingSet.setId].targetRest;
+    if (restingSet.elapsedRest < targetRest) {
+      set({
+        restingSet: { ...restingSet, elapsedRest: restingSet.elapsedRest + 1 },
+      });
+    } else {
+      set({ restingSet: null });
+      stop();
+    }
   });
 
   return {
@@ -196,6 +214,9 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
         set((state) => {
           if (!state.isPaused) {
             workoutTimer.stop();
+          }
+          if (state.restingSet) {
+            restTimer.stop();
           }
           return { ...initialActiveWorkout } satisfies ActiveWorkout;
         });
@@ -382,6 +403,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
       toggleSetDone: (setId) => {
         set((state) => {
           return {
+            restingSet: { setId, elapsedRest: 0 },
             sets: {
               ...state.sets,
               entities: {
@@ -392,8 +414,20 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
                 },
               },
             },
-          } satisfies Pick<ActiveWorkout, "sets">;
+          } satisfies Pick<ActiveWorkout, "sets" | "restingSet">;
         });
+        const restingSet = get().restingSet;
+        restTimer.start();
+        // if (!restingSet) {
+        //   restTimer.start();
+        // } else if (restingSet.setId === setId) {
+        //   restTimer.stop();
+        //   set((state) => {
+        //     return {
+        //       restingSet: null,
+        //     };
+        //   });
+        // }
       },
     },
   } satisfies ActiveWorkoutStore;
@@ -411,8 +445,11 @@ const useActiveWorkoutTitle = () =>
 const useActiveWorkoutElapsedTime = () =>
   useActiveWorkoutStore((state) => state.elapsedTime);
 
-const useActiveWorkoutRestingSet = () =>
-  useActiveWorkoutStore((state) => state.restingSet);
+const useActiveWorkoutRestingSetId = () =>
+  useActiveWorkoutStore((state) => state.restingSet?.setId);
+
+const useActiveWorkoutRestingTime = () =>
+  useActiveWorkoutStore((state) => state.restingSet?.elapsedRest);
 
 const useActiveWorkoutExerciseIds = () =>
   useActiveWorkoutStore((state) => state.exercises.ids);
@@ -443,7 +480,8 @@ export {
   useActiveWorkoutStatus,
   useActiveWorkoutTitle,
   useActiveWorkoutElapsedTime,
-  useActiveWorkoutRestingSet,
+  useActiveWorkoutRestingSetId,
+  useActiveWorkoutRestingTime,
   useActiveWorkoutExerciseIds,
   useActiveWorkoutExercise,
   useActiveWorkoutSetReps,
