@@ -51,7 +51,7 @@ type ActiveWorkoutActions = {
   toggleSetDone: (setId: number) => void;
 };
 
-type ActiveWorkoutState = ActiveWorkout & {
+type ActiveWorkoutStore = ActiveWorkout & {
   actions: ActiveWorkoutActions;
 };
 
@@ -104,7 +104,7 @@ function createTimer(callback: () => void) {
   return timer;
 }
 
-const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
+const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
   let exerciseIncrement = createAutoIncrement();
   let setIncrement = createAutoIncrement();
 
@@ -379,7 +379,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutState>()((set, get) => {
         });
       },
     },
-  } satisfies ActiveWorkoutState;
+  } satisfies ActiveWorkoutStore;
 });
 
 const useActiveWorkoutStatus = () =>
