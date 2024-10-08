@@ -151,8 +151,8 @@ const RepsCell = ({ setId }: { setId: number }) => {
   );
 };
 
+const SINGLE_DIGIT_REGEX = /^\d$/;
 const RestCell = ({ setId }: { setId: number }) => {
-  const singleDigitRegex = /^\d$/;
   const cursorRange = { start: 5, end: 5 };
   const rest = useActiveWorkoutSetTargetRest(setId);
   const minutes = Math.trunc(rest / 60);
@@ -177,7 +177,7 @@ const RestCell = ({ setId }: { setId: number }) => {
       style={[styles.dataCell, styles.dataText]}
       onKeyPress={(e) => {
         const key = e.nativeEvent.key;
-        const digitPressed = key.match(singleDigitRegex)?.at(0) !== undefined;
+        const digitPressed = key.match(SINGLE_DIGIT_REGEX)?.at(0) !== undefined;
         if (digitPressed) {
           setDigitChars([...digitChars.slice(1), key]);
         } else if (key === "Backspace") {
