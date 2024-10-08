@@ -155,6 +155,7 @@ const SINGLE_DIGIT_REGEX = /^\d$/;
 const RestCell = ({ setId }: { setId: number }) => {
   const cursorRange = { start: 5, end: 5 };
   const rest = useActiveWorkoutSetTargetRest(setId);
+  const { changeRest } = useActiveWorkoutActions();
   const minutes = Math.trunc(rest / 60);
   const seconds = rest - minutes * 60;
   const minutesString = minutes.toString().padStart(2, "0");
@@ -188,9 +189,9 @@ const RestCell = ({ setId }: { setId: number }) => {
         // handle seconds overflow
         const minutes = parseInt(digitChars[0] + digitChars[1]);
         const seconds = parseInt(digitChars[2] + digitChars[3]);
-        const overflow = seconds - 59;
-        if (overflow > 0) {
-          const adjustedOverflow = minutes >= 99 ? 59 : overflow;
+        const secondsOverflow = seconds - 59;
+        if (secondsOverflow > 0) {
+          const adjustedOverflow = minutes >= 99 ? 59 : secondsOverflow;
           const adjustedMinutes = Math.min(minutes + 1, 99);
           const minutesString = adjustedMinutes.toString().padStart(2, "0");
           const secondsString = adjustedOverflow.toString().padStart(2, "0");
@@ -198,7 +199,10 @@ const RestCell = ({ setId }: { setId: number }) => {
             [...minutesString],
             [...secondsString],
           ];
+          changeRest(setId, adjustedMinutes * 60 + adjustedOverflow);
           setDigitChars([...minutesArray, ...secondsArray]);
+        } else {
+          changeRest(setId, minutes * 60 + seconds);
         }
       }}
     />

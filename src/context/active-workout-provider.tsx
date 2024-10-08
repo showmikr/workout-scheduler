@@ -48,6 +48,7 @@ type ActiveWorkoutActions = {
   deleteSet: (exerciseId: number, setId: number) => void;
   changeReps: (setId: number, reps: number) => void;
   changeWeight: (setId: number, weight: number) => void;
+  changeRest: (setId: number, targetRest: number) => void;
   toggleSetDone: (setId: number) => void;
 };
 
@@ -360,6 +361,22 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
               },
             },
           } satisfies Pick<ActiveWorkout, "sets">;
+        });
+      },
+      changeRest: (setId, targetRest) => {
+        set((state) => {
+          return {
+            sets: {
+              ...state.sets,
+              entities: {
+                ...state.sets.entities,
+                [setId]: {
+                  ...state.sets.entities[setId],
+                  targetRest,
+                },
+              },
+            },
+          };
         });
       },
       toggleSetDone: (setId) => {
