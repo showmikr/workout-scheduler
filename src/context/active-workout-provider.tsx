@@ -82,7 +82,7 @@ type InputWorkout = {
   }>;
 };
 
-function createTimer(callback: (stop: () => void) => void) {
+function createTimer() {
   let intervalId: NodeJS.Timeout | null = null;
   const stopFn = () => {
     if (intervalId) {
@@ -92,9 +92,9 @@ function createTimer(callback: (stop: () => void) => void) {
       console.warn("Trying to stop timer when it's not running");
     }
   };
-  const startFn = () => {
+  const startFn = (callback: () => void) => {
     if (!intervalId) {
-      intervalId = setInterval(() => callback(stopFn), 1000);
+      intervalId = setInterval(() => callback(), 1000);
     } else {
       console.warn("Trying to start timer when it's already running");
     }
@@ -107,19 +107,21 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
   let exerciseIncrement = createAutoIncrement();
   let setIncrement = createAutoIncrement();
 
-  const workoutTimer = createTimer(() => {
+  const workoutTimer = createTimer();
+  const workoutTimerCallback = () => {
     set((state) => ({
       elapsedTime: state.elapsedTime + 1,
     }));
-  });
+  };
 
-  const restTimer = createTimer((stop) => {
+  const restTimer = createTimer();
+  const restTimerCallback = () => {
     const restingSet = get().restingSet;
     if (!restingSet) {
       console.warn(
         "resting set is null! This shouldn't happen. Stopping timer"
       );
-      stop();
+      restTimer.stop();
       return;
     }
     const targetRest = get().sets.entities[restingSet.setId].targetRest;
@@ -129,9 +131,9 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
       });
     } else {
       set({ restingSet: null });
-      stop();
+      restTimer.stop();
     }
-  });
+  };
 
   return {
     ...initialActiveWorkout,
@@ -177,7 +179,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
         }
 
         set((state) => {
-          workoutTimer.start();
+          workoutTimer.start(workoutTimerCallback);
           return {
             ...inputWorkout,
             isActive: true,
@@ -198,7 +200,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
       toggleWorkoutTimer: () => {
         const isCurrentlyPaused = get().isPaused;
         if (isCurrentlyPaused) {
-          workoutTimer.start();
+          workoutTimer.start(workoutTimerCallback);
         } else {
           workoutTimer.stop();
         }
@@ -401,33 +403,47 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
         });
       },
       toggleSetDone: (setId) => {
-        set((state) => {
-          return {
-            restingSet: { setId, elapsedRest: 0 },
-            sets: {
-              ...state.sets,
-              entities: {
-                ...state.sets.entities,
-                [setId]: {
-                  ...state.sets.entities[setId],
-                  isCompleted: !state.sets.entities[setId].isCompleted,
-                },
+        const initialState = get();
+        const toggledSet = initialState.sets.entities[setId];
+        const nextToggleState = {
+          sets: {
+            ...initialState.sets,
+            entities: {
+              ...initialState.sets.entities,
+              [setId]: {
+                ...initialState.sets.entities[setId],
+                isCompleted: !toggledSet.isCompleted,
               },
             },
-          } satisfies Pick<ActiveWorkout, "sets" | "restingSet">;
-        });
-        const restingSet = get().restingSet;
-        restTimer.start();
-        // if (!restingSet) {
-        //   restTimer.start();
-        // } else if (restingSet.setId === setId) {
-        //   restTimer.stop();
-        //   set((state) => {
-        //     return {
-        //       restingSet: null,
-        //     };
-        //   });
-        // }
+          },
+        } satisfies Pick<ActiveWorkout, "sets">;
+        const restingSet = initialState.restingSet;
+
+        if (toggledSet.isCompleted) {
+          if (!restingSet || restingSet.setId !== setId) {
+            set(nextToggleState);
+          } else if (restingSet.setId === setId) {
+            restTimer.stop();
+            set({ ...nextToggleState, restingSet: null });
+          }
+        }
+        // if not completed
+        else {
+          if (!restingSet) {
+            if (toggledSet.targetRest === 0) {
+              set(nextToggleState);
+              return;
+            }
+            // otherwise...
+            set({ ...nextToggleState, restingSet: { setId, elapsedRest: 0 } });
+            restTimer.start(restTimerCallback);
+          } else if (toggledSet.targetRest === 0) {
+            set({ ...nextToggleState, restingSet: null });
+            restTimer.stop();
+          } else if (restingSet.setId !== setId) {
+            set({ ...nextToggleState, restingSet: { setId, elapsedRest: 0 } });
+          }
+        }
       },
     },
   } satisfies ActiveWorkoutStore;
