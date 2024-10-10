@@ -13,6 +13,7 @@ import {
 } from "@/context/active-workout-provider";
 import { immediateDebounce } from "@/utils/debounce-utils";
 import { FontAwesome6 } from "@expo/vector-icons";
+import MaskedView from "@react-native-masked-view/masked-view";
 import { useCallback, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
@@ -22,6 +23,7 @@ import Animated, {
   Easing,
   withTiming,
   withSpring,
+  useDerivedValue,
 } from "react-native-reanimated";
 
 const ActiveExerciseCard = ({ exerciseId }: { exerciseId: number }) => {
@@ -220,6 +222,9 @@ const RestCell = ({ setId }: { setId: number }) => {
 const RestCountdown = ({ setId }: { setId: number }) => {
   const elapsedRest = useActiveWorkoutRestingTime();
   const targetRest = useActiveWorkoutSetTargetRest(setId);
+  const containerWidth = useSharedValue(0);
+  const containerHeight = useSharedValue(0);
+  const translation = useDerivedValue(() => -containerWidth.value + 50);
   if (elapsedRest === undefined) {
     console.warn("Trying to render countdownTime in set that is NOT resting");
     return null;
@@ -230,11 +235,30 @@ const RestCountdown = ({ setId }: { setId: number }) => {
   const minutesText = minutes.toString().padStart(2, "0");
   const secondsText = seconds.toString().padStart(2, "0");
   return (
-    <View style={styles.dataCell}>
-      <ThemedText style={styles.dataText}>
-        {minutesText + ":" + secondsText}
-      </ThemedText>
-    </View>
+    <MaskedView
+      style={{ flex: 1 }}
+      onLayout={(e) => {
+        containerWidth.value = e.nativeEvent.layout.width;
+        containerHeight.value = e.nativeEvent.layout.height;
+      }}
+      maskElement={<View style={styles.dataCell} />}
+    >
+      <View style={{ backgroundColor: styles.dataCell.backgroundColor }}>
+        <ThemedText style={[styles.dataText, { zIndex: 1 }]}>
+          {minutesText + ":" + secondsText}
+        </ThemedText>
+        <Animated.View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: translation,
+            backgroundColor: "#4db8ff",
+            width: containerWidth,
+            height: containerHeight,
+          }}
+        />
+      </View>
+    </MaskedView>
   );
 };
 
