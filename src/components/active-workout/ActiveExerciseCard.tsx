@@ -14,7 +14,7 @@ import {
 import { immediateDebounce } from "@/utils/debounce-utils";
 import { FontAwesome6 } from "@expo/vector-icons";
 import MaskedView from "@react-native-masked-view/masked-view";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Animated, {

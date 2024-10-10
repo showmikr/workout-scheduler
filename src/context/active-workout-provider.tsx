@@ -1,3 +1,8 @@
+import {
+  AppState,
+  AppStateStatus,
+  NativeEventSubscription,
+} from "react-native";
 import { create } from "zustand";
 
 type ActiveSet = {
@@ -17,6 +22,7 @@ type ActiveExercise = {
 
 type ActiveWorkout = {
   isActive: boolean;
+  lastActiveSnapshot: number; // records snapshot of last time app is in foreground (UNIX epoch in milliseconds)
   title: string;
   elapsedTime: number; // measured in seconds
   isPaused: boolean;
@@ -68,6 +74,7 @@ const initialActiveWorkout: ActiveWorkout = {
   restingSet: null,
   exercises: { ids: [], entities: {} },
   sets: { ids: [], entities: {} },
+  lastActiveSnapshot: Date.now(),
 };
 
 type InputWorkout = {
@@ -107,6 +114,8 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
   let exerciseIncrement = createAutoIncrement();
   let setIncrement = createAutoIncrement();
 
+  let appStateSubscription: NativeEventSubscription | undefined;
+
   const workoutTimer = createTimer();
   const workoutTimerCallback = () => {
     set((state) => ({
@@ -133,6 +142,28 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
       set({ restingSet: null });
       restTimer.stop();
     }
+  };
+
+  const handleAppStateChange = (updatedState: AppStateStatus) => {
+    const currentSnapshot = Date.now();
+    const restingSet = get().restingSet;
+    // if app in background, just update lastActiveSnapshot
+    if (updatedState !== "active") {
+      set({ lastActiveSnapshot: currentSnapshot });
+      return;
+    }
+    // otherwise, update the respective timers
+    const lastSnapshot = get().lastActiveSnapshot;
+    const diff = Math.trunc((currentSnapshot - lastSnapshot) / 1000);
+    if (restingSet) {
+      set({
+        restingSet: {
+          ...restingSet,
+          elapsedRest: restingSet.elapsedRest + diff,
+        },
+      });
+    }
+    set({ elapsedTime: get().elapsedTime + diff });
   };
 
   return {
@@ -178,6 +209,11 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
           }
         }
 
+        appStateSubscription = AppState.addEventListener(
+          "change",
+          handleAppStateChange
+        );
+
         set((state) => {
           workoutTimer.start(workoutTimerCallback);
           return {
@@ -194,6 +230,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
             restingSet: null,
             elapsedTime: 0,
             isPaused: !state.isPaused,
+            lastActiveSnapshot: Date.now(),
           } satisfies ActiveWorkout;
         });
       },
@@ -213,6 +250,13 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
         // reset incrementers
         setIncrement = createAutoIncrement();
         exerciseIncrement = createAutoIncrement();
+        if (appStateSubscription) {
+          appStateSubscription.remove();
+        } else {
+          console.warn(
+            "trying to unsubscribe from AppState eventListener when it's undefined"
+          );
+        }
         set((state) => {
           if (!state.isPaused) {
             workoutTimer.stop();
