@@ -14,7 +14,7 @@ import {
 import { immediateDebounce } from "@/utils/debounce-utils";
 import { FontAwesome6 } from "@expo/vector-icons";
 import MaskedView from "@react-native-masked-view/masked-view";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Animated, {
@@ -224,7 +224,23 @@ const RestCountdown = ({ setId }: { setId: number }) => {
   const targetRest = useActiveWorkoutSetTargetRest(setId);
   const containerWidth = useSharedValue(0);
   const containerHeight = useSharedValue(0);
-  const translation = useDerivedValue(() => -containerWidth.value + 50);
+  const offset = useSharedValue(-82);
+  // const rightPos = useDerivedValue(() => containerWidth.value - offset.value);
+
+  const slidingWindowStyles = useAnimatedStyle(() => ({
+    left: offset.value,
+    width: containerWidth.value,
+    height: containerHeight.value,
+  }));
+
+  useEffect(() => {
+    console.log("What");
+    offset.value = withTiming(0, {
+      duration: targetRest * 1000,
+      easing: Easing.inOut(Easing.linear),
+    });
+  }, []);
+
   if (elapsedRest === undefined) {
     console.warn("Trying to render countdownTime in set that is NOT resting");
     return null;
@@ -248,14 +264,14 @@ const RestCountdown = ({ setId }: { setId: number }) => {
           {minutesText + ":" + secondsText}
         </ThemedText>
         <Animated.View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: translation,
-            backgroundColor: "#4db8ff",
-            width: containerWidth,
-            height: containerHeight,
-          }}
+          style={[
+            {
+              position: "absolute",
+              top: 0,
+              backgroundColor: "#4db8ff",
+            },
+            slidingWindowStyles,
+          ]}
         />
       </View>
     </MaskedView>
