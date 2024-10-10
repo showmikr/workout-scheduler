@@ -5,6 +5,7 @@ import {
   useActiveWorkoutActions,
   useActiveWorkoutExercise,
   useActiveWorkoutRestingSetId,
+  useActiveWorkoutRestingTime,
   useActiveWorkoutSetIsCompleted,
   useActiveWorkoutSetReps,
   useActiveWorkoutSetTargetRest,
@@ -169,6 +170,10 @@ const RestCell = ({ setId }: { setId: number }) => {
   const textOutput =
     digitChars[0] + digitChars[1] + ":" + digitChars[2] + digitChars[3];
 
+  if (restingSetId === setId) {
+    return <RestCountdown setId={setId} />;
+  }
+
   return (
     <ThemedTextInput
       editable={setId !== restingSetId}
@@ -209,6 +214,27 @@ const RestCell = ({ setId }: { setId: number }) => {
         }
       }}
     />
+  );
+};
+
+const RestCountdown = ({ setId }: { setId: number }) => {
+  const elapsedRest = useActiveWorkoutRestingTime();
+  const targetRest = useActiveWorkoutSetTargetRest(setId);
+  if (elapsedRest === undefined) {
+    console.warn("Trying to render countdownTime in set that is NOT resting");
+    return null;
+  }
+  const remainingRest = targetRest - elapsedRest;
+  const minutes = Math.trunc(remainingRest / 60);
+  const seconds = remainingRest % 60;
+  const minutesText = minutes.toString().padStart(2, "0");
+  const secondsText = seconds.toString().padStart(2, "0");
+  return (
+    <View style={styles.dataCell}>
+      <ThemedText style={styles.dataText}>
+        {minutesText + ":" + secondsText}
+      </ThemedText>
+    </View>
   );
 };
 
