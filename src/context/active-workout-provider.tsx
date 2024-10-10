@@ -419,16 +419,8 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
         } satisfies Pick<ActiveWorkout, "sets">;
         const restingSet = initialState.restingSet;
 
-        if (toggledSet.isCompleted) {
-          if (!restingSet || restingSet.setId !== setId) {
-            set(nextToggleState);
-          } else if (restingSet.setId === setId) {
-            restTimer.stop();
-            set({ ...nextToggleState, restingSet: null });
-          }
-        }
-        // if not completed
-        else {
+        // if set isn't done (so, if we're marking that set as done)
+        if (!toggledSet.isCompleted) {
           if (!restingSet) {
             if (toggledSet.targetRest === 0) {
               set(nextToggleState);
@@ -442,6 +434,15 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
             restTimer.stop();
           } else if (restingSet.setId !== setId) {
             set({ ...nextToggleState, restingSet: { setId, elapsedRest: 0 } });
+          }
+        }
+        // if set is done (so, if we're marking the set to not done)
+        else {
+          if (!restingSet || restingSet.setId !== setId) {
+            set(nextToggleState);
+          } else if (restingSet.setId === setId) {
+            restTimer.stop();
+            set({ ...nextToggleState, restingSet: null });
           }
         }
       },
