@@ -139,9 +139,6 @@ const StartWorkoutButton = ({
           return;
         }
         // otherwise start the workout
-        for (const ex of exercises) {
-          console.log("ExerciseClassId:", ex.exercise_class_id);
-        }
         startWorkout({
           title: workoutTitle,
           exercises: exercises.map((exercise) => ({
