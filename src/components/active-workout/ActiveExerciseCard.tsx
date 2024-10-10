@@ -4,6 +4,7 @@ import { colorBox, figmaColors } from "@/constants/Colors";
 import {
   useActiveWorkoutActions,
   useActiveWorkoutExercise,
+  useActiveWorkoutRestingSetId,
   useActiveWorkoutSetIsCompleted,
   useActiveWorkoutSetReps,
   useActiveWorkoutSetTargetRest,
@@ -155,6 +156,7 @@ const SINGLE_DIGIT_REGEX = /^\d$/;
 const RestCell = ({ setId }: { setId: number }) => {
   const cursorRange = { start: 5, end: 5 };
   const rest = useActiveWorkoutSetTargetRest(setId);
+  const restingSetId = useActiveWorkoutRestingSetId();
   const { changeRest } = useActiveWorkoutActions();
   const minutes = Math.trunc(rest / 60);
   const seconds = rest - minutes * 60;
@@ -169,6 +171,7 @@ const RestCell = ({ setId }: { setId: number }) => {
 
   return (
     <ThemedTextInput
+      editable={setId !== restingSetId}
       numberOfLines={1}
       maxLength={5}
       inputMode="numeric"
