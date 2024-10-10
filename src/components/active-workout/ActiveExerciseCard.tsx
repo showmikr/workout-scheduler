@@ -23,7 +23,6 @@ import Animated, {
   Easing,
   withTiming,
   withSpring,
-  useDerivedValue,
 } from "react-native-reanimated";
 
 const ActiveExerciseCard = ({ exerciseId }: { exerciseId: number }) => {
@@ -161,6 +160,9 @@ const RestCell = ({ setId }: { setId: number }) => {
   const rest = useActiveWorkoutSetTargetRest(setId);
   const restingSetId = useActiveWorkoutRestingSetId();
   const { changeRest } = useActiveWorkoutActions();
+  const containerWidth = useRef(0);
+  const containerHeight = useRef(0);
+
   const minutes = Math.trunc(rest / 60);
   const seconds = rest - minutes * 60;
   const minutesString = minutes.toString().padStart(2, "0");
@@ -173,11 +175,21 @@ const RestCell = ({ setId }: { setId: number }) => {
     digitChars[0] + digitChars[1] + ":" + digitChars[2] + digitChars[3];
 
   if (restingSetId === setId) {
-    return <RestCountdown setId={setId} />;
+    return (
+      <RestCountdown
+        setId={setId}
+        containerWidth={containerWidth.current}
+        containerHeight={containerHeight.current}
+      />
+    );
   }
 
   return (
     <ThemedTextInput
+      onLayout={(e) => {
+        containerWidth.current = e.nativeEvent.layout.width;
+        containerHeight.current = e.nativeEvent.layout.height;
+      }}
       editable={setId !== restingSetId}
       numberOfLines={1}
       maxLength={5}
@@ -219,22 +231,24 @@ const RestCell = ({ setId }: { setId: number }) => {
   );
 };
 
-const RestCountdown = ({ setId }: { setId: number }) => {
+const RestCountdown = ({
+  setId,
+  containerWidth,
+  containerHeight,
+}: {
+  setId: number;
+  containerWidth: number;
+  containerHeight: number;
+}) => {
   const elapsedRest = useActiveWorkoutRestingTime();
   const targetRest = useActiveWorkoutSetTargetRest(setId);
-  const containerWidth = useSharedValue(0);
-  const containerHeight = useSharedValue(0);
-  const offset = useSharedValue(-82);
-  // const rightPos = useDerivedValue(() => containerWidth.value - offset.value);
+  const offset = useSharedValue(-containerWidth);
 
   const slidingWindowStyles = useAnimatedStyle(() => ({
     left: offset.value,
-    width: containerWidth.value,
-    height: containerHeight.value,
   }));
 
   useEffect(() => {
-    console.log("What");
     offset.value = withTiming(0, {
       duration: targetRest * 1000,
       easing: Easing.inOut(Easing.linear),
@@ -253,10 +267,6 @@ const RestCountdown = ({ setId }: { setId: number }) => {
   return (
     <MaskedView
       style={{ flex: 1 }}
-      onLayout={(e) => {
-        containerWidth.value = e.nativeEvent.layout.width;
-        containerHeight.value = e.nativeEvent.layout.height;
-      }}
       maskElement={<View style={styles.dataCell} />}
     >
       <View style={{ backgroundColor: styles.dataCell.backgroundColor }}>
@@ -267,7 +277,8 @@ const RestCountdown = ({ setId }: { setId: number }) => {
           style={[
             {
               position: "absolute",
-              top: 0,
+              width: containerWidth,
+              height: containerHeight,
               backgroundColor: "#4db8ff",
             },
             slidingWindowStyles,
