@@ -388,7 +388,7 @@ const AddSetButton = ({ exerciseId }: { exerciseId: number }) => {
   );
 };
 
-const ROW_ITEM_MIN_HEIGHT = 28;
+const ROW_ITEM_MIN_HEIGHT = 32;
 /// The size of the checkmark icon, calculated as a fraction of the minimum row item height.
 const CHECKMARK_ICON_SIZE = Math.floor((2 / 3) * ROW_ITEM_MIN_HEIGHT);
 const styles = StyleSheet.create({
@@ -400,14 +400,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: 16,
     gap: 24,
   },
   setsHeaderContainer: {
     flex: 1,
     flexDirection: "row",
     marginTop: 12,
-    marginBottom: -8,
+    marginBottom: -16,
   },
   headerText: {
     flex: 1,
@@ -418,6 +418,7 @@ const styles = StyleSheet.create({
   dataCell: {
     flex: 1,
     backgroundColor: figmaColors.primaryWhite,
+    paddingVertical: 2,
     borderRadius: 4,
   },
   dataText: {
