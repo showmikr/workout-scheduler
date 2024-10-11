@@ -22,12 +22,13 @@ type ActiveExercise = {
 
 type ActiveWorkout = {
   isActive: boolean;
-  lastActiveSnapshot: number; // records snapshot of last time app is in foreground (UNIX epoch in milliseconds)
+  workoutStartTime: number; // records snapshot of when the workout first starts (UNIX epoch in milliseconds)
   title: string;
   elapsedTime: number; // measured in seconds
   isPaused: boolean;
   restingSet: {
     setId: number;
+    startTime: number; // records snapshot of when rest started (UNIX epoch in milliseconds)
     elapsedRest: number;
   } | null;
   exercises: {
@@ -74,7 +75,7 @@ const initialActiveWorkout: ActiveWorkout = {
   restingSet: null,
   exercises: { ids: [], entities: {} },
   sets: { ids: [], entities: {} },
-  lastActiveSnapshot: Date.now(),
+  workoutStartTime: Date.now(),
 };
 
 type InputWorkout = {
@@ -144,26 +145,24 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
     }
   };
 
-  const handleAppStateChange = (updatedState: AppStateStatus) => {
-    const currentSnapshot = Date.now();
-    const restingSet = get().restingSet;
-    // if app in background, just update lastActiveSnapshot
-    if (updatedState !== "active") {
-      set({ lastActiveSnapshot: currentSnapshot });
-      return;
-    }
-    // otherwise, update the respective timers
-    const lastSnapshot = get().lastActiveSnapshot;
-    const diff = Math.trunc((currentSnapshot - lastSnapshot) / 1000);
-    if (restingSet) {
-      set({
-        restingSet: {
-          ...restingSet,
-          elapsedRest: restingSet.elapsedRest + diff,
-        },
-      });
-    }
-    set({ elapsedTime: get().elapsedTime + diff });
+  const handleAppStateChange = (newState: AppStateStatus) => {
+    if (newState !== "active") return;
+
+    // if app returns to an active state, update the respective timers
+    set(({ restingSet, workoutStartTime: startSnapshot }) => {
+      return {
+        restingSet:
+          restingSet ?
+            {
+              ...restingSet,
+              elapsedRest: Math.round(
+                (Date.now() - restingSet.startTime) / 1000
+              ),
+            }
+          : null,
+        elapsedTime: Math.round((Date.now() - startSnapshot) / 1000),
+      };
+    });
   };
 
   return {
@@ -230,7 +229,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
             restingSet: null,
             elapsedTime: 0,
             isPaused: !state.isPaused,
-            lastActiveSnapshot: Date.now(),
+            workoutStartTime: Date.now(),
           } satisfies ActiveWorkout;
         });
       },
@@ -471,13 +470,19 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
               return;
             }
             // otherwise...
-            set({ ...nextToggleState, restingSet: { setId, elapsedRest: 0 } });
+            set({
+              ...nextToggleState,
+              restingSet: { setId, startTime: Date.now(), elapsedRest: 0 },
+            });
             restTimer.start(restTimerCallback);
           } else if (toggledSet.targetRest === 0) {
             set({ ...nextToggleState, restingSet: null });
             restTimer.stop();
           } else if (restingSet.setId !== setId) {
-            set({ ...nextToggleState, restingSet: { setId, elapsedRest: 0 } });
+            set({
+              ...nextToggleState,
+              restingSet: { setId, startTime: Date.now(), elapsedRest: 0 },
+            });
           }
         }
         // if set is done (so, if we're marking the set to not done)
@@ -532,6 +537,9 @@ const useActiveWorkoutSetTargetRest = (setId: number) =>
 const useActiveWorkoutSetIsCompleted = (setId: number) =>
   useActiveWorkoutStore((state) => state.sets.entities[setId].isCompleted);
 
+const useActiveWorkoutStartTime = () =>
+  useActiveWorkoutStore((state) => state.workoutStartTime);
+
 export type { ActiveSet };
 
 export {
@@ -549,4 +557,5 @@ export {
   useActiveWorkoutSetWeight,
   useActiveWorkoutSetTargetRest,
   useActiveWorkoutSetIsCompleted,
+  useActiveWorkoutStartTime,
 };

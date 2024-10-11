@@ -14,7 +14,7 @@ import {
 import { immediateDebounce } from "@/utils/debounce-utils";
 import { FontAwesome6 } from "@expo/vector-icons";
 import MaskedView from "@react-native-masked-view/masked-view";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Animated, {
@@ -23,6 +23,7 @@ import Animated, {
   Easing,
   withTiming,
   withSpring,
+  withSequence,
 } from "react-native-reanimated";
 
 const ActiveExerciseCard = ({ exerciseId }: { exerciseId: number }) => {
@@ -156,12 +157,27 @@ const RepsCell = ({ setId }: { setId: number }) => {
 
 const SINGLE_DIGIT_REGEX = /^\d$/;
 const RestCell = ({ setId }: { setId: number }) => {
+  const restingSetId = useActiveWorkoutRestingSetId();
+
+  return (
+    <MaskedView
+      style={{
+        flex: 1,
+        flexDirection: "row",
+      }}
+      maskElement={<View style={styles.dataCell} />}
+    >
+      {restingSetId === setId ?
+        <RestCountdown setId={setId} />
+      : <RestInput setId={setId} />}
+    </MaskedView>
+  );
+};
+
+const RestInput = ({ setId }: { setId: number }) => {
   const cursorRange = { start: 5, end: 5 };
   const rest = useActiveWorkoutSetTargetRest(setId);
-  const restingSetId = useActiveWorkoutRestingSetId();
   const { changeRest } = useActiveWorkoutActions();
-  const containerWidth = useRef(0);
-  const containerHeight = useRef(0);
 
   const minutes = Math.trunc(rest / 60);
   const seconds = rest - minutes * 60;
@@ -174,23 +190,8 @@ const RestCell = ({ setId }: { setId: number }) => {
   const textOutput =
     digitChars[0] + digitChars[1] + ":" + digitChars[2] + digitChars[3];
 
-  if (restingSetId === setId) {
-    return (
-      <RestCountdown
-        setId={setId}
-        containerWidth={containerWidth.current}
-        containerHeight={containerHeight.current}
-      />
-    );
-  }
-
   return (
     <ThemedTextInput
-      onLayout={(e) => {
-        containerWidth.current = e.nativeEvent.layout.width;
-        containerHeight.current = e.nativeEvent.layout.height;
-      }}
-      editable={setId !== restingSetId}
       numberOfLines={1}
       maxLength={5}
       inputMode="numeric"
@@ -231,61 +232,82 @@ const RestCell = ({ setId }: { setId: number }) => {
   );
 };
 
-const RestCountdown = ({
-  setId,
-  containerWidth,
-  containerHeight,
-}: {
-  setId: number;
-  containerWidth: number;
-  containerHeight: number;
-}) => {
+const RestCountdown = ({ setId }: { setId: number }) => {
+  const [dimensions, setDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
   const elapsedRest = useActiveWorkoutRestingTime();
   const targetRest = useActiveWorkoutSetTargetRest(setId);
-  const offset = useSharedValue(-containerWidth);
-
-  const slidingWindowStyles = useAnimatedStyle(() => ({
-    left: offset.value,
-  }));
-
-  useEffect(() => {
-    offset.value = withTiming(0, {
-      duration: targetRest * 1000,
-      easing: Easing.inOut(Easing.linear),
-    });
-  }, []);
 
   if (elapsedRest === undefined) {
-    console.warn("Trying to render countdownTime in set that is NOT resting");
     return null;
   }
+
   const remainingRest = targetRest - elapsedRest;
   const minutes = Math.trunc(remainingRest / 60);
   const seconds = remainingRest % 60;
   const minutesText = minutes.toString().padStart(2, "0");
   const secondsText = seconds.toString().padStart(2, "0");
   return (
-    <MaskedView
-      style={{ flex: 1 }}
-      maskElement={<View style={styles.dataCell} />}
+    <View
+      onLayout={(e) => {
+        const { width, height } = e.nativeEvent.layout;
+        if (dimensions) return;
+        setDimensions({ width, height });
+      }}
+      style={[styles.dataCell]}
     >
-      <View style={{ backgroundColor: styles.dataCell.backgroundColor }}>
-        <ThemedText style={[styles.dataText, { zIndex: 1 }]}>
-          {minutesText + ":" + secondsText}
-        </ThemedText>
-        <Animated.View
-          style={[
-            {
-              position: "absolute",
-              width: containerWidth,
-              height: containerHeight,
-              backgroundColor: "#4db8ff",
-            },
-            slidingWindowStyles,
-          ]}
+      <ThemedText style={[styles.dataText, { zIndex: 1 }]}>
+        {minutesText + ":" + secondsText}
+      </ThemedText>
+      {dimensions && (
+        <SlidingLoader
+          setId={setId}
+          elapsedRest={elapsedRest}
+          dimensions={dimensions}
         />
-      </View>
-    </MaskedView>
+      )}
+    </View>
+  );
+};
+
+const SlidingLoader = ({
+  setId,
+  dimensions,
+  elapsedRest,
+}: {
+  setId: number;
+  elapsedRest: number;
+  dimensions: { height: number; width: number };
+}) => {
+  const { width, height } = dimensions;
+  const targetRest = useActiveWorkoutSetTargetRest(setId);
+  const percentRemaining = 1 - elapsedRest / targetRest;
+  const offset = useSharedValue(width * percentRemaining);
+
+  useEffect(() => {
+    offset.value = withTiming(0, {
+      duration: (targetRest - elapsedRest) * 1000,
+      easing: Easing.inOut(Easing.linear),
+    });
+    return () => {
+      offset.value = offset.value;
+    };
+  }, [elapsedRest, targetRest]);
+
+  return (
+    <Animated.View
+      style={[
+        {
+          position: "absolute",
+          width,
+          height,
+          backgroundColor: "#4db8ff",
+          right: offset,
+        },
+      ]}
+    />
   );
 };
 
