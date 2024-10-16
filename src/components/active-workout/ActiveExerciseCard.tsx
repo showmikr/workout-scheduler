@@ -23,7 +23,6 @@ import Animated, {
   Easing,
   withTiming,
   withSpring,
-  withSequence,
 } from "react-native-reanimated";
 
 const ActiveExerciseCard = ({ exerciseId }: { exerciseId: number }) => {
