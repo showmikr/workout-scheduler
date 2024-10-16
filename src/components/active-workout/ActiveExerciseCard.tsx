@@ -3,7 +3,7 @@ import { ThemedText, ThemedTextInput } from "@/components/Themed";
 import { colorBox, figmaColors } from "@/constants/Colors";
 import {
   useActiveWorkoutActions,
-  useActiveWorkoutExercise,
+  useActiveWorkoutExerciseClass,
   useActiveWorkoutRestingSetId,
   useActiveWorkoutRestingTime,
   useActiveWorkoutSetIsCompleted,
@@ -25,14 +25,11 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 
-const ActiveExerciseCard = ({ exerciseId }: { exerciseId: number }) => {
-  console.log(`${exerciseId} rendered`);
-  const {
-    exerciseClass: { id: exerciseClassId, title },
-    setIds,
-  } = useActiveWorkoutExercise(exerciseId);
+const ActiveSetHeader = ({ exerciseId }: { exerciseId: number }) => {
+  const { id: exerciseClassId, title } =
+    useActiveWorkoutExerciseClass(exerciseId);
   return (
-    <View style={styles.cardContainer}>
+    <View style={styles.activeSetHeaderContainer}>
       <ThemedText
         style={{
           fontSize: 24,
@@ -41,27 +38,17 @@ const ActiveExerciseCard = ({ exerciseId }: { exerciseId: number }) => {
       >
         {title}
       </ThemedText>
-      <ActiveSetHeader />
-      {setIds.map((setId) => (
-        <ActiveSetItem key={setId} exerciseId={exerciseId} setId={setId} />
-      ))}
-      <AddSetButton exerciseId={exerciseId} />
-    </View>
-  );
-};
-
-const ActiveSetHeader = () => {
-  return (
-    <View style={styles.setsHeaderContainer}>
-      <ThemedText style={styles.headerText}>Rest</ThemedText>
-      <ThemedText style={styles.headerText}>Kg</ThemedText>
-      <ThemedText style={styles.headerText}>Reps</ThemedText>
-      <View style={styles.headerCheckBox}>
-        <FontAwesome6
-          name="check"
-          size={CHECKMARK_ICON_SIZE}
-          color={figmaColors.greyLighter}
-        />
+      <View style={styles.activeSetHeaderUnits}>
+        <ThemedText style={styles.headerText}>Rest</ThemedText>
+        <ThemedText style={styles.headerText}>Kg</ThemedText>
+        <ThemedText style={styles.headerText}>Reps</ThemedText>
+        <View style={styles.headerCheckBox}>
+          <FontAwesome6
+            name="check"
+            size={CHECKMARK_ICON_SIZE}
+            color={figmaColors.greyLighter}
+          />
+        </View>
       </View>
     </View>
   );
@@ -87,8 +74,10 @@ const ActiveSetItem = ({
       friction={1.8}
       rightThreshold={20}
       dragOffsetFromLeftEdge={30}
-      childrenContainerStyle={{ flex: 1 }}
-      containerStyle={{ flexDirection: "row" }}
+      childrenContainerStyle={{
+        flex: 1,
+        paddingHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN,
+      }}
     >
       <View style={styles.setContainer}>
         <RestCell setId={setId} />
@@ -373,23 +362,28 @@ const AddSetButton = ({ exerciseId }: { exerciseId: number }) => {
   };
 
   return (
-    <Pressable
-      unstable_pressDelay={25}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
-      onPress={onPress}
-      style={{ flexDirection: "row" }}
-    >
-      <Animated.View style={[styles.addSetButton, animatedStyle]}>
-        <ThemedText style={styles.addSetText}>Add Set</ThemedText>
-      </Animated.View>
-    </Pressable>
+    <View style={styles.addSetContainer}>
+      <Pressable
+        unstable_pressDelay={25}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        onPress={onPress}
+        style={{ flexDirection: "row", marginBottom: 32 }}
+      >
+        <Animated.View style={[styles.addSetButton, animatedStyle]}>
+          <ThemedText style={styles.addSetText}>Add Set</ThemedText>
+        </Animated.View>
+      </Pressable>
+    </View>
   );
 };
 
 const ROW_ITEM_MIN_HEIGHT = 32;
 /// The size of the checkmark icon, calculated as a fraction of the minimum row item height.
 const CHECKMARK_ICON_SIZE = Math.floor((2 / 3) * ROW_ITEM_MIN_HEIGHT);
+
+const LIST_CONTAINER_HORIZONTAL_MARGIN = 16;
+
 const styles = StyleSheet.create({
   cardContainer: {
     alignItems: "flex-start",
@@ -402,11 +396,15 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: 24,
   },
-  setsHeaderContainer: {
+  activeSetHeaderContainer: {
+    backgroundColor: figmaColors.primaryBlack,
+    paddingHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN,
+  },
+  activeSetHeaderUnits: {
     flex: 1,
     flexDirection: "row",
     marginTop: 12,
-    marginBottom: -16,
+    marginBottom: -10,
   },
   headerText: {
     flex: 1,
@@ -438,6 +436,9 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     borderWidth: 1,
   },
+  addSetContainer: {
+    marginHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN,
+  },
   addSetButton: {
     flex: 1,
     flexDirection: "row",
@@ -455,6 +456,10 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ActiveExerciseCard;
-
-export { styles as activeExStyles };
+export {
+  styles as activeExStyles,
+  LIST_CONTAINER_HORIZONTAL_MARGIN,
+  ActiveSetItem,
+  ActiveSetHeader,
+  AddSetButton,
+};

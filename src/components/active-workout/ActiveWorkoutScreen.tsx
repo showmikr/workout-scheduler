@@ -4,11 +4,17 @@ import {
   useActiveWorkoutRestingSetId,
   useActiveWorkoutRestingTime,
   useActiveWorkoutSetTargetRest,
+  useActiveWorkoutExerciseEntities,
 } from "@/context/active-workout-provider";
-import { FlatList, TouchableOpacity, View } from "react-native";
+import { SectionList, TouchableOpacity, View } from "react-native";
 import { ThemedText } from "../Themed";
 import { router } from "expo-router";
-import ActiveExerciseCard from "./ActiveExerciseCard";
+import {
+  ActiveSetItem,
+  ActiveSetHeader,
+  AddSetButton,
+  LIST_CONTAINER_HORIZONTAL_MARGIN,
+} from "./ActiveExerciseCard";
 
 const AddExerciseButton = () => {
   return (
@@ -27,7 +33,7 @@ const ActiveWorkoutHeader = () => {
   const { cancelWorkout } = useActiveWorkoutActions();
   const restingSetId = useActiveWorkoutRestingSetId();
   return (
-    <View>
+    <View style={{ marginHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN }}>
       <ThemedText style={{ fontSize: 24 }}>Active Workout</ThemedText>
       <TouchableOpacity
         onPress={() => {
@@ -43,20 +49,35 @@ const ActiveWorkoutHeader = () => {
   );
 };
 
-const ActiveWorkoutList = () => {
+const ActiveWorkoutSectionList = () => {
   const exerciseIds = useActiveWorkoutExerciseIds();
+  const exerciseEntities = useActiveWorkoutExerciseEntities();
+  const sections = exerciseIds.map((id) => ({
+    exerciseId: id,
+    exerciseClass: exerciseEntities[id].exerciseClass,
+    data: exerciseEntities[id].setIds,
+  }));
+  console.log("SectionList re-rendered");
+
   return (
-    <FlatList
+    <SectionList
       ListHeaderComponent={<ActiveWorkoutHeader />}
       contentContainerStyle={{
-        gap: 24,
-        paddingHorizontal: 24,
         paddingBottom: 200,
       }}
-      initialNumToRender={3} // This vastly improves loading performance when there are many exercises
-      data={exerciseIds}
-      keyExtractor={(a) => a.toString()}
-      renderItem={({ item: id }) => <ActiveExerciseCard exerciseId={id} />}
+      initialNumToRender={16} // This vastly improves loading performance when there are many exercises
+      stickySectionHeadersEnabled={false}
+      sections={sections}
+      keyExtractor={(setId) => setId.toString()}
+      renderItem={({ item: setId, section: { exerciseId } }) => (
+        <ActiveSetItem exerciseId={exerciseId} setId={setId} />
+      )}
+      renderSectionHeader={({ section }) => (
+        <ActiveSetHeader exerciseId={section.exerciseId} />
+      )}
+      renderSectionFooter={({ section }) => (
+        <AddSetButton exerciseId={section.exerciseId} />
+      )}
     />
   );
 };
@@ -83,4 +104,4 @@ const RestTimer = () => {
   );
 };
 
-export default ActiveWorkoutList;
+export default ActiveWorkoutSectionList;

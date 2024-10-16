@@ -540,6 +540,14 @@ const useActiveWorkoutSetIsCompleted = (setId: number) =>
 const useActiveWorkoutStartTime = () =>
   useActiveWorkoutStore((state) => state.workoutStartTime);
 
+const useActiveWorkoutExerciseEntities = () =>
+  useActiveWorkoutStore(({ exercises }) => exercises.entities);
+
+const useActiveWorkoutExerciseClass = (exerciseId: number) =>
+  useActiveWorkoutStore(
+    ({ exercises }) => exercises.entities[exerciseId].exerciseClass
+  );
+
 export type { ActiveSet };
 
 export {
@@ -558,4 +566,6 @@ export {
   useActiveWorkoutSetTargetRest,
   useActiveWorkoutSetIsCompleted,
   useActiveWorkoutStartTime,
+  useActiveWorkoutExerciseEntities,
+  useActiveWorkoutExerciseClass,
 };
