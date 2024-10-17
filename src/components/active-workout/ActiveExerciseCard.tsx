@@ -233,8 +233,8 @@ const RestCountdown = ({ setId }: { setId: number }) => {
   }
 
   const remainingRest = targetRest - elapsedRest;
-  const minutes = Math.trunc(remainingRest / 60);
-  const seconds = remainingRest % 60;
+  const minutes = Math.max(Math.trunc(remainingRest / 60), 0); // ensure no negatives if elapsedRest goes past targetRest
+  const seconds = Math.max(remainingRest % 60, 0); // ensure no negatives if elapsedRest goes past targetRest
   const minutesText = minutes.toString().padStart(2, "0");
   const secondsText = seconds.toString().padStart(2, "0");
   return (
