@@ -13,8 +13,10 @@ import { useState } from "react";
 import { Link } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { twColors } from "@/constants/Colors";
+import { useAppUserId } from "@/context/app-user-id-provider";
 
 export default function TabOneScreen() {
+  const appUserId = useAppUserId();
   const readDb = () => {
     const results = db.getAllSync<any>(
       `
@@ -89,6 +91,9 @@ export default function TabOneScreen() {
             : value}
           </ThemedText>
         ))}
+      <ThemedText style={styles.userTableText}>
+        appUserId from zustand store hook: {appUserId}
+      </ThemedText>
       <ThemedView
         style={styles.separator}
         lightColor="#eee"
