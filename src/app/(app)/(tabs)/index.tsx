@@ -1,18 +1,18 @@
 import { BarChart, LineChart, yAxisSides } from "react-native-gifted-charts";
-import { ThemedView } from "@/components/Themed";
+import { ThemedText, ThemedView } from "@/components/Themed";
 import {
   Text,
   Pressable,
   StyleSheet,
   TextStyle,
-  ScrollView,
   TextInput,
-  FlatList,
+  View,
   SectionList,
 } from "react-native";
 import { useSQLiteContext } from "expo-sqlite/next";
 import { useState } from "react";
 import { ActivityCard } from "@/components/ActivityCard";
+import { figmaColors } from "@/constants/Colors";
 
 type WorkoutSession = {
   sessionId: number;
@@ -236,7 +236,7 @@ export default function SummaryPage() {
     personalRecordOptions[0]
   );
 
-  const [graphRange, setGraphRange] = useState("1M");
+  const [graphRange, setGraphRange] = useState("ALL");
 
   const [graphDataType, setGraphDataType] = useState("calorie");
   const graphDataTypeButtons = ["calorie", "body weight", "personal record"];
@@ -672,33 +672,50 @@ export default function SummaryPage() {
         </ThemedView>
       )}
       keyExtractor={(item) => item.sessionId.toString()}
-      ListHeaderComponent={
-        <Graph
-          graphType
-          graphInput={graphInput}
-          graphDataType={graphDataType}
-          setGraphType={setGraphType}
-          goalLine={goalLine}
-          maxGraphValue={maxGraphValue}
-          personalRecordOptions={personalRecordOptions}
-          personalRecordExercise={personalRecordExercise}
-          setPersonalRecordExercise={setPersonalRecordExercise}
-          graphDataTypeButtons={graphDataTypeButtons}
-          setGraphDataType={setGraphDataType}
-          rawInputLength={rawInputLength}
-          rawInputTime={rawInputTime}
-          rawInputTimeNum={rawInputTimeNum}
-          rawInputValue={rawInputValue}
-          rawInputLastIdx={rawInputLastIdx}
-          userProfileData={userProfileData}
-          rawInputFirstIdx={rawInputFirstIdx}
-          PrLastVal={PrLastVal}
-          PrFirstVal={PrFirstVal}
-          bodyWeightData={bodyWeightData}
-          graphRange={graphRange}
-          setGraphRange={setGraphRange}
-        />
-      }
+      // ListHeaderComponent={
+      //   <Graph
+      //     graphType
+      //     graphInput={graphInput}
+      //     graphDataType={graphDataType}
+      //     setGraphType={setGraphType}
+      //     goalLine={goalLine}
+      //     maxGraphValue={maxGraphValue}
+      //     personalRecordOptions={personalRecordOptions}
+      //     personalRecordExercise={personalRecordExercise}
+      //     setPersonalRecordExercise={setPersonalRecordExercise}
+      //     graphDataTypeButtons={graphDataTypeButtons}
+      //     setGraphDataType={setGraphDataType}
+      //     rawInputLength={rawInputLength}
+      //     rawInputTime={rawInputTime}
+      //     rawInputTimeNum={rawInputTimeNum}
+      //     rawInputValue={rawInputValue}
+      //     rawInputLastIdx={rawInputLastIdx}
+      //     userProfileData={userProfileData}
+      //     rawInputFirstIdx={rawInputFirstIdx}
+      //     PrLastVal={PrLastVal}
+      //     PrFirstVal={PrFirstVal}
+      //     bodyWeightData={bodyWeightData}
+      //     graphRange={graphRange}
+      //     setGraphRange={setGraphRange}
+      //   />
+      // }
+      ListHeaderComponent={() => (
+        <View
+          style={{
+            marginHorizontal: 8,
+            marginVertical: 44,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <ThemedText style={{ color: figmaColors.primaryWhite, fontSize: 24 }}>
+            🚧{" "}
+          </ThemedText>
+          <ThemedText style={{ color: figmaColors.primaryWhite, fontSize: 24 }}>
+            Graph is under construction...
+          </ThemedText>
+        </View>
+      )}
     />
   );
 }

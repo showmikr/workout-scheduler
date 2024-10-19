@@ -44,7 +44,7 @@ type ActiveWorkout = {
 type ActiveWorkoutActions = {
   startWorkout: (inputWorkout: InputWorkout) => void;
   toggleWorkoutTimer: () => void;
-  cancelWorkout: () => void;
+  endAndResetWorkout: () => void;
   addExercise: (
     inputExercise: ActiveExercise["exerciseClass"],
     inputSet?: Omit<ActiveSet, "id">
@@ -245,7 +245,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
           "isPaused"
         >);
       },
-      cancelWorkout: () => {
+      endAndResetWorkout: () => {
         // reset incrementers
         setIncrement = createAutoIncrement();
         exerciseIncrement = createAutoIncrement();
@@ -548,7 +548,11 @@ const useActiveWorkoutExerciseClass = (exerciseId: number) =>
     ({ exercises }) => exercises.entities[exerciseId].exerciseClass
   );
 
-export type { ActiveSet };
+// Right now, this is just for a callback for saving the workout session.
+// Note: this isn't reactive, it only gets the latest state once on call. Don't try using it for UI
+const getLatestActiveWorkoutSnapshot = () => useActiveWorkoutStore.getState();
+
+export type { ActiveSet, ActiveExercise };
 
 export {
   InputWorkout,
@@ -568,4 +572,5 @@ export {
   useActiveWorkoutStartTime,
   useActiveWorkoutExerciseEntities,
   useActiveWorkoutExerciseClass,
+  getLatestActiveWorkoutSnapshot,
 };

@@ -6,6 +6,9 @@ import {
   useActiveWorkoutSetTargetRest,
   useActiveWorkoutExerciseEntities,
   useActiveWorkoutTitle,
+  getLatestActiveWorkoutSnapshot,
+  ActiveExercise,
+  ActiveSet,
 } from "@/context/active-workout-provider";
 import {
   StyleSheet,
@@ -15,6 +18,8 @@ import {
   ViewStyle,
   Text,
   PressableProps,
+  Modal,
+  TouchableOpacity,
 } from "react-native";
 import { ThemedText } from "../Themed";
 import { router } from "expo-router";
@@ -31,7 +36,11 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { colorBox } from "@/constants/Colors";
+import { colorBox, figmaColors } from "@/constants/Colors";
+import { useSaveWorkoutSession } from "@/hooks/active-workout";
+import { useSQLiteContext } from "expo-sqlite";
+import { useAppUserId } from "@/context/app-user-id-provider";
+import { useCallback, useState } from "react";
 
 /**
  * @param contentContainerStyle controls the style of the outer container view of the child elements
@@ -158,29 +167,171 @@ const ActiveWorkoutSectionList = () => {
 };
 
 const ActiveWorkoutFooter = () => {
-  const { cancelWorkout } = useActiveWorkoutActions();
+  const { endAndResetWorkout } = useActiveWorkoutActions();
+  const [isModalVisible, setModalVisibility] = useState(false);
+  const appUserId = useAppUserId();
+  const db = useSQLiteContext();
+  const saveWorkoutMutation = useSaveWorkoutSession();
+  const saveWorkout = useCallback(() => {
+    console.log("Class Dismissed");
+    const { exercises, sets, title, workoutStartTime } =
+      getLatestActiveWorkoutSnapshot();
+    const exerciseEntries: Array<
+      [number, { activeExercise: ActiveExercise; activeSets: ActiveSet[] }]
+    > = exercises.ids.map((exerciseId) => [
+      exerciseId,
+      {
+        activeExercise: exercises.entities[exerciseId],
+        activeSets: exercises.entities[exerciseId].setIds.map(
+          (setId) => sets.entities[setId]
+        ),
+      },
+    ]);
+    const exerciseMap = new Map(exerciseEntries);
+    console.log("workoutStartTime", workoutStartTime);
+    const startTimeISO = new Date(workoutStartTime).toISOString();
+    const endTimeISO = new Date().toISOString();
+    console.log("start", startTimeISO);
+    console.log("end", endTimeISO);
+    saveWorkoutMutation.mutate({
+      db,
+      appUserId,
+      workoutDetails: {
+        title,
+        exercises: exerciseMap,
+        startTime: startTimeISO,
+        endTime: endTimeISO,
+      },
+    });
+  }, [saveWorkoutMutation, db, appUserId]);
   return (
-    <View style={styles.footerView}>
-      <AddExerciseButton />
-      <View style={styles.cancelFinishButtonContainer}>
-        <CustomAnimatedButton
-          contentContainerStyle={{ flex: 1 }}
-          style={styles.cancelWorkoutButton}
-          onPress={() => cancelWorkout()}
-        >
-          <Text style={styles.cancelWorkoutText}>Cancel</Text>
-        </CustomAnimatedButton>
-        <CustomAnimatedButton
-          contentContainerStyle={{ flex: 1 }}
-          style={styles.finishWorkoutButton}
+    <>
+      <View style={styles.footerView}>
+        <AddExerciseButton />
+        <View style={styles.cancelFinishButtonContainer}>
+          <CustomAnimatedButton
+            contentContainerStyle={{ flex: 1 }}
+            style={styles.cancelWorkoutButton}
+            onPress={() => {
+              router.dismiss();
+              endAndResetWorkout();
+            }}
+          >
+            <Text style={styles.cancelWorkoutText}>Cancel</Text>
+          </CustomAnimatedButton>
+          <CustomAnimatedButton
+            contentContainerStyle={{ flex: 1 }}
+            style={styles.finishWorkoutButton}
+            onPress={() => {
+              setModalVisibility(true);
+            }}
+          >
+            <Text style={styles.finishWorkoutText}>Finish</Text>
+          </CustomAnimatedButton>
+        </View>
+      </View>
+      <Modal transparent={true} animationType="slide" visible={isModalVisible}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+          }}
           onPress={() => {
-            console.log("todo: implement saving workout session");
+            console.log("Pressed outside modal");
+            setModalVisibility(false);
           }}
         >
-          <Text style={styles.finishWorkoutText}>Finish</Text>
-        </CustomAnimatedButton>
-      </View>
-    </View>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => {
+              e.preventDefault();
+            }}
+            style={{
+              flex: 1,
+            }}
+          >
+            <View
+              style={{
+                flex: 1,
+                paddingTop: 36,
+                alignItems: "center",
+                maxHeight: 360,
+                maxWidth: 360,
+                marginHorizontal: 16,
+                borderRadius: 12,
+                backgroundColor: colorBox.grey800,
+                borderTopWidth: 1,
+                borderTopColor: colorBox.grey700,
+                paddingHorizontal: 16,
+              }}
+            >
+              <ThemedText
+                style={{ fontSize: 32, color: figmaColors.primaryWhite }}
+              >
+                👍
+              </ThemedText>
+              <ThemedText
+                style={{
+                  fontSize: 24,
+                  color: figmaColors.primaryWhite,
+                  fontWeight: 500,
+                }}
+              >
+                Nice Work!
+              </ThemedText>
+              <TouchableOpacity
+                onPress={() => {
+                  saveWorkout();
+                  router.dismiss();
+                  endAndResetWorkout();
+                }}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 28,
+                  backgroundColor: "#4db8ff",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 500,
+                    color: "white",
+                  }}
+                >
+                  Save Workout
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setModalVisibility(false);
+                }}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 28,
+                  backgroundColor: "red",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 500,
+                    color: "white",
+                  }}
+                >
+                  Back
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+    </>
   );
 };
 
