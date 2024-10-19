@@ -58,7 +58,7 @@ async function initDb(db: SQLiteDatabase) {
   ).downloadAsync();
 
   if (!sqlFile.localUri) {
-    console.log("wo-scheduler-v3.sql asset was not correctly downloaded");
+    console.error("wo-scheduler-v3.sql asset was not correctly downloaded");
     return;
   }
   const sqlScript = await FileSystem.readAsStringAsync(sqlFile.localUri);
