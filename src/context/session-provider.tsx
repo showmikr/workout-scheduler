@@ -137,9 +137,12 @@ export function SessionProvider(props: React.PropsWithChildren) {
         if (!(accessToken && refreshToken && idToken)) {
           throw new Error("Invariant broken. Access Token was not found");
         }
-        SecureStore.setItemAsync("accessToken", accessToken);
-        SecureStore.setItemAsync("refreshToken", refreshToken ?? "");
-        SecureStore.setItemAsync("idToken", idToken ?? "");
+        SecureStore.setItemAsync(AWS_COGNITO_ACCESS_TOKEN_KEYWORD, accessToken);
+        SecureStore.setItemAsync(
+          AWS_COGNITO_REFRESH_TOKEN_KEYWORD,
+          refreshToken ?? ""
+        );
+        SecureStore.setItemAsync(AWS_COGNITO_ID_TOKEN_KEYWORD, idToken ?? "");
 
         const { sub, iat, exp, username } = jwtDecode<
           JwtPayload & { username?: string }
