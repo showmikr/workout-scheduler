@@ -312,9 +312,19 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
         });
       },
       deleteExercise: (exerciseId) => {
+        const restingSet = get().restingSet;
+        const exerciseSetIds = get().exercises.entities[exerciseId].setIds;
+        if (restingSet && exerciseSetIds.includes(restingSet.setId)) {
+          console.log("HIT!");
+          restTimer.stop();
+          set({ restingSet: null });
+        }
         set((state) => {
           delete state.exercises.entities[exerciseId];
-          delete state.sets.entities[exerciseId];
+          const setIds = state.exercises.entities[exerciseId].setIds;
+          for (const id of setIds) {
+            delete state.sets.entities[id];
+          }
           return {
             exercises: {
               ...state.exercises,
@@ -375,6 +385,12 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
         });
       },
       deleteSet: (exerciseId, setId) => {
+        const restingSet = get().restingSet;
+        if (restingSet && restingSet.setId === setId) {
+          console.log("HIT!");
+          restTimer.stop();
+          set({ restingSet: null });
+        }
         set((state) => {
           delete state.sets.entities[setId];
           return {

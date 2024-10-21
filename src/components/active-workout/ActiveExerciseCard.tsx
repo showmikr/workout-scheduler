@@ -25,20 +25,13 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 
-const ActiveSetHeader = ({ exerciseId }: { exerciseId: number }) => {
+const ActiveExerciseHeader = ({ exerciseId }: { exerciseId: number }) => {
   const { id: exerciseClassId, title } =
     useActiveWorkoutExerciseClass(exerciseId);
   return (
-    <View style={styles.activeSetHeaderContainer}>
-      <ThemedText
-        style={{
-          fontSize: 24,
-          fontWeight: 600,
-        }}
-      >
-        {title}
-      </ThemedText>
-      <View style={styles.activeSetHeaderUnits}>
+    <View style={styles.activeExerciseHeaderContainer}>
+      <ThemedText style={styles.activeExerciseTitle}>{title}</ThemedText>
+      <View style={styles.activeExerciseHeaderUnits}>
         <ThemedText style={styles.headerText}>Rest</ThemedText>
         <ThemedText style={styles.headerText}>Kg</ThemedText>
         <ThemedText style={styles.headerText}>Reps</ThemedText>
@@ -46,7 +39,7 @@ const ActiveSetHeader = ({ exerciseId }: { exerciseId: number }) => {
           <FontAwesome6
             name="check"
             size={CHECKMARK_ICON_SIZE}
-            color={figmaColors.greyLighter}
+            color={colorBox.stoneGrey500}
           />
         </View>
       </View>
@@ -200,8 +193,8 @@ const RestInput = ({ setId }: { setId: number }) => {
         // handle seconds overflow
         const minutes = parseInt(digitChars[0] + digitChars[1]);
         const seconds = parseInt(digitChars[2] + digitChars[3]);
-        const secondsOverflow = seconds - 59;
-        if (secondsOverflow > 0) {
+        const secondsOverflow = seconds - 60;
+        if (secondsOverflow >= 0) {
           const adjustedOverflow = minutes >= 99 ? 59 : secondsOverflow;
           const adjustedMinutes = Math.min(minutes + 1, 99);
           const minutesString = adjustedMinutes.toString().padStart(2, "0");
@@ -286,15 +279,7 @@ const SlidingLoader = ({
 
   return (
     <Animated.View
-      style={[
-        {
-          position: "absolute",
-          width,
-          height,
-          backgroundColor: "#4db8ff",
-          right: offset,
-        },
-      ]}
+      style={[styles.animatedSlider, { right: offset, width, height }]}
     />
   );
 };
@@ -310,11 +295,11 @@ const CheckboxCell = ({ setId }: { setId: number }) => {
         styles.checkBox,
         {
           backgroundColor:
-            isCompleted ? figmaColors.orangeAccent : colorBox.grey800,
+            isCompleted ? colorBox.orangeAccent400 : colorBox.stoneGrey900,
         },
       ]}
     >
-      {isCompleted && <FontAwesome6 name="check" size={16} />}
+      {isCompleted && <FontAwesome6 name="check" size={CHECKMARK_ICON_SIZE} />}
     </Pressable>
   );
 };
@@ -378,7 +363,7 @@ const AddSetButton = ({ exerciseId }: { exerciseId: number }) => {
   );
 };
 
-const ROW_ITEM_MIN_HEIGHT = 32;
+const ROW_ITEM_MIN_HEIGHT = 34;
 /// The size of the checkmark icon, calculated as a fraction of the minimum row item height.
 const CHECKMARK_ICON_SIZE = Math.floor((2 / 3) * ROW_ITEM_MIN_HEIGHT);
 
@@ -396,11 +381,16 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: 24,
   },
-  activeSetHeaderContainer: {
+  activeExerciseHeaderContainer: {
     backgroundColor: figmaColors.primaryBlack,
     paddingHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN,
   },
-  activeSetHeaderUnits: {
+  activeExerciseTitle: {
+    fontSize: 24,
+    color: colorBox.stoneGrey100,
+    fontWeight: 600,
+  },
+  activeExerciseHeaderUnits: {
     flex: 1,
     flexDirection: "row",
     marginTop: 12,
@@ -408,20 +398,27 @@ const styles = StyleSheet.create({
   },
   headerText: {
     flex: 1,
-    color: figmaColors.greyLighter,
+    color: colorBox.stoneGrey500,
     fontSize: 16,
     fontWeight: "500",
   },
   dataCell: {
     flex: 1,
-    backgroundColor: figmaColors.primaryWhite,
-    paddingVertical: 2,
-    borderRadius: 4,
+    backgroundColor: colorBox.stoneGrey800,
+    borderBottomColor: colorBox.stoneGrey900,
+    borderBottomWidth: 1,
+    borderColor: colorBox.stoneGrey900,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
   dataText: {
     fontSize: 20,
-    color: figmaColors.primaryBlack,
+    color: colorBox.stoneGrey000,
     textAlign: "center",
+  },
+  animatedSlider: {
+    position: "absolute",
+    backgroundColor: colorBox.blue400,
   },
   headerCheckBox: {
     aspectRatio: 1,
@@ -433,8 +430,7 @@ const styles = StyleSheet.create({
     height: ROW_ITEM_MIN_HEIGHT,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 4,
-    borderWidth: 1,
+    borderRadius: 8,
   },
   addSetContainer: {
     marginHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN,
@@ -443,16 +439,15 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     justifyContent: "center",
-    backgroundColor: colorBox.green700,
-    borderTopColor: colorBox.green600,
-    borderTopWidth: 1,
-    borderRadius: 4,
+    backgroundColor: colorBox.orangeAccent400,
+    borderRadius: 20,
     marginVertical: 12,
-    paddingVertical: 4,
+    paddingVertical: 6,
   },
   addSetText: {
     fontSize: 20,
-    color: colorBox.green000,
+    fontWeight: 600,
+    color: colorBox.orangeAccent1000,
   },
 });
 
@@ -460,6 +455,6 @@ export {
   styles as activeExStyles,
   LIST_CONTAINER_HORIZONTAL_MARGIN,
   ActiveSetItem,
-  ActiveSetHeader,
+  ActiveExerciseHeader as ActiveSetHeader,
   AddSetButton,
 };

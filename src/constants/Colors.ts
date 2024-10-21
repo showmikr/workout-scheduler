@@ -34,30 +34,71 @@ const figmaColors = {
 
 // Based on ColorBox Color Palette
 const colorBox = {
-  grey000: "#E6E6E6",
-  grey100: "#D0CECE",
-  grey200: "#BAB7B7",
-  grey300: "#A4A1A0",
-  grey400: "#8F8B8A",
-  grey500: "#797574",
-  grey600: "#63605F",
-  grey700: "#4E4B4A",
-  grey800: "#383635",
-  grey900: "#222121",
-  grey1000: "#0D0C0C",
+  stoneGrey000: "#fafafa",
+  stoneGrey100: "#e2e1e1",
+  stoneGrey200: "#cac8c8",
+  stoneGrey300: "#b2afaf",
+  stoneGrey400: "#9a9797",
+  stoneGrey500: "#827f7f",
+  stoneGrey600: "#6a6867",
+  stoneGrey700: "#525050",
+  stoneGrey800: "#3a3938",
+  stoneGrey900: "#222121",
+  stoneGrey950: "#161616",
+  stoneGrey1000: "#0a0a0a",
 
-  green000: "#EFF2E4",
-  green100: "#CDDCA8",
-  green200: "#A9C576",
-  green300: "#88AF4E",
-  green400: "#6B9831",
-  green500: "#52821D",
-  green600: "#3D6C10",
-  green700: "#2D5508",
-  green800: "#1F3F03",
-  green900: "#132801",
-  green950: "#081200",
-} as const;
+  blue000: "#e1f4f7",
+  blue100: "#a8d5e1",
+  blue200: "#76b5cb",
+  blue300: "#4f97b6",
+  blue400: "#337ba0",
+  blue500: "#1f638a",
+  blue600: "#124e74",
+  blue700: "#093c5e",
+  blue800: "#042c48",
+  blue900: "#021e32",
+  blue950: "#011727",
+  blue1000: "#01111c",
+
+  green000: "#f4fae1",
+  green100: "#d2e4a8",
+  green200: "#b0ce77",
+  green300: "#8fb851",
+  green400: "#71a234",
+  green500: "#598c20",
+  green600: "#447613",
+  green700: "#33600a",
+  green800: "#254a05",
+  green900: "#193502",
+  green950: "#142a02",
+  green1000: "#0e1f01",
+
+  red000: "#f7dfdf",
+  red100: "#e2a6a6",
+  red200: "#ce7575",
+  red300: "#b9504e",
+  red400: "#a43431",
+  red500: "#8f221d",
+  red600: "#7a1710",
+  red700: "#651008",
+  red800: "#500c03",
+  red900: "#3b0901",
+  red950: "#310800",
+  red1000: "#260600",
+
+  orangeAccent000: "#fae7cc",
+  orangeAccent100: "#e4be88",
+  orangeAccent200: "#ce9a4f",
+  orangeAccent300: "#b87b24",
+  orangeAccent400: "#a26306",
+  orangeAccent500: "#8c5500",
+  orangeAccent600: "#764900",
+  orangeAccent700: "#603c00",
+  orangeAccent800: "#4a3000",
+  orangeAccent900: "#352200",
+  orangeAccent950: "#2a1b00",
+  orangeAccent1000: "#1f1400",
+};
 
 /**
  * Most of the components provided by Expo Router (Tabs, Stacks, Slots, etc)
@@ -76,7 +117,7 @@ const customDarkTheme: Theme = {
     background: figmaColors.primaryBlack,
     card: figmaColors.primaryBlack, // background color for tab bar
     text: figmaColors.primaryWhite,
-    border: colorBox.grey800, // for the border on the tabs and headers
+    border: colorBox.stoneGrey800, // for the border on the tabs and headers
     notification: "rgb(255, 69, 58)", // idk yet
   },
 };
@@ -93,7 +134,7 @@ const customLightTheme: Theme = {
     background: figmaColors.primaryWhite,
     card: figmaColors.primaryWhite, // background color for tab bar
     text: figmaColors.primaryBlack,
-    border: colorBox.grey200, // for the border on the tabs and headers
+    border: colorBox.stoneGrey200, // for the border on the tabs and headers
     notification: "rgb(255, 59, 48)", //idk yet
   },
 };

@@ -20,6 +20,7 @@ import {
   PressableProps,
   Modal,
   TouchableOpacity,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { ThemedText } from "../Themed";
 import { router } from "expo-router";
@@ -217,7 +218,7 @@ const ActiveWorkoutFooter = () => {
               endAndResetWorkout();
             }}
           >
-            <Text style={styles.cancelWorkoutText}>Cancel</Text>
+            <ThemedText style={styles.cancelWorkoutText}>Cancel</ThemedText>
           </CustomAnimatedButton>
           <CustomAnimatedButton
             contentContainerStyle={{ flex: 1 }}
@@ -226,13 +227,12 @@ const ActiveWorkoutFooter = () => {
               setModalVisibility(true);
             }}
           >
-            <Text style={styles.finishWorkoutText}>Finish</Text>
+            <ThemedText style={styles.finishWorkoutText}>Finish</ThemedText>
           </CustomAnimatedButton>
         </View>
       </View>
       <Modal transparent={true} animationType="slide" visible={isModalVisible}>
-        <TouchableOpacity
-          activeOpacity={1}
+        <Pressable
           style={{
             flex: 1,
             flexDirection: "row",
@@ -245,8 +245,7 @@ const ActiveWorkoutFooter = () => {
             setModalVisibility(false);
           }}
         >
-          <TouchableOpacity
-            activeOpacity={1}
+          <TouchableWithoutFeedback
             onPress={(e) => {
               e.preventDefault();
             }}
@@ -263,9 +262,9 @@ const ActiveWorkoutFooter = () => {
                 maxWidth: 360,
                 marginHorizontal: 16,
                 borderRadius: 12,
-                backgroundColor: colorBox.grey800,
+                backgroundColor: colorBox.stoneGrey800,
                 borderTopWidth: 1,
-                borderTopColor: colorBox.grey700,
+                borderTopColor: colorBox.stoneGrey700,
                 paddingHorizontal: 16,
               }}
             >
@@ -328,8 +327,8 @@ const ActiveWorkoutFooter = () => {
                 </Text>
               </TouchableOpacity>
             </View>
-          </TouchableOpacity>
-        </TouchableOpacity>
+          </TouchableWithoutFeedback>
+        </Pressable>
       </Modal>
     </>
   );
@@ -360,14 +359,14 @@ const RestTimer = () => {
 const styles = StyleSheet.create({
   addExerciseButton: {
     flex: 1,
-    backgroundColor: colorBox.green700,
-    borderTopWidth: 1,
-    borderTopColor: colorBox.green600,
+    backgroundColor: colorBox.orangeAccent400,
     borderRadius: 20,
     paddingVertical: 6,
   },
   addExerciseText: {
     fontSize: 20,
+    fontWeight: 600,
+    color: colorBox.orangeAccent1000,
     textAlign: "center",
   },
   footerView: {
@@ -381,31 +380,30 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#931818",
-    borderTopWidth: 1,
-    borderTopColor: "#C42525",
+    backgroundColor: colorBox.red400,
     paddingVertical: 6,
     borderRadius: 20,
   },
   cancelWorkoutText: {
     fontSize: 20,
-    color: "#FFE0D4",
+    fontWeight: 600,
+    textAlign: "center",
+    color: colorBox.red1000,
   },
   finishWorkoutButton: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#976400",
-    borderTopWidth: 1,
-    borderTopColor: "#BB7C00",
+    backgroundColor: colorBox.blue400,
     paddingVertical: 6,
     borderRadius: 20,
   },
   finishWorkoutText: {
-    fontSize: 20,
+    fontSize: 22,
     textAlign: "center",
-    color: "#FFF8C2",
+    fontWeight: 500,
+    color: colorBox.blue1000,
   },
   cancelFinishButtonContainer: {
     flexDirection: "row",
