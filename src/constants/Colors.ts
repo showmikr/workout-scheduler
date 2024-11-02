@@ -43,6 +43,7 @@ const colorBox = {
   stoneGrey600: "#6a6867",
   stoneGrey700: "#525050",
   stoneGrey800: "#3a3938",
+  stoneGrey850: "#2e2d2d",
   stoneGrey900: "#222121",
   stoneGrey950: "#161616",
   stoneGrey1000: "#0a0a0a",

@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
   },
   dataCell: {
     flex: 1,
-    backgroundColor: colorBox.stoneGrey800,
+    backgroundColor: colorBox.stoneGrey850,
     borderBottomColor: colorBox.stoneGrey900,
     borderBottomWidth: 1,
     borderColor: colorBox.stoneGrey900,
