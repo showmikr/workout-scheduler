@@ -15,9 +15,7 @@ import {
   Pressable,
   SectionList,
   View,
-  ViewStyle,
   Text,
-  PressableProps,
   Modal,
   TouchableOpacity,
   TouchableWithoutFeedback,
@@ -30,80 +28,12 @@ import {
   AddSetButton,
   LIST_CONTAINER_HORIZONTAL_MARGIN,
 } from "./ActiveExerciseCard";
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
 import { colorBox, figmaColors } from "@/constants/Colors";
 import { useSaveWorkoutSession } from "@/hooks/active-workout";
 import { useSQLiteContext } from "expo-sqlite";
 import { useAppUserId } from "@/context/app-user-id-provider";
 import { useCallback, useState } from "react";
-
-/**
- * @param contentContainerStyle controls the style of the outer container view of the child elements
- * @param style controls the style of the container for the child elements. Think of it as the button view that gets animated
- */
-const CustomAnimatedButton = ({
-  onPress,
-  style,
-  contentContainerStyle,
-  children,
-}: {
-  onPress: () => void;
-  contentContainerStyle?: PressableProps["style"];
-  style?: ViewStyle;
-  children: React.ReactElement;
-}) => {
-  // Create a shared value for scale
-  const scale = useSharedValue(1);
-  const buttonOpacity = useSharedValue(1);
-
-  // Define the animated style
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: scale.value },
-        { translateY: (1 - scale.value) * 50 },
-      ],
-      opacity: buttonOpacity.value,
-    };
-  });
-
-  // Handle button press
-  const onPressIn = () => {
-    scale.value = withTiming(0.95, {
-      duration: 50,
-      easing: Easing.in(Easing.quad),
-    });
-    buttonOpacity.value = withTiming(0.9, {
-      duration: 100,
-      easing: Easing.in(Easing.quad),
-    });
-  };
-
-  const onPressOut = () => {
-    scale.value = withSpring(1, { mass: 0.1, stiffness: 100, damping: 10 });
-    buttonOpacity.value = withTiming(1, {
-      duration: 50,
-      easing: Easing.in(Easing.quad),
-    });
-  };
-  return (
-    <Pressable
-      unstable_pressDelay={25}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
-      onPress={onPress}
-      style={contentContainerStyle}
-    >
-      <Animated.View style={[style, animatedStyle]}>{children}</Animated.View>
-    </Pressable>
-  );
-};
+import CustomAnimatedButton from "@/components/CustomAnimatedButton";
 
 const AddExerciseButton = () => {
   const onPress = () => {

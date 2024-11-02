@@ -18,12 +18,11 @@ import { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Animated, {
-  useAnimatedStyle,
   useSharedValue,
   Easing,
   withTiming,
-  withSpring,
 } from "react-native-reanimated";
+import CustomAnimatedButton from "../CustomAnimatedButton";
 
 const ActiveExerciseHeader = ({ exerciseId }: { exerciseId: number }) => {
   const { id: exerciseClassId, title } =
@@ -305,61 +304,19 @@ const CheckboxCell = ({ setId }: { setId: number }) => {
 };
 
 const AddSetButton = ({ exerciseId }: { exerciseId: number }) => {
-  // Create a shared value for scale
-  const scale = useSharedValue(1);
-  const buttonOpacity = useSharedValue(1);
-
   const { addSet } = useActiveWorkoutActions();
-
-  // Define the animated style
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: scale.value },
-        { translateY: (1 - scale.value) * 50 },
-      ],
-      opacity: buttonOpacity.value,
-    };
-  });
-
-  // Handle button press
-  const onPressIn = () => {
-    scale.value = withTiming(0.95, {
-      duration: 50,
-      easing: Easing.in(Easing.quad),
-    });
-    buttonOpacity.value = withTiming(0.9, {
-      duration: 100,
-      easing: Easing.in(Easing.quad),
-    });
-  };
-
-  const onPressOut = () => {
-    scale.value = withSpring(1, { mass: 0.1, stiffness: 100, damping: 10 });
-    buttonOpacity.value = withTiming(1, {
-      duration: 50,
-      easing: Easing.in(Easing.quad),
-    });
-  };
-
-  const onPress = () => {
+  const onPress = useCallback(() => {
     addSet(exerciseId);
-  };
+  }, [addSet]);
 
   return (
-    <View style={styles.addSetContainer}>
-      <Pressable
-        unstable_pressDelay={25}
-        onPressIn={onPressIn}
-        onPressOut={onPressOut}
-        onPress={onPress}
-        style={{ flexDirection: "row", marginBottom: 32 }}
-      >
-        <Animated.View style={[styles.addSetButton, animatedStyle]}>
-          <ThemedText style={styles.addSetText}>Add Set</ThemedText>
-        </Animated.View>
-      </Pressable>
-    </View>
+    <CustomAnimatedButton
+      contentContainerStyle={[styles.addSetContainer, { marginBottom: 32 }]}
+      style={styles.addSetButton}
+      onPress={onPress}
+    >
+      <ThemedText style={styles.addSetText}>Add Set</ThemedText>
+    </CustomAnimatedButton>
   );
 };
 
