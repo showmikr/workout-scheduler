@@ -15,12 +15,19 @@ import { immediateDebounce } from "@/utils/debounce-utils";
 import { FontAwesome6 } from "@expo/vector-icons";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { useCallback, useEffect, useState } from "react";
-import { View, StyleSheet, Pressable } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  LayoutAnimation,
+  LayoutAnimationConfig,
+} from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
   Easing,
   withTiming,
+  ZoomIn,
 } from "react-native-reanimated";
 import CustomAnimatedButton from "../CustomAnimatedButton";
 
@@ -46,6 +53,15 @@ const ActiveExerciseHeader = ({ exerciseId }: { exerciseId: number }) => {
   );
 };
 
+const listUpdateAnimationConfig: LayoutAnimationConfig = {
+  duration: 400, // default fallback duration. shouldn't be used
+  update: {
+    type: LayoutAnimation.Types.spring,
+    springDamping: 0.7,
+    duration: 200,
+  },
+};
+
 const ActiveSetItem = ({
   exerciseId,
   setId,
@@ -55,29 +71,35 @@ const ActiveSetItem = ({
 }) => {
   const { deleteSet } = useActiveWorkoutActions();
   const debouncedDelete = useCallback(
-    immediateDebounce(() => deleteSet(exerciseId, setId), 100),
+    immediateDebounce(() => {
+      LayoutAnimation.configureNext(listUpdateAnimationConfig);
+      deleteSet(exerciseId, setId);
+    }, 200),
     [exerciseId, setId]
   );
   return (
-    <Swipeable
-      renderRightActions={(_progress, dragX) => (
-        <CardOptionsUnderlay dragX={dragX} onPress={debouncedDelete} />
-      )}
-      friction={1.8}
-      rightThreshold={20}
-      dragOffsetFromLeftEdge={30}
-      childrenContainerStyle={{
-        flex: 1,
-        paddingHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN,
-      }}
-    >
-      <View style={styles.setContainer}>
+    <Animated.View entering={ZoomIn.springify(150).dampingRatio(0.8)}>
+      <Swipeable
+        renderRightActions={(_progress, dragX) => (
+          <CardOptionsUnderlay dragX={dragX} onPress={debouncedDelete} />
+        )}
+        friction={1.8}
+        rightThreshold={20}
+        dragOffsetFromLeftEdge={30}
+        childrenContainerStyle={[
+          styles.setContainer,
+          {
+            flex: 1,
+            paddingHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN,
+          },
+        ]}
+      >
         <RestCell setId={setId} />
         <WeightCell setId={setId} />
         <RepsCell setId={setId} />
         <CheckboxCell setId={setId} />
-      </View>
-    </Swipeable>
+      </Swipeable>
+    </Animated.View>
   );
 };
 
@@ -306,9 +328,13 @@ const CheckboxCell = ({ setId }: { setId: number }) => {
 
 const AddSetButton = ({ exerciseId }: { exerciseId: number }) => {
   const { addSet } = useActiveWorkoutActions();
-  const onPress = useCallback(() => {
-    addSet(exerciseId);
-  }, [addSet]);
+  const onPress = useCallback(
+    immediateDebounce(() => {
+      LayoutAnimation.configureNext(listUpdateAnimationConfig);
+      addSet(exerciseId);
+    }, 200),
+    [addSet]
+  );
 
   return (
     <CustomAnimatedButton
