@@ -190,23 +190,24 @@ const RestInput = ({ setId }: { setId: number }) => {
       }}
       onEndEditing={() => {
         // handle seconds overflow
-        const minutes = parseInt(digitChars[0] + digitChars[1]);
-        const seconds = parseInt(digitChars[2] + digitChars[3]);
-        const secondsOverflow = seconds - 60;
-        if (secondsOverflow >= 0) {
-          const adjustedOverflow = minutes >= 99 ? 59 : secondsOverflow;
-          const adjustedMinutes = Math.min(minutes + 1, 99);
+        const minutes = Number(digitChars[0] + digitChars[1]);
+        const seconds = Number(digitChars[2] + digitChars[3]);
+        const adjustedMinutes = Math.min(
+          99,
+          minutes + Math.trunc(seconds / 60)
+        );
+        const adjustedSeconds =
+          adjustedMinutes >= 99 && seconds >= 60 ? 59 : seconds % 60;
+        if (seconds >= 60) {
           const minutesString = adjustedMinutes.toString().padStart(2, "0");
-          const secondsString = adjustedOverflow.toString().padStart(2, "0");
+          const secondsString = adjustedSeconds.toString().padStart(2, "0");
           const [minutesArray, secondsArray] = [
             [...minutesString],
             [...secondsString],
           ];
-          changeRest(setId, adjustedMinutes * 60 + adjustedOverflow);
           setDigitChars([...minutesArray, ...secondsArray]);
-        } else {
-          changeRest(setId, minutes * 60 + seconds);
         }
+        changeRest(setId, adjustedMinutes * 60 + adjustedSeconds);
       }}
     />
   );
