@@ -30,10 +30,10 @@ const ActiveExerciseHeader = ({ exerciseId }: { exerciseId: number }) => {
   return (
     <View style={styles.activeExerciseHeaderContainer}>
       <ThemedText style={styles.activeExerciseTitle}>{title}</ThemedText>
-      <View style={styles.activeExerciseHeaderUnits}>
-        <ThemedText style={styles.headerText}>Rest</ThemedText>
-        <ThemedText style={styles.headerText}>Kg</ThemedText>
-        <ThemedText style={styles.headerText}>Reps</ThemedText>
+      <View style={styles.columnLabelsContainer}>
+        <ThemedText style={styles.columnLabel}>Rest</ThemedText>
+        <ThemedText style={styles.columnLabel}>Kg</ThemedText>
+        <ThemedText style={styles.columnLabel}>Reps</ThemedText>
         <View style={styles.headerCheckBox}>
           <FontAwesome6
             name="check"
@@ -348,17 +348,17 @@ const styles = StyleSheet.create({
     color: colorBox.stoneGrey100,
     fontWeight: 600,
   },
-  activeExerciseHeaderUnits: {
+  columnLabelsContainer: {
     flex: 1,
     flexDirection: "row",
     marginTop: 12,
     marginBottom: -10,
   },
-  headerText: {
+  columnLabel: {
     flex: 1,
     color: colorBox.stoneGrey500,
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: 500,
   },
   dataCell: {
     flex: 1,
