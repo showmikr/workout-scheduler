@@ -27,7 +27,7 @@ import {
   useActiveWorkoutTitle,
 } from "@/context/active-workout-provider";
 
-const MiniWorkoutPlayer = ({
+const WorkoutMiniPlayer = ({
   title,
   onPress,
 }: {
@@ -81,11 +81,10 @@ export default function TabLayout() {
           return (
             <View>
               {isWorkoutInProgress && (
-                <MiniWorkoutPlayer
+                <WorkoutMiniPlayer
                   title={activeWorkoutTitle}
                   onPress={() => {
-                    // setModalVisible(true);
-                    router.push("/active-workout");
+                    router.navigate("/active-workout");
                   }}
                 />
               )}
