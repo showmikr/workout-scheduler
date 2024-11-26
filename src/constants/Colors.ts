@@ -1,4 +1,4 @@
-import { Theme } from "@react-navigation/native";
+import { Theme, DefaultTheme, DarkTheme } from "@react-navigation/native";
 
 const tintColorLight = "#2f95dc";
 const tintColorDark = "#fff";
@@ -111,15 +111,13 @@ const colorBox = {
  */
 const customDarkTheme: Theme = {
   // Some values are sourced from the Default DarkTheme in "@react-navigation/native"
-  dark: true,
+  ...DarkTheme,
   colors: {
-    primary: "rgb(0, 122, 255)", // (default) for the back buttons text on the top bar
-    // primary: colorBox.green400,
+    ...DarkTheme.colors,
     background: figmaColors.primaryBlack,
     card: figmaColors.primaryBlack, // background color for tab bar
     text: figmaColors.primaryWhite,
     border: colorBox.stoneGrey800, // for the border on the tabs and headers
-    notification: "rgb(255, 69, 58)", // idk yet
   },
 };
 
@@ -128,15 +126,13 @@ const customDarkTheme: Theme = {
  */
 const customLightTheme: Theme = {
   // Some values are sourced from the DefaultTheme in "@react-navigation/native"
-  dark: false,
+  ...DefaultTheme,
   colors: {
-    primary: "rgb(0, 122, 255)", // (default) for the back buttons text on the top bar
-    // primary: colorBox.green400,
+    ...DefaultTheme.colors,
     background: figmaColors.primaryWhite,
     card: figmaColors.primaryWhite, // background color for tab bar
     text: figmaColors.primaryBlack,
     border: colorBox.stoneGrey200, // for the border on the tabs and headers
-    notification: "rgb(255, 59, 48)", //idk yet
   },
 };
 

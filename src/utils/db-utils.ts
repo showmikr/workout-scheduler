@@ -65,7 +65,7 @@ async function initDb(db: SQLiteDatabase) {
   await db.execAsync(sqlScript);
   console.log(
     "%s successfully created and initialized w/ wo-scheduler-v3 schema",
-    db.databaseName
+    db.databasePath
   );
 }
 

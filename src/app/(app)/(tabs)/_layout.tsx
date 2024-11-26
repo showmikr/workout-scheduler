@@ -1,7 +1,6 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Link, Redirect, router, Tabs } from "expo-router";
 import { Pressable, useColorScheme, View } from "react-native";
-
 import Colors, { figmaColors } from "@/constants/Colors";
 import { useSession } from "@/context/session-provider";
 import { useSQLiteContext } from "expo-sqlite";
@@ -59,7 +58,8 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { session } = useSession();
   const db = useSQLiteContext();
-  useDrizzleStudio(db);
+  // @ts-expect-error
+  useDrizzleStudio(db); // idk why, but 'db' doesn't match functions expected input type. Drizzle doesn't work anyway now
   const isWorkoutInProgress = useActiveWorkoutStatus();
   const activeWorkoutTitle = useActiveWorkoutTitle();
 

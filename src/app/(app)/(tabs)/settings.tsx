@@ -11,7 +11,7 @@ import { ThemedText, ThemedView } from "@/components/Themed";
 import { useSession } from "@/context/session-provider";
 import { useState } from "react";
 import { Link } from "expo-router";
-import { useSQLiteContext } from "expo-sqlite/next";
+import { useSQLiteContext } from "expo-sqlite";
 import { twColors } from "@/constants/Colors";
 import { useAppUserId } from "@/context/app-user-id-provider";
 

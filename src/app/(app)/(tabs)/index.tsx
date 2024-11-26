@@ -9,7 +9,7 @@ import {
   View,
   SectionList,
 } from "react-native";
-import { useSQLiteContext } from "expo-sqlite/next";
+import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
 import { ActivityCard } from "@/components/ActivityCard";
 import { figmaColors } from "@/constants/Colors";
