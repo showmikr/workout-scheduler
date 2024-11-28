@@ -11,10 +11,13 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.showmikr.workout-scheduler"
     },
     "android": {
       "adaptiveIcon": {
@@ -33,7 +36,12 @@
       }
     },
     "owner": "showmikr",
-    "plugins": ["expo-router", "expo-asset", "expo-font", "expo-secure-store"],
+    "plugins": [
+      "expo-router",
+      "expo-asset",
+      "expo-font",
+      "expo-secure-store"
+    ],
     "scheme": "workoutscheduler",
     "experiments": {
       "typedRoutes": true

@@ -24,6 +24,9 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+# ignore iOS native build files
+ios/
+
 # macOS
 .DS_Store
 *.pem
