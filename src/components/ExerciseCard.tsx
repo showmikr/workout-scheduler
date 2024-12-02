@@ -3,11 +3,7 @@ import { twColors } from "@/constants/Colors";
 import { ResistanceSection } from "@/utils/exercise-types";
 import { ThemedText } from "@/components/Themed";
 import { TableRow } from "@/components/Table";
-import {
-  Gesture,
-  GestureDetector,
-  Swipeable,
-} from "react-native-gesture-handler";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { router } from "expo-router";
 import Animated, {
   interpolateColor,
@@ -17,7 +13,8 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import { CardOptionsUnderlay } from "./CardUnderlay";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import { DeleteUnderlay } from "./CardUnderlay";
 import { useCallback } from "react";
 import { immediateDebounce } from "@/utils/debounce-utils";
 import { useDeleteExercise } from "@/hooks/exercises/exercises";
@@ -155,8 +152,8 @@ const ExerciseCard = ({
 
   return (
     <Swipeable
-      renderRightActions={(_progress, dragX) => (
-        <CardOptionsUnderlay dragX={dragX} onPress={debouncedDelete} />
+      renderRightActions={(_progress, drag) => (
+        <DeleteUnderlay drag={drag} onPress={debouncedDelete} />
       )}
       friction={1.8}
       rightThreshold={20}

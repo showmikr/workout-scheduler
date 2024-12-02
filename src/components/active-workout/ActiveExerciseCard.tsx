@@ -1,4 +1,4 @@
-import { CardOptionsUnderlay } from "@/components/CardUnderlay";
+import { DeleteUnderlay } from "@/components/CardUnderlay";
 import { ThemedText, ThemedTextInput } from "@/components/Themed";
 import { colorBox, figmaColors } from "@/constants/Colors";
 import {
@@ -22,7 +22,7 @@ import {
   LayoutAnimation,
   LayoutAnimationConfig,
 } from "react-native";
-import { Swipeable } from "react-native-gesture-handler";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import Animated, {
   useSharedValue,
   Easing,
@@ -80,18 +80,19 @@ const ActiveSetItem = ({
   return (
     <Animated.View entering={ZoomIn.springify(150).dampingRatio(0.8)}>
       <Swipeable
-        renderRightActions={(_progress, dragX) => (
-          <CardOptionsUnderlay dragX={dragX} onPress={debouncedDelete} />
+        renderRightActions={(_progress, drag) => (
+          <DeleteUnderlay drag={drag} onPress={debouncedDelete} />
         )}
-        friction={1.8}
+        renderLeftActions={(_progress, drag) => (
+          <PlatesUnderlay drag={drag} plates={[]} />
+        )}
+        friction={2}
+        overshootFriction={8}
         rightThreshold={20}
         dragOffsetFromLeftEdge={30}
         childrenContainerStyle={[
           styles.setContainer,
-          {
-            flex: 1,
-            paddingHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN,
-          },
+          { paddingHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN },
         ]}
       >
         <RestCell setId={setId} />
@@ -169,9 +170,11 @@ const RestCell = ({ setId }: { setId: number }) => {
       }}
       maskElement={<View style={styles.dataCell} />}
     >
-      {restingSetId === setId ?
+      {restingSetId === setId ? (
         <RestCountdown setId={setId} />
-      : <RestInput setId={setId} />}
+      ) : (
+        <RestInput setId={setId} />
+      )}
     </MaskedView>
   );
 };
@@ -316,8 +319,9 @@ const CheckboxCell = ({ setId }: { setId: number }) => {
       style={[
         styles.checkBox,
         {
-          backgroundColor:
-            isCompleted ? colorBox.orangeAccent400 : colorBox.stoneGrey900,
+          backgroundColor: isCompleted
+            ? colorBox.orangeAccent400
+            : colorBox.stoneGrey900,
         },
       ]}
     >

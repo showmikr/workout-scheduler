@@ -1,55 +1,61 @@
-import { StyleSheet, View, Animated } from "react-native";
+import { colorBox } from "@/constants/Colors";
+import { Dimensions, StyleSheet } from "react-native";
 import { RectButton } from "react-native-gesture-handler";
+import { SwipeableMethods } from "react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  SharedValue,
+  useAnimatedStyle,
+} from "react-native-reanimated";
 
-type RightSideUnderlayProps = {
-  onPress: () => void;
-  progress?: Animated.AnimatedInterpolation<number>;
-  dragX: Animated.AnimatedInterpolation<number>;
-};
+const WINDOW_WIDTH = Dimensions.get("window").width;
+const DELETE_BUTTON_WIDTH = Math.ceil(WINDOW_WIDTH / 4);
 
-const CardOptionsUnderlay = ({
-  progress,
-  dragX,
+const AnimatedRectButton = Animated.createAnimatedComponent(RectButton);
+
+function DeleteUnderlay({
+  drag,
   onPress,
-}: RightSideUnderlayProps) => {
-  const textDrag = dragX.interpolate({
-    inputRange: [-88, 0],
-    outputRange: [0, 100],
-    extrapolate: "clamp",
-  });
-
-  const underlayStretch = dragX.interpolate({
-    inputRange: [-88, 0],
-    outputRange: [1, 0],
-    extrapolate: "extend",
+}: {
+  progress?: SharedValue<number>;
+  drag: SharedValue<number>;
+  swipeable?: SwipeableMethods;
+  onPress?: () => void;
+}) {
+  const styleAnimation = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateX: interpolate(
+            drag.value,
+            [-DELETE_BUTTON_WIDTH, 0],
+            [0, DELETE_BUTTON_WIDTH],
+            Extrapolation.CLAMP
+          ),
+        },
+        {
+          scaleX: interpolate(
+            drag.value,
+            [-WINDOW_WIDTH, -DELETE_BUTTON_WIDTH, 0],
+            [1.5, 1, 1],
+            Extrapolation.CLAMP
+          ),
+        },
+      ],
+    };
   });
 
   return (
-    <View style={styles.rightActionsContainer}>
-      <Animated.View
-        style={[
-          styles.deleteAction,
-          {
-            transform: [{ translateX: textDrag }, { scaleX: underlayStretch }],
-          },
-        ]}
-      >
-        <RectButton
-          activeOpacity={0.4}
-          style={styles.deleteButton}
-          onPress={onPress}
-        ></RectButton>
-      </Animated.View>
-      <Animated.Text
-        style={[styles.deleteText, { transform: [{ translateX: textDrag }] }]}
-        // @ts-expect-error
-        pointerEvents="none" // pass through presess events to the swipeable
-      >
-        Delete
-      </Animated.Text>
-    </View>
+    <AnimatedRectButton
+      activeOpacity={0.4}
+      style={[styles.deleteAction, styleAnimation]}
+      onPress={onPress}
+    >
+      <Animated.Text style={styles.deleteText}>Delete</Animated.Text>
+    </AnimatedRectButton>
   );
-};
+}
 
 const styles = StyleSheet.create({
   itemContainer: {
@@ -62,27 +68,18 @@ const styles = StyleSheet.create({
   itemText: {
     fontSize: 16,
   },
-  rightActionsContainer: {
-    maxWidth: 88,
-    justifyContent: "center",
-    flexGrow: 1,
-    flexBasis: 0,
-    flexDirection: "row",
-  },
   deleteAction: {
-    flex: 1,
-    backgroundColor: "red",
+    backgroundColor: colorBox.red500,
     justifyContent: "center",
-  },
-  deleteButton: {
-    flex: 1,
+    alignItems: "center",
+    width: DELETE_BUTTON_WIDTH,
   },
   deleteText: {
-    position: "absolute",
     alignSelf: "center",
-    color: "white",
+    color: colorBox.red000,
     fontWeight: "600",
+    fontSize: 16,
   },
 });
 
-export { CardOptionsUnderlay };
+export { DeleteUnderlay };
