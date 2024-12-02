@@ -101,21 +101,19 @@ const ExerciseList = ({
   }
 
   return (
-    <>
-      <FlatList
-        ItemSeparatorComponent={OverlaySeparator}
-        ListFooterComponent={
-          <ThemedView style={floatingAddButtonStyles.blankSpaceMargin}>
-            <StartWorkoutButton workoutTitle={workoutTitle} exercises={data} />
-          </ThemedView>
-        }
-        data={data}
-        keyExtractor={(item) => item.exercise_id.toString()}
-        renderItem={({ item }) => (
-          <ExerciseCard workoutId={workoutId} exercise={item} />
-        )}
-      />
-    </>
+    <FlatList
+      ItemSeparatorComponent={OverlaySeparator}
+      ListFooterComponent={
+        <ThemedView style={floatingAddButtonStyles.blankSpaceMargin}>
+          <StartWorkoutButton workoutTitle={workoutTitle} exercises={data} />
+        </ThemedView>
+      }
+      data={data}
+      keyExtractor={(item) => item.exercise_id.toString()}
+      renderItem={({ item }) => (
+        <ExerciseCard workoutId={workoutId} exercise={item} />
+      )}
+    />
   );
 };
 
@@ -181,7 +179,6 @@ const styles = StyleSheet.create({
   },
   emptyView: {
     flex: 1,
-    backgroundColor: twColors.neutral950,
     justifyContent: "center",
     alignItems: "center",
     rowGap: 24,

@@ -651,7 +651,6 @@ export default function SummaryPage() {
 
   return (
     <SectionList
-      style={{ backgroundColor: "#0D0D0D" }}
       initialNumToRender={4}
       sections={groupActivityCards(
         workoutSessionData

@@ -370,7 +370,6 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   activeExerciseHeaderContainer: {
-    backgroundColor: figmaColors.primaryBlack,
     paddingHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN,
   },
   activeExerciseTitle: {

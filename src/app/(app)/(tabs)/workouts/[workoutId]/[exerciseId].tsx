@@ -112,7 +112,7 @@ export default function ExerciseDetails() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: twColors.neutral950 }}
+      style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <Stack.Screen
@@ -268,7 +268,6 @@ const ResistanceSet = ({
 const styles = StyleSheet.create({
   outerContainer: {
     flex: 1,
-    backgroundColor: twColors.neutral950,
   },
   textInput: {
     fontSize: 1.5 * 14,

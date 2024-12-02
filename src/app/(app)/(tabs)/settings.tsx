@@ -58,10 +58,7 @@ export default function TabOneScreen() {
   }
 
   return (
-    <ScrollView
-      style={{ backgroundColor: twColors.neutral950 }}
-      contentContainerStyle={styles.safeAreaView}
-    >
+    <ScrollView contentContainerStyle={styles.safeAreaView}>
       <ThemedText style={styles.title}>Database</ThemedText>
       <Pressable
         style={styles.btnStyle}
@@ -164,7 +161,6 @@ const styles = StyleSheet.create({
     paddingBottom: 2 * 14,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: twColors.neutral950,
   },
   container: {
     flex: 1,

@@ -1,18 +1,9 @@
-import { StyleSheet, TextStyle, View } from "react-native";
+import { Pressable, StyleSheet, TextStyle, View } from "react-native";
 import { twColors } from "@/constants/Colors";
 import { ResistanceSection } from "@/utils/exercise-types";
 import { ThemedText } from "@/components/Themed";
 import { TableRow } from "@/components/Table";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { router } from "expo-router";
-import Animated, {
-  interpolateColor,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withTiming,
-} from "react-native-reanimated";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { DeleteUnderlay } from "./CardUnderlay";
 import { useCallback } from "react";
@@ -90,19 +81,6 @@ function ExercisePressableContainer({
   workoutId: number;
   children: React.ReactElement;
 }) {
-  const animatedOpacity = useSharedValue(1);
-  const colorTransitionProgress = useSharedValue(0);
-  const animStyles = useAnimatedStyle(() => {
-    return {
-      opacity: animatedOpacity.value,
-      backgroundColor: interpolateColor(
-        colorTransitionProgress.value,
-        [0, 1],
-        // initial backgroundColor = twColors.neutral950
-        ["rgb(10, 10, 10)", "rgb(32, 32, 32)"]
-      ),
-    };
-  });
   const onPressHandler = () => {
     router.push({
       pathname: "/workouts/[workoutId]/[exerciseId]",
@@ -113,26 +91,7 @@ function ExercisePressableContainer({
       },
     });
   };
-  const gesture = Gesture.Tap()
-    .maxDeltaX(10)
-    .onStart(() => {
-      animatedOpacity.value = withSequence(
-        withTiming(0.7, { duration: 75 }),
-        withTiming(1, { duration: 125 })
-      );
-      colorTransitionProgress.value = withSequence(
-        withTiming(1, { duration: 75 }),
-        withTiming(0, { duration: 125 })
-      );
-    })
-    .onEnd(() => {
-      runOnJS(onPressHandler)();
-    });
-  return (
-    <GestureDetector gesture={gesture}>
-      <Animated.View style={[animStyles]}>{children}</Animated.View>
-    </GestureDetector>
-  );
+  return <Pressable onPress={onPressHandler}>{children}</Pressable>;
 }
 
 const ExerciseCard = ({

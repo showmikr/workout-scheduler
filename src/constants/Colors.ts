@@ -114,7 +114,7 @@ const customDarkTheme: Theme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    background: figmaColors.primaryBlack,
+    background: "hsl(0, 0%, 2%)",
     card: figmaColors.primaryBlack, // background color for tab bar
     text: figmaColors.primaryWhite,
     border: colorBox.stoneGrey800, // for the border on the tabs and headers
@@ -139,14 +139,14 @@ const customLightTheme: Theme = {
 export default {
   light: {
     text: "#000",
-    background: twColors.neutral300,
+    background: customLightTheme.colors.background,
     tint: tintColorLight,
     tabIconDefault: "#ccc",
     tabIconSelected: tintColorLight,
   },
   dark: {
     text: "#ffffff",
-    background: twColors.neutral950,
+    background: customDarkTheme.colors.background,
     tint: tintColorDark,
     tabIconDefault: "#ccc",
     tabIconSelected: tintColorDark,
