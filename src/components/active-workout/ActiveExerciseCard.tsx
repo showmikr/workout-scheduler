@@ -1,6 +1,10 @@
-import { DeleteUnderlay } from "@/components/CardUnderlay";
+import {
+  calculatePlates,
+  DeleteUnderlay,
+  PlatesUnderlay,
+} from "@/components/CardUnderlay";
 import { ThemedText, ThemedTextInput } from "@/components/Themed";
-import { colorBox, figmaColors } from "@/constants/Colors";
+import { colorBox } from "@/constants/Colors";
 import {
   useActiveWorkoutActions,
   useActiveWorkoutExerciseClass,
@@ -14,7 +18,7 @@ import {
 import { immediateDebounce } from "@/utils/debounce-utils";
 import { FontAwesome6 } from "@expo/vector-icons";
 import MaskedView from "@react-native-masked-view/masked-view";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -62,6 +66,7 @@ const listUpdateAnimationConfig: LayoutAnimationConfig = {
   },
 };
 
+const DEFAULT_INVENTORY = [45, 35, 25, 10, 5, 2.5];
 const ActiveSetItem = ({
   exerciseId,
   setId,
@@ -70,6 +75,11 @@ const ActiveSetItem = ({
   setId: number;
 }) => {
   const { deleteSet } = useActiveWorkoutActions();
+  const totalWeight = useActiveWorkoutSetWeight(setId);
+  const plates = useMemo(
+    () => calculatePlates(totalWeight, DEFAULT_INVENTORY),
+    [totalWeight]
+  );
   const debouncedDelete = useCallback(
     immediateDebounce(() => {
       LayoutAnimation.configureNext(listUpdateAnimationConfig);
@@ -84,11 +94,12 @@ const ActiveSetItem = ({
           <DeleteUnderlay drag={drag} onPress={debouncedDelete} />
         )}
         renderLeftActions={(_progress, drag) => (
-          <PlatesUnderlay drag={drag} plates={[]} />
+          <PlatesUnderlay drag={drag} plates={plates} />
         )}
         friction={2}
         overshootFriction={8}
         rightThreshold={20}
+        leftThreshold={20}
         dragOffsetFromLeftEdge={30}
         childrenContainerStyle={[
           styles.setContainer,
@@ -170,11 +181,9 @@ const RestCell = ({ setId }: { setId: number }) => {
       }}
       maskElement={<View style={styles.dataCell} />}
     >
-      {restingSetId === setId ? (
+      {restingSetId === setId ?
         <RestCountdown setId={setId} />
-      ) : (
-        <RestInput setId={setId} />
-      )}
+      : <RestInput setId={setId} />}
     </MaskedView>
   );
 };
@@ -319,9 +328,8 @@ const CheckboxCell = ({ setId }: { setId: number }) => {
       style={[
         styles.checkBox,
         {
-          backgroundColor: isCompleted
-            ? colorBox.orangeAccent400
-            : colorBox.stoneGrey900,
+          backgroundColor:
+            isCompleted ? colorBox.orangeAccent400 : colorBox.stoneGrey900,
         },
       ]}
     >
@@ -368,6 +376,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 16,
     gap: 24,
+    minHeight: 80,
   },
   activeExerciseHeaderContainer: {
     paddingHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN,
