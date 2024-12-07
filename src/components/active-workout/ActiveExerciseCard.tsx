@@ -1,4 +1,5 @@
 import {
+  calculatePlateHeight,
   calculatePlates,
   DeleteUnderlay,
   PlatesUnderlay,
@@ -80,6 +81,29 @@ const ActiveSetItem = ({
     () => calculatePlates(totalWeight, DEFAULT_INVENTORY),
     [totalWeight]
   );
+  const minPlateWeight = useMemo(
+    () => plates[plates.length - 1].weight,
+    [plates]
+  );
+  const maxPlateWeight = useMemo(() => plates[0].weight, [plates]);
+  console.log(
+    "maxPlateWeight: %d, minPlateWeight: %d",
+    maxPlateWeight,
+    minPlateWeight
+  );
+  const finalPlates = useMemo(
+    () =>
+      plates.map((plate) => ({
+        ...plate,
+        plateHeight: calculatePlateHeight({
+          plateWeight: plate.weight,
+          minWeight: minPlateWeight,
+          maxWeight: maxPlateWeight,
+        }),
+      })),
+    [plates, minPlateWeight, maxPlateWeight]
+  );
+  console.log(finalPlates);
   const debouncedDelete = useCallback(
     immediateDebounce(() => {
       LayoutAnimation.configureNext(listUpdateAnimationConfig);
@@ -94,7 +118,7 @@ const ActiveSetItem = ({
           <DeleteUnderlay drag={drag} onPress={debouncedDelete} />
         )}
         renderLeftActions={(_progress, drag) => (
-          <PlatesUnderlay drag={drag} plates={plates} />
+          <PlatesUnderlay drag={drag} plates={finalPlates} />
         )}
         friction={2}
         overshootFriction={8}

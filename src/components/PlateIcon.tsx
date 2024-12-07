@@ -1,6 +1,5 @@
 import * as React from "react";
 import Svg, { Path, Ellipse, SvgProps } from "react-native-svg";
-import Animated from "react-native-reanimated";
 import { ColorValue } from "react-native";
 
 type StrippedSvgProps = Omit<SvgProps, "width" | "height">;

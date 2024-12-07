@@ -7,7 +7,6 @@ import Animated, {
   interpolate,
   SharedValue,
   useAnimatedStyle,
-  withTiming,
 } from "react-native-reanimated";
 import PlateIcon from "./PlateIcon";
 
@@ -41,7 +40,13 @@ const calculatePlates = (weight: number, inventory: Array<number>) => {
   return plates;
 };
 
-const PlateView = ({ plate }: { plate: PlateConfig }) => {
+const PlateView = ({
+  plate,
+  height,
+}: {
+  plate: PlateConfig;
+  height: number;
+}) => {
   return (
     <Animated.View
       style={{
@@ -50,7 +55,7 @@ const PlateView = ({ plate }: { plate: PlateConfig }) => {
       }}
     >
       <PlateIcon
-        height={42}
+        height={height}
         innerColor={colorBox.stoneGrey700}
         outerColor={colorBox.stoneGrey800}
       />
@@ -67,6 +72,24 @@ const PlateView = ({ plate }: { plate: PlateConfig }) => {
   );
 };
 
+const MAX_PLATE_HEIGHT = 48;
+const MINE_PLATE_HEIGHT = MAX_PLATE_HEIGHT / 2;
+const calculatePlateHeight = ({
+  plateWeight,
+  minWeight,
+  maxWeight,
+}: {
+  plateWeight: number;
+  minWeight: number;
+  maxWeight: number;
+}) => {
+  return (
+    ((MAX_PLATE_HEIGHT - MINE_PLATE_HEIGHT) * (plateWeight - maxWeight)) /
+      (maxWeight - minWeight) +
+    MAX_PLATE_HEIGHT
+  );
+};
+
 function PlatesUnderlay({
   drag,
   plates,
@@ -75,7 +98,7 @@ function PlatesUnderlay({
   progress?: SharedValue<number>;
   drag: SharedValue<number>;
   swipeable?: SwipeableMethods;
-  plates: Array<PlateConfig>;
+  plates: Array<PlateConfig & { plateHeight: number }>;
   onPress?: () => void;
 }) {
   const styleAnimation = useAnimatedStyle(() => {
@@ -95,9 +118,9 @@ function PlatesUnderlay({
   });
   return (
     <Animated.View style={[styles.plateUnderlay, styleAnimation]}>
-      {plates.map((plate) => (
+      {plates.map(({ plateHeight, ...plate }) => (
         <View>
-          <PlateView plate={plate} />
+          <PlateView plate={plate} height={plateHeight} />
         </View>
       ))}
       <Text
@@ -187,10 +210,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flex: 1,
     justifyContent: "flex-start",
-    alignItems: "center",
+    alignItems: "flex-end",
     gap: 8,
     paddingHorizontal: 16,
   },
 });
 
-export { DeleteUnderlay, PlatesUnderlay, calculatePlates };
+export {
+  DeleteUnderlay,
+  PlatesUnderlay,
+  calculatePlates,
+  calculatePlateHeight,
+};

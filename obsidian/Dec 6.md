@@ -1,0 +1,1 @@
+- Need to account for barbell weight inside `calculatePlates` function
