@@ -80,6 +80,16 @@ const ActiveSetItem = ({
     () => calculatePlates(totalWeight, DEFAULT_INVENTORY),
     [totalWeight]
   );
+  const minPlateWeight = useMemo(
+    () => plates[plates.length - 1].weight,
+    [plates]
+  );
+  const maxPlateWeight = useMemo(() => plates[0].weight, [plates]);
+  console.log(
+    "maxPlateWeight: %d, minPlateWeight: %d",
+    maxPlateWeight,
+    minPlateWeight
+  );
   const debouncedDelete = useCallback(
     immediateDebounce(() => {
       LayoutAnimation.configureNext(listUpdateAnimationConfig);

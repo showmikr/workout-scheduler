@@ -7,7 +7,6 @@ import Animated, {
   interpolate,
   SharedValue,
   useAnimatedStyle,
-  withTiming,
 } from "react-native-reanimated";
 import PlateIcon from "./PlateIcon";
 
@@ -16,7 +15,11 @@ const DELETE_BUTTON_WIDTH = Math.ceil(WINDOW_WIDTH / 4);
 
 const AnimatedRectButton = Animated.createAnimatedComponent(RectButton);
 
-type PlateConfig = { weight: number; quantity: number };
+const MAX_PLATE_HEIGHT = 48;
+const MINE_PLATE_HEIGHT = MAX_PLATE_HEIGHT / 2;
+
+type PlateConfig = { weight: number; quantity: number; uiHeight: number };
+
 /**
  * Calculates how many of each plate is necessary per-side of a barbell
  *
@@ -28,13 +31,19 @@ type PlateConfig = { weight: number; quantity: number };
  * @returns an array of objects representing how many of each plate is needed per side of the barbell
  */
 const calculatePlates = (weight: number, inventory: Array<number>) => {
+  const minWeight = inventory[inventory.length - 1];
+  const maxWeight = inventory[0];
   const plates: Array<PlateConfig> = [];
   let remainder = weight / 2;
   for (let i = 0; i < inventory.length && remainder > 0; i++) {
     const plateWeight = inventory[i];
     const quantity = Math.floor(remainder / plateWeight);
     if (quantity > 0) {
-      plates.push({ weight: plateWeight, quantity });
+      const plateHeight =
+        ((MAX_PLATE_HEIGHT - MINE_PLATE_HEIGHT) * (plateWeight - maxWeight)) /
+          (maxWeight - minWeight) +
+        MAX_PLATE_HEIGHT;
+      plates.push({ weight: plateWeight, quantity, uiHeight: plateHeight });
     }
     remainder = remainder - plateWeight * quantity;
   }
@@ -50,7 +59,7 @@ const PlateView = ({ plate }: { plate: PlateConfig }) => {
       }}
     >
       <PlateIcon
-        height={42}
+        height={plate.uiHeight}
         innerColor={colorBox.stoneGrey700}
         outerColor={colorBox.stoneGrey800}
       />
@@ -78,6 +87,9 @@ function PlatesUnderlay({
   plates: Array<PlateConfig>;
   onPress?: () => void;
 }) {
+  plates.forEach((plate) =>
+    console.log("plate: %s, height: %s", plate.weight, plate.uiHeight)
+  );
   const styleAnimation = useAnimatedStyle(() => {
     console.log("drag: %d", drag.value);
     return {
@@ -187,8 +199,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flex: 1,
     justifyContent: "flex-start",
-    alignItems: "center",
-    gap: 8,
+    alignItems: "flex-end",
+    gap: 16,
     paddingHorizontal: 16,
   },
 });
