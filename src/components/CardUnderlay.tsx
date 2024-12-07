@@ -15,7 +15,11 @@ const DELETE_BUTTON_WIDTH = Math.ceil(WINDOW_WIDTH / 4);
 
 const AnimatedRectButton = Animated.createAnimatedComponent(RectButton);
 
-type PlateConfig = { weight: number; quantity: number };
+const MAX_PLATE_HEIGHT = 48;
+const MINE_PLATE_HEIGHT = MAX_PLATE_HEIGHT / 2;
+
+type PlateConfig = { weight: number; quantity: number; uiHeight: number };
+
 /**
  * Calculates how many of each plate is necessary per-side of a barbell
  *
@@ -27,26 +31,26 @@ type PlateConfig = { weight: number; quantity: number };
  * @returns an array of objects representing how many of each plate is needed per side of the barbell
  */
 const calculatePlates = (weight: number, inventory: Array<number>) => {
+  const minWeight = inventory[inventory.length - 1];
+  const maxWeight = inventory[0];
   const plates: Array<PlateConfig> = [];
   let remainder = weight / 2;
   for (let i = 0; i < inventory.length && remainder > 0; i++) {
     const plateWeight = inventory[i];
     const quantity = Math.floor(remainder / plateWeight);
     if (quantity > 0) {
-      plates.push({ weight: plateWeight, quantity });
+      const plateHeight =
+        ((MAX_PLATE_HEIGHT - MINE_PLATE_HEIGHT) * (plateWeight - maxWeight)) /
+          (maxWeight - minWeight) +
+        MAX_PLATE_HEIGHT;
+      plates.push({ weight: plateWeight, quantity, uiHeight: plateHeight });
     }
     remainder = remainder - plateWeight * quantity;
   }
   return plates;
 };
 
-const PlateView = ({
-  plate,
-  height,
-}: {
-  plate: PlateConfig;
-  height: number;
-}) => {
+const PlateView = ({ plate }: { plate: PlateConfig }) => {
   return (
     <Animated.View
       style={{
@@ -55,7 +59,7 @@ const PlateView = ({
       }}
     >
       <PlateIcon
-        height={height}
+        height={plate.uiHeight}
         innerColor={colorBox.stoneGrey700}
         outerColor={colorBox.stoneGrey800}
       />
@@ -72,24 +76,6 @@ const PlateView = ({
   );
 };
 
-const MAX_PLATE_HEIGHT = 48;
-const MINE_PLATE_HEIGHT = MAX_PLATE_HEIGHT / 2;
-const calculatePlateHeight = ({
-  plateWeight,
-  minWeight,
-  maxWeight,
-}: {
-  plateWeight: number;
-  minWeight: number;
-  maxWeight: number;
-}) => {
-  return (
-    ((MAX_PLATE_HEIGHT - MINE_PLATE_HEIGHT) * (plateWeight - maxWeight)) /
-      (maxWeight - minWeight) +
-    MAX_PLATE_HEIGHT
-  );
-};
-
 function PlatesUnderlay({
   drag,
   plates,
@@ -98,9 +84,12 @@ function PlatesUnderlay({
   progress?: SharedValue<number>;
   drag: SharedValue<number>;
   swipeable?: SwipeableMethods;
-  plates: Array<PlateConfig & { plateHeight: number }>;
+  plates: Array<PlateConfig>;
   onPress?: () => void;
 }) {
+  plates.forEach((plate) =>
+    console.log("plate: %s, height: %s", plate.weight, plate.uiHeight)
+  );
   const styleAnimation = useAnimatedStyle(() => {
     console.log("drag: %d", drag.value);
     return {
@@ -118,9 +107,9 @@ function PlatesUnderlay({
   });
   return (
     <Animated.View style={[styles.plateUnderlay, styleAnimation]}>
-      {plates.map(({ plateHeight, ...plate }) => (
+      {plates.map((plate) => (
         <View>
-          <PlateView plate={plate} height={plateHeight} />
+          <PlateView plate={plate} />
         </View>
       ))}
       <Text
@@ -211,14 +200,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-start",
     alignItems: "flex-end",
-    gap: 8,
+    gap: 16,
     paddingHorizontal: 16,
   },
 });
 
-export {
-  DeleteUnderlay,
-  PlatesUnderlay,
-  calculatePlates,
-  calculatePlateHeight,
-};
+export { DeleteUnderlay, PlatesUnderlay, calculatePlates };
