@@ -20,8 +20,65 @@
               "icon": "lucide-file",
               "title": "Dec 6"
             }
+          },
+          {
+            "id": "8459a32894538441",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Dec 8.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Dec 8"
+            }
+          },
+          {
+            "id": "e7366e7850d79c56",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Study Group Platform.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Study Group Platform"
+            }
+          },
+          {
+            "id": "a8dff3deab4f6bd3",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Dec 8.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Dec 8"
+            }
+          },
+          {
+            "id": "ecc6668009899ee4",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Dec 10.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Dec 10"
+            }
           }
-        ]
+        ],
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -162,8 +219,12 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "eca7205c04d160a9",
+  "active": "ecc6668009899ee4",
   "lastOpenFiles": [
+    "Dec 8.md",
+    "Dec 10.md",
+    "Study Group Platform.md",
+    "New Movies.md",
     "Dec 6.md"
   ]
 }

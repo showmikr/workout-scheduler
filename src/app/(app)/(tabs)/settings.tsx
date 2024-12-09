@@ -4,6 +4,7 @@ import {
   ScrollView,
   useColorScheme,
   Appearance,
+  View,
 } from "react-native";
 import EditScreenInfo from "@/components/EditScreenInfo";
 import { deleteDB } from "@/utils/db-utils";
@@ -14,6 +15,7 @@ import { Link } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { twColors } from "@/constants/Colors";
 import { useAppUserId } from "@/context/app-user-id-provider";
+import WeightAdjustView from "@/components/WeightAdjustView";
 
 export default function TabOneScreen() {
   const appUserId = useAppUserId();
@@ -122,6 +124,9 @@ export default function TabOneScreen() {
           Sign Me Out!
         </ThemedText>
       </Pressable>
+      <View style={{ width: "100%" }}>
+        <WeightAdjustView weight={120} />
+      </View>
     </ScrollView>
   );
 }

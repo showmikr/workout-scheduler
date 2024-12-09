@@ -128,6 +128,49 @@ function PlatesUnderlay({
   );
 }
 
+function ExerciseSetUnderlay({
+  drag,
+  onPress,
+}: {
+  progress?: SharedValue<number>;
+  drag: SharedValue<number>;
+  swipeable?: SwipeableMethods;
+  onPress?: () => void;
+}) {
+  const styleAnimation = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateX: interpolate(
+            drag.value,
+            [-DELETE_BUTTON_WIDTH, 0],
+            [0, DELETE_BUTTON_WIDTH],
+            Extrapolation.CLAMP
+          ),
+        },
+        {
+          scaleX: interpolate(
+            drag.value,
+            [-WINDOW_WIDTH, -DELETE_BUTTON_WIDTH, 0],
+            [1.5, 1, 1],
+            Extrapolation.CLAMP
+          ),
+        },
+      ],
+    };
+  });
+
+  return (
+    <AnimatedRectButton
+      activeOpacity={0.4}
+      style={[styles.deleteAction, styleAnimation]}
+      onPress={onPress}
+    >
+      <Animated.Text style={styles.deleteText}>Delete</Animated.Text>
+    </AnimatedRectButton>
+  );
+}
+
 function DeleteUnderlay({
   drag,
   onPress,
