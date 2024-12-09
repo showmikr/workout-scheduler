@@ -386,7 +386,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 16,
     gap: 24,
-    minHeight: 80,
   },
   activeExerciseHeaderContainer: {
     paddingHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN,
