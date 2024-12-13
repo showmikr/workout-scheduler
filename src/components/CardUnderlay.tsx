@@ -87,11 +87,7 @@ function PlatesUnderlay({
   plates: Array<PlateConfig>;
   onPress?: () => void;
 }) {
-  plates.forEach((plate) =>
-    console.log("plate: %s, height: %s", plate.weight, plate.uiHeight)
-  );
   const styleAnimation = useAnimatedStyle(() => {
-    console.log("drag: %d", drag.value);
     return {
       transform: [
         {

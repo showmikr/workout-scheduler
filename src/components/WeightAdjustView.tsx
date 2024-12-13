@@ -6,25 +6,65 @@ import {
   Pressable,
   ColorValue,
   PressableProps,
-  ViewStyle,
 } from "react-native";
-import Animated from "react-native-reanimated";
+import Animated, {
+  Easing,
+  interpolateColor,
+  useAnimatedStyle,
+  useDerivedValue,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { useRef } from "react";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const KeypadButton = ({
   children,
+  backgroundColor,
+  activeBackgroundColor,
   ...pressableProps
 }: {
   backgroundColor?: ColorValue;
   activeBackgroundColor?: ColorValue;
 } & PressableProps) => {
-  return <AnimatedPressable {...pressableProps}>{children}</AnimatedPressable>;
+  const initialColor = backgroundColor ?? "#000000";
+  const finalColor = activeBackgroundColor ?? "#404040"; // +25 lightness compared to #000000
+  const pressProgress = useSharedValue(0);
+  const { onPressIn, onPressOut, style, ...remainingProps } = pressableProps;
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      backgroundColor: interpolateColor(pressProgress.value, [0, 1], [
+        initialColor,
+        finalColor,
+      ] as string[]),
+    };
+  });
+  return (
+    <AnimatedPressable
+      onPressIn={(event) => {
+        pressProgress.value = withTiming(1, {
+          duration: 100,
+          easing: Easing.ease,
+        });
+        if (onPressIn) onPressIn(event);
+      }}
+      onPressOut={(event) => {
+        pressProgress.value = withTiming(0, {
+          duration: 150,
+          easing: Easing.out(Easing.ease),
+        });
+        if (onPressOut) onPressOut(event);
+      }}
+      style={[style, animatedStyle]}
+      {...remainingProps}
+    >
+      {children}
+    </AnimatedPressable>
+  );
 };
 
-const keypadChars = [
+const KEYPAD_CHARS = [
   ["1", "2", "3"],
   ["4", "5", "6"],
   ["7", "8", "9"],
@@ -34,76 +74,111 @@ const KEYPAD_TEXT_COLOR = colorBox.stoneGrey200;
 const KEYPAD_ICON_SIZE = KEYPAD_FONT_SIZE;
 const KEYPAD_TEXT_SIZE = KEYPAD_FONT_SIZE * (7 / 8);
 
+const KEYPAD_LAST_ROW_CHARS = [
+  () => <Text style={styles.keypadDigitText}>.</Text>,
+  () => <Text style={styles.keypadDigitText}>0</Text>,
+  () => (
+    <FontAwesome6
+      name="xmark"
+      size={KEYPAD_ICON_SIZE}
+      color={KEYPAD_TEXT_COLOR}
+    />
+  ),
+];
+
 const WeightAdjustView = ({ weight }: { weight: number }) => {
-  const keypadHeight = useRef(0);
   return (
-    <View style={baseStyles.rootWrapper}>
-      <View style={baseStyles.weightWrapper}>
-        <Text style={baseStyles.weightText}>{weight}</Text>
-        <View style={baseStyles.unitsWrapper}>
-          <Text style={baseStyles.unitText}>kg</Text>
-          <Text style={baseStyles.unitText}>lbs</Text>
+    <View style={styles.rootWrapper}>
+      <View style={styles.weightWrapper}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            flex: 3,
+            gap: 4,
+          }}
+        >
+          <FontAwesome6
+            name="weight-hanging"
+            size={32}
+            color={colorBox.stoneGrey400}
+          />
+          <Text style={styles.weightText}>{weight}</Text>
+        </View>
+        <View style={styles.keypadButtonWrapper}>
+          <Text style={styles.keypadDigitText}>KG</Text>
         </View>
       </View>
-      <View style={baseStyles.keypadWrapper}>
-        <View style={baseStyles.keypadDigitsWrapper}>
-          {keypadChars.map((row, rowIndex) => (
-            <View key={rowIndex} style={baseStyles.keypadRow}>
+      <View style={styles.keypadWrapper}>
+        <View style={styles.keypadDigitsWrapper}>
+          {KEYPAD_CHARS.map((row, rowIndex) => (
+            <View key={rowIndex} style={styles.keypadRow}>
               {row.map((char, colIndex) => (
                 <KeypadButton
+                  backgroundColor={colorBox.stoneGrey700}
+                  activeBackgroundColor={"#868383"}
                   key={colIndex}
-                  style={baseStyles.keypadButtonWrapper}
+                  style={styles.keypadButtonWrapper}
                 >
-                  <Text style={baseStyles.keypadDigitText}>{char}</Text>
+                  <Text style={styles.keypadDigitText}>{char}</Text>
                 </KeypadButton>
               ))}
             </View>
           ))}
-          <View style={baseStyles.keypadRow}>
-            <KeypadButton
-              style={baseStyles.keypadButtonWrapper}
-              onPress={() => {}}
-            >
-              <Text style={baseStyles.keypadDigitText}>.</Text>
-            </KeypadButton>
-            <KeypadButton
-              style={baseStyles.keypadButtonWrapper}
-              onPress={() => {}}
-            >
-              <Text style={baseStyles.keypadDigitText}>0</Text>
-            </KeypadButton>
-            <KeypadButton
-              style={baseStyles.keypadButtonWrapper}
-              onPress={() => {}}
-            >
-              <FontAwesome6
-                name="xmark"
-                size={KEYPAD_ICON_SIZE}
-                color={KEYPAD_TEXT_COLOR}
-              />
-            </KeypadButton>
+          <View style={styles.keypadRow}>
+            {KEYPAD_LAST_ROW_CHARS.map((rowItem, index) => (
+              <KeypadButton
+                key={index}
+                backgroundColor={colorBox.stoneGrey700}
+                activeBackgroundColor={"#868383"}
+                style={styles.keypadButtonWrapper}
+                onPress={() => {}}
+              >
+                {rowItem}
+              </KeypadButton>
+            ))}
           </View>
         </View>
-        <View style={baseStyles.keypadUtilitiesWrapper}>
-          <KeypadButton style={styles.keypadPlusButton}>
+        <View style={styles.keypadUtilitiesWrapper}>
+          <KeypadButton
+            backgroundColor={colorBox.orangeAccent400}
+            activeBackgroundColor="#F69D18"
+            style={styles.keypadPlusButton}
+          >
             <FontAwesome6
               name="plus"
               color={colorBox.orangeAccent900}
               size={KEYPAD_ICON_SIZE}
             />
           </KeypadButton>
-          <KeypadButton style={styles.keypadMinusButton}>
+          <KeypadButton
+            backgroundColor={colorBox.orangeAccent400}
+            activeBackgroundColor="#F69D18"
+            style={styles.keypadMinusButton}
+          >
             <FontAwesome6
               name="minus"
               color={colorBox.orangeAccent900}
               size={KEYPAD_ICON_SIZE}
             />
           </KeypadButton>
-          <KeypadButton style={styles.keypadPlatesButton}>
-            <Text style={baseStyles.platesButtonText}>Plates</Text>
+          <KeypadButton
+            backgroundColor={colorBox.orangeAccent900}
+            activeBackgroundColor="#996200"
+            style={styles.keypadPlatesButton}
+          >
+            <Text numberOfLines={1} style={styles.platesButtonText}>
+              Plates
+            </Text>
           </KeypadButton>
-          <KeypadButton style={styles.keypadDoneButton}>
-            <Text style={baseStyles.doneButtonText}>Done</Text>
+          <KeypadButton
+            backgroundColor={colorBox.blue400}
+            activeBackgroundColor="#68ACCF"
+            style={styles.keypadDoneButton}
+          >
+            <Text numberOfLines={1} style={styles.doneButtonText}>
+              Done
+            </Text>
           </KeypadButton>
         </View>
       </View>
@@ -111,17 +186,19 @@ const WeightAdjustView = ({ weight }: { weight: number }) => {
   );
 };
 
-const baseStyles = StyleSheet.create({
+const styles = StyleSheet.create({
   rootWrapper: {
-    padding: 24,
+    padding: 16,
     borderRadius: 12,
     gap: 16,
     backgroundColor: colorBox.stoneGrey950,
+    minWidth: 320,
+    maxWidth: 480,
   },
   keypadWrapper: {
     flexDirection: "row",
-    flex: 1,
     gap: 8,
+    aspectRatio: 3 / 2,
   },
   keypadDigitsWrapper: {
     flex: 3,
@@ -133,24 +210,22 @@ const baseStyles = StyleSheet.create({
   },
   weightWrapper: {
     flexDirection: "row",
-    alignItems: "baseline",
-    gap: 12,
+    alignItems: "center",
+    gap: 8,
   },
   weightText: {
-    flexDirection: "row",
-    flex: 1,
     color: colorBox.stoneGrey200,
-    fontSize: 32,
-    fontWeight: 600,
+    fontSize: 44,
+    fontWeight: 700,
+    letterSpacing: -2,
   },
   unitsWrapper: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    gap: 4,
+    flex: 1,
+    flexDirection: "column-reverse",
   },
   unitText: {
     color: colorBox.stoneGrey300,
-    fontSize: 24,
+    fontSize: KEYPAD_ICON_SIZE,
   },
   keypadRow: {
     flexDirection: "row",
@@ -162,10 +237,8 @@ const baseStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 8,
-    backgroundColor: colorBox.stoneGrey800,
+    backgroundColor: colorBox.stoneGrey700,
     borderRadius: 8,
-    minWidth: 64,
-    // minHeight: 48,
   },
   keypadDigitText: {
     color: KEYPAD_TEXT_COLOR,
@@ -182,29 +255,38 @@ const baseStyles = StyleSheet.create({
     fontWeight: 700,
     color: colorBox.blue900,
   },
-});
-
-const styles = {
-  keypadMinusButton: StyleSheet.compose(baseStyles.keypadButtonWrapper, {
+  keypadMinusButton: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    borderBottomRightRadius: 8,
+    borderBottomLeftRadius: 8,
     backgroundColor: colorBox.orangeAccent400,
-    padding: 0,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-  }) as ViewStyle,
-  keypadPlusButton: StyleSheet.compose(baseStyles.keypadButtonWrapper, {
+  },
+  keypadPlusButton: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
     backgroundColor: colorBox.orangeAccent400,
-    padding: 0,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-  }) as ViewStyle,
-  keypadPlatesButton: StyleSheet.compose(baseStyles.keypadButtonWrapper, {
+  },
+  keypadPlatesButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
     backgroundColor: colorBox.orangeAccent900,
-    padding: 0,
-  }) as ViewStyle,
-  keypadDoneButton: StyleSheet.compose(baseStyles.keypadButtonWrapper, {
+  },
+  keypadDoneButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
     backgroundColor: colorBox.blue400,
-    padding: 0,
-  }) as ViewStyle,
-};
+  },
+});
 
 export default WeightAdjustView;

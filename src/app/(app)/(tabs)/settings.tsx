@@ -124,8 +124,8 @@ export default function TabOneScreen() {
           Sign Me Out!
         </ThemedText>
       </Pressable>
-      <View style={{ width: "100%" }}>
-        <WeightAdjustView weight={120} />
+      <View style={{ alignSelf: "stretch", marginVertical: 24, width: 320 }}>
+        <WeightAdjustView weight={9999.99} />
       </View>
     </ScrollView>
   );
