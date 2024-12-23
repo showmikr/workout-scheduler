@@ -4,63 +4,45 @@ import {
   View,
   Text,
   Pressable,
-  ColorValue,
+  ViewStyle,
   PressableProps,
 } from "react-native";
-import Animated, {
-  Easing,
-  interpolateColor,
-  useAnimatedStyle,
-  useDerivedValue,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const KeypadButton = ({
   children,
-  backgroundColor,
-  activeBackgroundColor,
-  ...pressableProps
+  activeOpacity = 0.7,
+  underlayColor = "white",
+  style,
+  contentContainerStyle, // styling for inner view
+  ...remainingProps
 }: {
-  backgroundColor?: ColorValue;
-  activeBackgroundColor?: ColorValue;
-} & PressableProps) => {
-  const initialColor = backgroundColor ?? "#000000";
-  const finalColor = activeBackgroundColor ?? "#404040"; // +25 lightness compared to #000000
-  const pressProgress = useSharedValue(0);
-  const { onPressIn, onPressOut, style, ...remainingProps } = pressableProps;
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      backgroundColor: interpolateColor(pressProgress.value, [0, 1], [
-        initialColor,
-        finalColor,
-      ] as string[]),
-    };
-  });
+  contentContainerStyle?: ViewStyle;
+  activeOpacity?: number;
+  underlayColor?: string;
+  children?: React.ReactElement;
+} & Omit<PressableProps, "children">) => {
   return (
-    <AnimatedPressable
-      onPressIn={(event) => {
-        pressProgress.value = withTiming(1, {
-          duration: 100,
-          easing: Easing.ease,
-        });
-        if (onPressIn) onPressIn(event);
-      }}
-      onPressOut={(event) => {
-        pressProgress.value = withTiming(0, {
-          duration: 150,
-          easing: Easing.out(Easing.ease),
-        });
-        if (onPressOut) onPressOut(event);
-      }}
-      style={[style, animatedStyle]}
+    // The Pressable acts as the underlay
+    <Pressable
+      style={({ pressed, hovered }) => [
+        typeof style === "function" ? style({ pressed, hovered }) : style,
+        { backgroundColor: pressed ? underlayColor : "transparent" },
+      ]}
       {...remainingProps}
     >
-      {children}
-    </AnimatedPressable>
+      {({ pressed }) => (
+        // The View acts as the overlay, it becomes more transparent, revealing the underlay
+        <View
+          style={[
+            contentContainerStyle,
+            { opacity: pressed ? activeOpacity : 1 },
+          ]}
+        >
+          {children}
+        </View>
+      )}
+    </Pressable>
   );
 };
 
@@ -105,9 +87,12 @@ const WeightAdjustView = ({ weight }: { weight: number }) => {
           />
           <Text style={styles.weightText}>{weight}</Text>
         </View>
-        <View style={styles.keypadButtonWrapper}>
+        <KeypadButton
+          style={styles.keypadButtonWrapper}
+          contentContainerStyle={styles.keypadButtonContent}
+        >
           <Text style={styles.keypadDigitText}>KG</Text>
-        </View>
+        </KeypadButton>
       </View>
       <View style={styles.keypadWrapper}>
         <View style={styles.keypadDigitsWrapper}>
@@ -115,10 +100,9 @@ const WeightAdjustView = ({ weight }: { weight: number }) => {
             <View key={rowIndex} style={styles.keypadRow}>
               {row.map((char, colIndex) => (
                 <KeypadButton
-                  backgroundColor={colorBox.stoneGrey700}
-                  activeBackgroundColor={"#868383"}
                   key={colIndex}
                   style={styles.keypadButtonWrapper}
+                  contentContainerStyle={styles.keypadButtonContent}
                 >
                   <Text style={styles.keypadDigitText}>{char}</Text>
                 </KeypadButton>
@@ -126,24 +110,21 @@ const WeightAdjustView = ({ weight }: { weight: number }) => {
             </View>
           ))}
           <View style={styles.keypadRow}>
-            {KEYPAD_LAST_ROW_CHARS.map((rowItem, index) => (
+            {KEYPAD_LAST_ROW_CHARS.map((RowItem, index) => (
               <KeypadButton
                 key={index}
-                backgroundColor={colorBox.stoneGrey700}
-                activeBackgroundColor={"#868383"}
                 style={styles.keypadButtonWrapper}
-                onPress={() => {}}
+                contentContainerStyle={styles.keypadButtonContent}
               >
-                {rowItem}
+                <RowItem />
               </KeypadButton>
             ))}
           </View>
         </View>
         <View style={styles.keypadUtilitiesWrapper}>
           <KeypadButton
-            backgroundColor={colorBox.orangeAccent400}
-            activeBackgroundColor="#F69D18"
-            style={styles.keypadPlusButton}
+            style={styles.keypadPlusButtonWrapper}
+            contentContainerStyle={styles.keypadPlussButtonContent}
           >
             <FontAwesome6
               name="plus"
@@ -152,9 +133,8 @@ const WeightAdjustView = ({ weight }: { weight: number }) => {
             />
           </KeypadButton>
           <KeypadButton
-            backgroundColor={colorBox.orangeAccent400}
-            activeBackgroundColor="#F69D18"
-            style={styles.keypadMinusButton}
+            style={styles.keypadMinusButtonWrapper}
+            contentContainerStyle={styles.keypadMinusButtonContent}
           >
             <FontAwesome6
               name="minus"
@@ -163,18 +143,16 @@ const WeightAdjustView = ({ weight }: { weight: number }) => {
             />
           </KeypadButton>
           <KeypadButton
-            backgroundColor={colorBox.orangeAccent900}
-            activeBackgroundColor="#996200"
-            style={styles.keypadPlatesButton}
+            style={styles.keypadPlatesButtonWrapper}
+            contentContainerStyle={styles.keypadPlatesButtonContet}
           >
             <Text numberOfLines={1} style={styles.platesButtonText}>
               Plates
             </Text>
           </KeypadButton>
           <KeypadButton
-            backgroundColor={colorBox.blue400}
-            activeBackgroundColor="#68ACCF"
-            style={styles.keypadDoneButton}
+            style={styles.keypadDoneButtonWrapper}
+            contentContainerStyle={styles.keypadDoneButtonContent}
           >
             <Text numberOfLines={1} style={styles.doneButtonText}>
               Done
@@ -234,11 +212,15 @@ const styles = StyleSheet.create({
   },
   keypadButtonWrapper: {
     flex: 1,
+    borderRadius: 8,
+  },
+  keypadButtonContent: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 8,
-    backgroundColor: colorBox.stoneGrey700,
     borderRadius: 8,
+    backgroundColor: colorBox.stoneGrey700,
   },
   keypadDigitText: {
     color: KEYPAD_TEXT_COLOR,
@@ -255,33 +237,49 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     color: colorBox.blue900,
   },
-  keypadMinusButton: {
+  keypadMinusButtonWrapper: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
     borderBottomRightRadius: 8,
     borderBottomLeftRadius: 8,
-    backgroundColor: colorBox.orangeAccent400,
   },
-  keypadPlusButton: {
+  keypadMinusButtonContent: {
     flex: 1,
+    borderBottomRightRadius: 8,
+    borderBottomLeftRadius: 8,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: colorBox.orangeAccent400,
+  },
+  keypadPlusButtonWrapper: {
+    flex: 1,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
+  keypadPlussButtonContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
     backgroundColor: colorBox.orangeAccent400,
   },
-  keypadPlatesButton: {
+  keypadPlatesButtonWrapper: {
     flex: 1,
-    flexDirection: "row",
+    borderRadius: 8,
+  },
+  keypadPlatesButtonContet: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 8,
     backgroundColor: colorBox.orangeAccent900,
   },
-  keypadDoneButton: {
+  keypadDoneButtonWrapper: {
     flex: 1,
-    flexDirection: "row",
+    borderRadius: 8,
+  },
+  keypadDoneButtonContent: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 8,
