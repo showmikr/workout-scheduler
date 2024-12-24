@@ -69,12 +69,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Dec 10.md",
+                "file": "How to use color codegen.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Dec 10"
+              "title": "How to use color codegen"
             }
           }
         ],
@@ -221,8 +221,9 @@
   },
   "active": "ecc6668009899ee4",
   "lastOpenFiles": [
-    "Dec 8.md",
     "Dec 10.md",
+    "How to use color codegen.md",
+    "Dec 8.md",
     "Study Group Platform.md",
     "New Movies.md",
     "Dec 6.md"
