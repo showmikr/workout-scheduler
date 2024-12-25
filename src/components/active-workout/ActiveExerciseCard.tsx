@@ -18,7 +18,7 @@ import {
 import { immediateDebounce } from "@/utils/debounce-utils";
 import { FontAwesome6 } from "@expo/vector-icons";
 import MaskedView from "@react-native-masked-view/masked-view";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -34,6 +34,14 @@ import Animated, {
   ZoomIn,
 } from "react-native-reanimated";
 import CustomAnimatedButton from "../CustomAnimatedButton";
+import {
+  BottomSheetBackdrop,
+  BottomSheetBackdropProps,
+  BottomSheetModal,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
+import WeightAdjustView from "../WeightAdjustView";
+import React from "react";
 
 const ActiveExerciseHeader = ({ exerciseId }: { exerciseId: number }) => {
   const { id: exerciseClassId, title } =
@@ -122,29 +130,74 @@ const ActiveSetItem = ({
 
 const WEIGHT_REGEX = /^\d*\.?\d+/;
 const WeightCell = ({ setId }: { setId: number }) => {
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
   const { changeWeight } = useActiveWorkoutActions();
   const weight = useActiveWorkoutSetWeight(setId);
   const [weightText, setWeightText] = useState(() => weight.toString());
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        pressBehavior="close"
+        style={{
+          position: "absolute",
+          flex: 1,
+          height: 900,
+          backgroundColor: "white",
+        }}
+        enableTouchThrough={false}
+        onPress={() => {
+          console.log("backdrop pressed");
+          bottomSheetRef.current?.dismiss();
+        }}
+        {...props}
+      />
+    ),
+    []
+  );
   return (
-    <ThemedTextInput
-      numberOfLines={1}
-      maxLength={6}
-      inputMode="decimal"
-      value={weightText}
-      returnKeyType="done"
-      style={[styles.dataCell, styles.dataText]}
-      onChangeText={(text) => {
-        setWeightText(text);
-      }}
-      onEndEditing={(e) => {
-        const parsedWeight = Number(
-          e.nativeEvent.text.match(WEIGHT_REGEX)?.at(0) ?? "0"
-        );
-        const truncatedWeight = Math.round(parsedWeight * 10) / 10;
-        setWeightText(truncatedWeight.toString());
-        changeWeight(setId, truncatedWeight);
-      }}
-    />
+    <>
+      <ThemedTextInput
+        numberOfLines={1}
+        maxLength={6}
+        inputMode="decimal"
+        editable={false}
+        onPress={() => {
+          console.log("Pressed");
+          bottomSheetRef.current?.present();
+        }}
+        value={weightText}
+        returnKeyType="done"
+        style={[styles.dataCell, styles.dataText]}
+        onChangeText={(text) => {
+          setWeightText(text);
+        }}
+        onEndEditing={(e) => {
+          const parsedWeight = Number(
+            e.nativeEvent.text.match(WEIGHT_REGEX)?.at(0) ?? "0"
+          );
+          const truncatedWeight = Math.round(parsedWeight * 10) / 10;
+          setWeightText(truncatedWeight.toString());
+          changeWeight(setId, truncatedWeight);
+        }}
+      />
+      <BottomSheetModal
+        ref={bottomSheetRef}
+        backdropComponent={renderBackdrop}
+        enableDynamicSizing={true}
+        backgroundStyle={{ backgroundColor: colorBox.stoneGrey950 }}
+        handleIndicatorStyle={{ backgroundColor: colorBox.stoneGrey400 }}
+        handleStyle={{
+          borderTopColor: colorBox.stoneGrey900,
+          borderTopWidth: 1,
+          borderTopLeftRadius: 14,
+          borderTopRightRadius: 14,
+        }}
+      >
+        <BottomSheetView>
+          <WeightAdjustView weight={120} />
+        </BottomSheetView>
+      </BottomSheetModal>
+    </>
   );
 };
 

@@ -32,9 +32,12 @@ import { colorBox, figmaColors } from "@/constants/Colors";
 import { useSaveWorkoutSession } from "@/hooks/active-workout";
 import { useSQLiteContext } from "expo-sqlite";
 import { useAppUserId } from "@/context/app-user-id-provider";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import CustomAnimatedButton from "@/components/CustomAnimatedButton";
 import { calculatePlates } from "../CardUnderlay";
+import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
+import WeightAdjustView from "../WeightAdjustView";
+import React from "react";
 
 const AddExerciseButton = () => {
   const onPress = () => {
@@ -309,7 +312,7 @@ const styles = StyleSheet.create({
     marginTop: 80,
     gap: 32,
     paddingHorizontal: 16,
-    marginBottom: 112,
+    marginBottom: 128,
   },
   cancelWorkoutButton: {
     flex: 1,

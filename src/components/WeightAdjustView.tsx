@@ -172,11 +172,12 @@ const styles = StyleSheet.create({
     backgroundColor: colorBox.stoneGrey950,
     minWidth: 320,
     maxWidth: 480,
+    marginBottom: 68,
   },
   keypadWrapper: {
     flexDirection: "row",
     gap: 8,
-    aspectRatio: 3 / 2,
+    aspectRatio: 13 / 8,
   },
   keypadDigitsWrapper: {
     flex: 3,
