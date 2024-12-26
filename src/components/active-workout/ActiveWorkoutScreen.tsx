@@ -35,8 +35,6 @@ import { useAppUserId } from "@/context/app-user-id-provider";
 import { useCallback, useRef, useState } from "react";
 import CustomAnimatedButton from "@/components/CustomAnimatedButton";
 import { calculatePlates } from "../CardUnderlay";
-import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import WeightAdjustView from "../WeightAdjustView";
 import React from "react";
 
 const AddExerciseButton = () => {
@@ -71,11 +69,6 @@ const ActiveWorkoutHeader = () => {
 };
 
 const ActiveWorkoutSectionList = () => {
-  const inventory = [45, 35, 25, 10, 5, 2.5];
-  const plates = calculatePlates(350, inventory);
-  for (const { weight, quantity } of plates) {
-    console.log("plate: %d, quantity: %d", weight, quantity);
-  }
   const exerciseIds = useActiveWorkoutExerciseIds();
   const exerciseEntities = useActiveWorkoutExerciseEntities();
   const sections = exerciseIds.map((id) => ({

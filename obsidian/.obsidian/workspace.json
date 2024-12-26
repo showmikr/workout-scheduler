@@ -76,9 +76,23 @@
               "icon": "lucide-file",
               "title": "How to generate sqlite db file for testing"
             }
+          },
+          {
+            "id": "67cd7b09d2c8d31d",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Hook data up to Weight Adjust View.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Hook data up to Weight Adjust View"
+            }
           }
         ],
-        "currentTab": 4
+        "currentTab": 5
       }
     ],
     "direction": "vertical"
@@ -220,10 +234,11 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "ecc6668009899ee4",
+  "active": "67cd7b09d2c8d31d",
   "lastOpenFiles": [
-    "How to use color codegen.md",
+    "Hook data up to Weight Adjust View.md",
     "Dec 10.md",
+    "How to use color codegen.md",
     "Dec 8.md",
     "Study Group Platform.md",
     "New Movies.md"

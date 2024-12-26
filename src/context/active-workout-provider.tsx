@@ -1,9 +1,11 @@
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import {
   AppState,
   AppStateStatus,
   NativeEventSubscription,
 } from "react-native";
 import { create } from "zustand";
+import { useShallow } from "zustand/react/shallow";
 
 type ActiveSet = {
   id: number;
@@ -39,7 +41,15 @@ type ActiveWorkout = {
     ids: Array<number>;
     entities: { [id: number]: ActiveSet };
   };
+  bottomSheetRef: BottomSheetModal | null;
+  selectedSet: {
+    setId: number;
+    param: "weight" | "reps" | "rest";
+    interimText: string;
+  } | null;
 };
+
+const MAX_WEIGHT_DIGITS = 6;
 
 type ActiveWorkoutActions = {
   startWorkout: (inputWorkout: InputWorkout) => void;
@@ -54,8 +64,18 @@ type ActiveWorkoutActions = {
   deleteSet: (exerciseId: number, setId: number) => void;
   changeReps: (setId: number, reps: number) => void;
   changeWeight: (setId: number, weight: number) => void;
+  concatDigitToWeight: ({
+    setId,
+    concatDigit,
+  }: {
+    setId: number;
+    concatDigit: number;
+  }) => void;
+  deleteDigitFromWeight: (setId: number) => void;
   changeRest: (setId: number, targetRest: number) => void;
   toggleSetDone: (setId: number) => void;
+  setBottomSheet: (bottomSheetRefCurrent: BottomSheetModal | null) => void;
+  setSelectedSetCell: (setCell: ActiveWorkoutStore["selectedSet"]) => void;
 };
 
 type ActiveWorkoutStore = ActiveWorkout & {
@@ -76,6 +96,8 @@ const initialActiveWorkout: ActiveWorkout = {
   exercises: { ids: [], entities: {} },
   sets: { ids: [], entities: {} },
   workoutStartTime: Date.now(),
+  bottomSheetRef: null,
+  selectedSet: null,
 };
 
 type InputWorkout = {
@@ -230,6 +252,8 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
             elapsedTime: 0,
             isPaused: !state.isPaused,
             workoutStartTime: Date.now(),
+            bottomSheetRef: null,
+            selectedSet: null,
           } satisfies ActiveWorkout;
         });
       },
@@ -445,6 +469,34 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
           } satisfies Pick<ActiveWorkout, "sets">;
         });
       },
+      concatDigitToWeight({ setId, concatDigit }) {
+        const weightText = get().sets.entities[setId].weight.toString();
+        const [wholeDigits, decimalDigits] = weightText.split(".") as [
+          string,
+          string | undefined,
+        ];
+        const digitCount = wholeDigits.length + (decimalDigits?.length ?? 0);
+        if (digitCount < MAX_WEIGHT_DIGITS) {
+          set((state) => {
+            return {
+              sets: {
+                ...state.sets,
+                entities: {
+                  ...state.sets.entities,
+                  [setId]: {
+                    ...state.sets.entities[setId],
+                    weight: Number(weightText.concat(concatDigit.toString())),
+                  },
+                },
+              },
+            } satisfies Pick<ActiveWorkout, "sets">;
+          });
+        }
+      },
+      deleteDigitFromWeight: (setId) => {
+        const kgWeightString = get().sets.entities[setId].weight.toString();
+        const [wholeDigits, decimalDigits] = kgWeightString.split(".");
+      },
       changeRest: (setId, targetRest) => {
         set((state) => {
           return {
@@ -511,6 +563,12 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
           }
         }
       },
+      setBottomSheet: (bottomSheetRef) => {
+        set({ bottomSheetRef });
+      },
+      setSelectedSetCell: (setCell) => {
+        set({ selectedSet: setCell });
+      },
     },
   } satisfies ActiveWorkoutStore;
 });
@@ -540,7 +598,37 @@ const useActiveWorkoutExercise = (exerciseId: number) => {
   return useActiveWorkoutStore((state) => state.exercises.entities[exerciseId]);
 };
 
+const useActiveWorkoutBottomSheet = () => {
+  return useActiveWorkoutStore((state) => state.bottomSheetRef);
+};
+
 // getters for exercise set properties
+const useActiveWorkoutIsSetCellSelected = ({
+  setId,
+  param,
+}: Omit<NonNullable<ActiveWorkout["selectedSet"]>, "interimText">): boolean =>
+  useActiveWorkoutStore(
+    (state) =>
+      setId === state.selectedSet?.setId && param === state.selectedSet?.param
+  );
+
+const useActiveWorkoutSelectedSet = () =>
+  useActiveWorkoutStore(
+    useShallow((state) => {
+      if (state.selectedSet) {
+        const { interimText, ...relevantContents } = state.selectedSet;
+        return relevantContents;
+      }
+      return null;
+    })
+  );
+
+/*
+ * Represents the interim string text of a selected set while editing
+ */
+const useActiveWorkoutStoreSelectedSetText = () =>
+  useActiveWorkoutStore((state) => state.selectedSet?.interimText ?? "");
+
 const useActiveWorkoutSetReps = (setId: number) =>
   useActiveWorkoutStore((state) => state.sets.entities[setId].reps);
 
@@ -589,4 +677,8 @@ export {
   useActiveWorkoutExerciseEntities,
   useActiveWorkoutExerciseClass,
   getLatestActiveWorkoutSnapshot,
+  useActiveWorkoutBottomSheet,
+  useActiveWorkoutSelectedSet,
+  useActiveWorkoutIsSetCellSelected,
+  useActiveWorkoutStoreSelectedSetText,
 };

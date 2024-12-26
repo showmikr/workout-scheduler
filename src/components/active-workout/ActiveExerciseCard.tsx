@@ -7,18 +7,21 @@ import { ThemedText, ThemedTextInput } from "@/components/Themed";
 import { colorBox } from "@/constants/Colors";
 import {
   useActiveWorkoutActions,
+  useActiveWorkoutBottomSheet,
   useActiveWorkoutExerciseClass,
+  useActiveWorkoutIsSetCellSelected,
   useActiveWorkoutRestingSetId,
   useActiveWorkoutRestingTime,
   useActiveWorkoutSetIsCompleted,
   useActiveWorkoutSetReps,
   useActiveWorkoutSetTargetRest,
   useActiveWorkoutSetWeight,
+  useActiveWorkoutStoreSelectedSetText,
 } from "@/context/active-workout-provider";
 import { immediateDebounce } from "@/utils/debounce-utils";
 import { FontAwesome6 } from "@expo/vector-icons";
 import MaskedView from "@react-native-masked-view/masked-view";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -34,13 +37,6 @@ import Animated, {
   ZoomIn,
 } from "react-native-reanimated";
 import CustomAnimatedButton from "../CustomAnimatedButton";
-import {
-  BottomSheetBackdrop,
-  BottomSheetBackdropProps,
-  BottomSheetModal,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
-import WeightAdjustView from "../WeightAdjustView";
 import React from "react";
 
 const ActiveExerciseHeader = ({ exerciseId }: { exerciseId: number }) => {
@@ -88,11 +84,6 @@ const ActiveSetItem = ({
     () => calculatePlates(totalWeight, DEFAULT_INVENTORY),
     [totalWeight]
   );
-  const minPlateWeight = useMemo(
-    () => plates[plates.length - 1].weight,
-    [plates]
-  );
-  const maxPlateWeight = useMemo(() => plates[0].weight, [plates]);
   const debouncedDelete = useCallback(
     immediateDebounce(() => {
       LayoutAnimation.configureNext(listUpdateAnimationConfig);
@@ -100,6 +91,7 @@ const ActiveSetItem = ({
     }, 200),
     [exerciseId, setId]
   );
+
   return (
     <Animated.View entering={ZoomIn.springify(150).dampingRatio(0.8)}>
       <Swipeable
@@ -128,76 +120,44 @@ const ActiveSetItem = ({
   );
 };
 
+const WeightCellTempText = () => {
+  const text = useActiveWorkoutStoreSelectedSetText();
+  return <ThemedText style={styles.dataText}>{text}</ThemedText>;
+};
+
 const WEIGHT_REGEX = /^\d*\.?\d+/;
 const WeightCell = ({ setId }: { setId: number }) => {
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const { changeWeight } = useActiveWorkoutActions();
+  const isSelected = useActiveWorkoutIsSetCellSelected({
+    setId,
+    param: "weight",
+  });
+  const { setSelectedSetCell } = useActiveWorkoutActions();
   const weight = useActiveWorkoutSetWeight(setId);
-  const [weightText, setWeightText] = useState(() => weight.toString());
-  const renderBackdrop = useCallback(
-    (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop
-        pressBehavior="close"
-        style={{
-          position: "absolute",
-          flex: 1,
-          height: 900,
-          backgroundColor: "white",
-        }}
-        enableTouchThrough={false}
-        onPress={() => {
-          console.log("backdrop pressed");
-          bottomSheetRef.current?.dismiss();
-        }}
-        {...props}
-      />
-    ),
-    []
-  );
+  const sheetMenu = useActiveWorkoutBottomSheet();
   return (
-    <>
-      <ThemedTextInput
-        numberOfLines={1}
-        maxLength={6}
-        inputMode="decimal"
-        editable={false}
-        onPress={() => {
-          console.log("Pressed");
-          bottomSheetRef.current?.present();
-        }}
-        value={weightText}
-        returnKeyType="done"
-        style={[styles.dataCell, styles.dataText]}
-        onChangeText={(text) => {
-          setWeightText(text);
-        }}
-        onEndEditing={(e) => {
-          const parsedWeight = Number(
-            e.nativeEvent.text.match(WEIGHT_REGEX)?.at(0) ?? "0"
-          );
-          const truncatedWeight = Math.round(parsedWeight * 10) / 10;
-          setWeightText(truncatedWeight.toString());
-          changeWeight(setId, truncatedWeight);
-        }}
-      />
-      <BottomSheetModal
-        ref={bottomSheetRef}
-        backdropComponent={renderBackdrop}
-        enableDynamicSizing={true}
-        backgroundStyle={{ backgroundColor: colorBox.stoneGrey950 }}
-        handleIndicatorStyle={{ backgroundColor: colorBox.stoneGrey400 }}
-        handleStyle={{
-          borderTopColor: colorBox.stoneGrey900,
-          borderTopWidth: 1,
-          borderTopLeftRadius: 14,
-          borderTopRightRadius: 14,
-        }}
-      >
-        <BottomSheetView>
-          <WeightAdjustView weight={120} />
-        </BottomSheetView>
-      </BottomSheetModal>
-    </>
+    <Pressable
+      onPress={() => {
+        setSelectedSetCell({
+          setId,
+          param: "weight",
+          interimText: weight.toString(),
+        });
+        sheetMenu?.present();
+      }}
+      style={[
+        styles.dataCell,
+        isSelected && {
+          borderWidth: 2,
+          borderBottomWidth: 2,
+          borderColor: colorBox.stoneGrey300,
+          borderBottomColor: colorBox.stoneGrey300,
+        },
+      ]}
+    >
+      {isSelected ?
+        <WeightCellTempText />
+      : <ThemedText style={styles.dataText}>{weight}</ThemedText>}
+    </Pressable>
   );
 };
 
@@ -211,6 +171,10 @@ const RepsCell = ({ setId }: { setId: number }) => {
       numberOfLines={1}
       maxLength={3}
       inputMode="numeric"
+      editable={false}
+      onPress={() => {
+        console.log("reps pressed");
+      }}
       value={repsText}
       returnKeyType="done"
       style={[styles.dataCell, styles.dataText]}
@@ -428,6 +392,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   setContainer: {
+    backgroundColor: "transparent",
     flex: 1,
     flexDirection: "row",
     justifyContent: "center",

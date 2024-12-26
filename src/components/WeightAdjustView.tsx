@@ -8,6 +8,11 @@ import {
   PressableProps,
 } from "react-native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import {
+  useActiveWorkoutActions,
+  useActiveWorkoutStoreSelectedSetText,
+} from "@/context/active-workout-provider";
+import React from "react";
 
 const KeypadButton = ({
   children,
@@ -56,110 +61,135 @@ const KEYPAD_TEXT_COLOR = colorBox.stoneGrey200;
 const KEYPAD_ICON_SIZE = KEYPAD_FONT_SIZE;
 const KEYPAD_TEXT_SIZE = KEYPAD_FONT_SIZE * (7 / 8);
 
-const KEYPAD_LAST_ROW_CHARS = [
-  () => <Text style={styles.keypadDigitText}>.</Text>,
-  () => <Text style={styles.keypadDigitText}>0</Text>,
-  () => (
+const KEYPAD_LAST_ROW_CHARS: Record<string, () => React.JSX.Element> = {
+  ".": () => <Text style={styles.keypadDigitText}>.</Text>,
+  "0": () => <Text style={styles.keypadDigitText}>0</Text>,
+  xmark: () => (
     <FontAwesome6
       name="xmark"
       size={KEYPAD_ICON_SIZE}
       color={KEYPAD_TEXT_COLOR}
     />
   ),
-];
+};
 
-const WeightAdjustView = ({ weight }: { weight: number }) => {
+const MAX_WEIGHT = 9999.99;
+const KEYPAD_DIGITS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
+const WeightAdjustKeypad = ({ setId }: { setId: number }) => {
+  const { concatDigitToWeight } = useActiveWorkoutActions();
+  const digitActions = React.useMemo(
+    () =>
+      Object.fromEntries(
+        KEYPAD_DIGITS.map((digit) => {
+          return [
+            digit,
+            () => concatDigitToWeight({ setId, concatDigit: Number(digit) }),
+          ];
+        })
+      ),
+    []
+  );
+  const behaviors = { ...digitActions };
   return (
-    <View style={styles.rootWrapper}>
-      <View style={styles.weightWrapper}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            flex: 3,
-            gap: 4,
-          }}
-        >
-          <FontAwesome6
-            name="weight-hanging"
-            size={32}
-            color={colorBox.stoneGrey400}
-          />
-          <Text style={styles.weightText}>{weight}</Text>
-        </View>
-        <KeypadButton
-          style={styles.keypadButtonWrapper}
-          contentContainerStyle={styles.keypadButtonContent}
-        >
-          <Text style={styles.keypadDigitText}>KG</Text>
-        </KeypadButton>
-      </View>
-      <View style={styles.keypadWrapper}>
-        <View style={styles.keypadDigitsWrapper}>
-          {KEYPAD_CHARS.map((row, rowIndex) => (
-            <View key={rowIndex} style={styles.keypadRow}>
-              {row.map((char, colIndex) => (
-                <KeypadButton
-                  key={colIndex}
-                  style={styles.keypadButtonWrapper}
-                  contentContainerStyle={styles.keypadButtonContent}
-                >
-                  <Text style={styles.keypadDigitText}>{char}</Text>
-                </KeypadButton>
-              ))}
-            </View>
-          ))}
-          <View style={styles.keypadRow}>
-            {KEYPAD_LAST_ROW_CHARS.map((RowItem, index) => (
+    <View style={styles.keypadWrapper}>
+      <View style={styles.keypadDigitsWrapper}>
+        {KEYPAD_CHARS.map((row, rowIndex) => (
+          <View key={rowIndex} style={styles.keypadRow}>
+            {row.map((char, colIndex) => (
               <KeypadButton
-                key={index}
+                key={colIndex}
+                onPress={behaviors[char]}
                 style={styles.keypadButtonWrapper}
                 contentContainerStyle={styles.keypadButtonContent}
               >
-                <RowItem />
+                <Text style={styles.keypadDigitText}>{char}</Text>
               </KeypadButton>
             ))}
           </View>
-        </View>
-        <View style={styles.keypadUtilitiesWrapper}>
-          <KeypadButton
-            style={styles.keypadPlusButtonWrapper}
-            contentContainerStyle={styles.keypadPlussButtonContent}
-          >
-            <FontAwesome6
-              name="plus"
-              color={colorBox.orangeAccent900}
-              size={KEYPAD_ICON_SIZE}
-            />
-          </KeypadButton>
-          <KeypadButton
-            style={styles.keypadMinusButtonWrapper}
-            contentContainerStyle={styles.keypadMinusButtonContent}
-          >
-            <FontAwesome6
-              name="minus"
-              color={colorBox.orangeAccent900}
-              size={KEYPAD_ICON_SIZE}
-            />
-          </KeypadButton>
-          <KeypadButton
-            style={styles.keypadPlatesButtonWrapper}
-            contentContainerStyle={styles.keypadPlatesButtonContet}
-          >
-            <Text numberOfLines={1} style={styles.platesButtonText}>
-              Plates
-            </Text>
-          </KeypadButton>
-          <KeypadButton
-            style={styles.keypadDoneButtonWrapper}
-            contentContainerStyle={styles.keypadDoneButtonContent}
-          >
-            <Text numberOfLines={1} style={styles.doneButtonText}>
-              Done
-            </Text>
-          </KeypadButton>
+        ))}
+        <View style={styles.keypadRow}>
+          {Object.keys(KEYPAD_LAST_ROW_CHARS).map((key, index) => (
+            <KeypadButton
+              key={index}
+              onPress={behaviors[key]}
+              style={styles.keypadButtonWrapper}
+              contentContainerStyle={styles.keypadButtonContent}
+            >
+              {KEYPAD_LAST_ROW_CHARS[key]()}
+            </KeypadButton>
+          ))}
         </View>
       </View>
+      <View style={styles.keypadUtilitiesWrapper}>
+        <KeypadButton
+          style={styles.keypadPlusButtonWrapper}
+          contentContainerStyle={styles.keypadPlussButtonContent}
+        >
+          <FontAwesome6
+            name="plus"
+            color={colorBox.orangeAccent900}
+            size={KEYPAD_ICON_SIZE}
+          />
+        </KeypadButton>
+        <KeypadButton
+          style={styles.keypadMinusButtonWrapper}
+          contentContainerStyle={styles.keypadMinusButtonContent}
+        >
+          <FontAwesome6
+            name="minus"
+            color={colorBox.orangeAccent900}
+            size={KEYPAD_ICON_SIZE}
+          />
+        </KeypadButton>
+        <KeypadButton
+          style={styles.keypadPlatesButtonWrapper}
+          contentContainerStyle={styles.keypadPlatesButtonContet}
+        >
+          <Text numberOfLines={1} style={styles.platesButtonText}>
+            Plates
+          </Text>
+        </KeypadButton>
+        <KeypadButton
+          style={styles.keypadDoneButtonWrapper}
+          contentContainerStyle={styles.keypadDoneButtonContent}
+        >
+          <Text numberOfLines={1} style={styles.doneButtonText}>
+            Done
+          </Text>
+        </KeypadButton>
+      </View>
+    </View>
+  );
+};
+
+const WeightDisplay = () => {
+  const weightText = useActiveWorkoutStoreSelectedSetText();
+  return (
+    <View style={styles.weightWrapper}>
+      <View style={styles.weightTextWrapper}>
+        <FontAwesome6
+          name="weight-hanging"
+          size={32}
+          color={colorBox.stoneGrey400}
+        />
+        <Text style={styles.weightText}>{weightText}</Text>
+      </View>
+      <KeypadButton
+        style={styles.keypadButtonWrapper}
+        contentContainerStyle={styles.keypadButtonContent}
+      >
+        <Text style={styles.keypadDigitText}>KG</Text>
+      </KeypadButton>
+    </View>
+  );
+};
+
+const WeightAdjustView = ({ setId }: { setId: number }) => {
+  return (
+    <View style={styles.rootWrapper}>
+      <WeightDisplay />
+      <WeightAdjustKeypad setId={setId} />
     </View>
   );
 };
@@ -191,6 +221,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+  },
+  weightTextWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 3,
+    gap: 4,
   },
   weightText: {
     color: colorBox.stoneGrey200,
