@@ -1,7 +1,9 @@
-import { Asset } from "expo-asset";
+import { drizzle } from "drizzle-orm/expo-sqlite";
 import * as FileSystem from "expo-file-system";
 import * as SQLite from "expo-sqlite";
+import { migrate } from "drizzle-orm/expo-sqlite/migrator";
 import { SQLiteDatabase } from "expo-sqlite";
+import migrations from "drizzle/migrations";
 
 async function doesLocalDbExist(dbFileName: string) {
   const filePath = FileSystem.documentDirectory + "SQLite/" + dbFileName;
@@ -37,32 +39,30 @@ async function initDb(db: SQLiteDatabase) {
   // any mutations to the db that relied on cascade deletes to fail
   // (i.e, deleting an exercise row didn't delete related exercise_sets and resistance_sets)
   // hence why I'm enabling it here so that on reloads, constraints are still enforced
-  await db.runAsync("PRAGMA foreign_keys = ON;");
+  await db.execAsync("PRAGMA foreign_keys = ON");
 
-  const tableInfo = await db.getFirstAsync<{ table_count: number }>(
-    "SELECT COUNT(name) as table_count FROM sqlite_master WHERE type=?",
-    ["table"]
-  );
+  // Enable Write-Ahead Logging (WAL) mode which is more efficient for concurrent reads and writes
+  await db.execAsync("PRAGMA journal_mode = WAL");
 
+  const tableInfo = await db.getFirstAsync<{
+    table_count: number;
+  }>("SELECT COUNT(name) as table_count FROM sqlite_master WHERE type=?", [
+    "table",
+  ]);
   const tableCount = tableInfo?.table_count ?? 0;
 
   if (tableCount > 0) {
+    console.log(
+      `database already exists ${db.databasePath}, skipping migrations`
+    );
     return;
   }
 
-  const sqlFile = await Asset.fromModule(
-    require("../assets/wo-scheduler-v3.sql")
-  ).downloadAsync();
+  const drizzleDb = drizzle(db);
+  await migrate(drizzleDb, migrations);
 
-  if (!sqlFile.localUri) {
-    console.error("wo-scheduler-v3.sql asset was not correctly downloaded");
-    return;
-  }
-  const sqlScript = await FileSystem.readAsStringAsync(sqlFile.localUri);
-  await db.execAsync(sqlScript);
   console.log(
-    "%s successfully created and initialized w/ wo-scheduler-v3 schema",
-    db.databasePath
+    `${db.databasePath} successfully created and initialized w/ all necessary sql migrations`
   );
 }
 

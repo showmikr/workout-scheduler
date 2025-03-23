@@ -53,8 +53,10 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { session } = useSession();
   const db = useSQLiteContext();
-  // @ts-expect-error
-  useDrizzleStudio(db); // idk why, but 'db' doesn't match functions expected input type. Drizzle doesn't work anyway now
+
+  // Use drizzle studio to help debug and query on-device db from your browser - might wanna disable for production
+  useDrizzleStudio(db as any); // cast to any b/c compiler complains despite `db` being the correct type
+
   const isWorkoutInProgress = useActiveWorkoutStatus();
 
   // Only require authentication within the (app) group's layout as users

@@ -16,19 +16,18 @@ import { useSQLiteContext } from "expo-sqlite";
 import { twColors } from "@/constants/Colors";
 import { useAppUserId } from "@/context/app-user-id-provider";
 import WeightAdjustView from "@/components/WeightAdjustView";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { daysOfWeek } from "@/db/schema";
 
 export default function TabOneScreen() {
   const appUserId = useAppUserId();
-  const readDb = () => {
-    const results = db.getAllSync<any>(
-      `
-      SELECT title FROM workout WHERE app_user_id = 1
-      UNION
-      SELECT day FROM days_of_week;
-      `,
-      null
-    );
-    console.log(results);
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db);
+  const readDb = async () => {
+    const results = await drizzleDb.select().from(daysOfWeek);
+    results.forEach((item) => {
+      console.log(item);
+    });
   };
 
   type UserFields = {
@@ -43,7 +42,6 @@ export default function TabOneScreen() {
   const colorScheme = useColorScheme();
   const { signOut, session } = useSession();
   const [userData, setUserData] = useState<UserFields | null>(null);
-  const db = useSQLiteContext();
 
   if (!session) {
     throw new Error("session is null despite being in page that requires auth");

@@ -7,7 +7,8 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll",
+    "pull-schema": "ts-node generate-db.ts && npx drizzle-kit pull --config=drizzle-dev.config.ts && rm ./sample.db"
   },
   "jest": {
     "preset": "jest-expo"
@@ -19,7 +20,9 @@
     "@react-navigation/bottom-tabs": "^7.0.0",
     "@react-navigation/native": "^7.0.0",
     "@tanstack/react-query": "^5.35.1",
+    "babel-plugin-inline-import": "^3.0.0",
     "core-js": "^3.37.1",
+    "drizzle-orm": "^0.41.0",
     "expo": "^52.0.11",
     "expo-asset": "~11.0.1",
     "expo-auth-session": "~6.0.0",
@@ -52,9 +55,12 @@
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
-    "@rmp135/sql-ts": "^1.18.1",
+    "@types/better-sqlite3": "^7.6.12",
     "@types/react": "~18.3.12",
+    "better-sqlite3": "^11.9.1",
     "colorjs.io": "^0.5.2",
+    "dotenv": "^16.4.7",
+    "drizzle-kit": "^0.30.5",
     "jest": "^29.2.1",
     "jest-expo": "~52.0.2",
     "prettier": "^3.2.5",

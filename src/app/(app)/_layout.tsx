@@ -10,8 +10,13 @@ export default function AppLayout() {
   if (!session) {
     return <Redirect href="/auth" />;
   }
+
   return (
-    <SQLiteProvider databaseName={`${session.subjectClaim}.db`} onInit={initDb}>
+    <SQLiteProvider
+      databaseName={`${session.subjectClaim}.db`}
+      onInit={initDb}
+      /* options={{ enableChangeListener: true }} */
+    >
       <AppUserIdProvider>
         <Stack screenOptions={{ animation: "default", headerShown: true }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

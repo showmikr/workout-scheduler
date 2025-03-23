@@ -69,12 +69,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "How to use color codegen.md",
+                "file": "How to generate sqlite db file for testing.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "How to use color codegen"
+              "title": "How to generate sqlite db file for testing"
             }
           }
         ],
@@ -97,7 +97,8 @@
             "state": {
               "type": "file-explorer",
               "state": {
-                "sortOrder": "alphabetical"
+                "sortOrder": "alphabetical",
+                "autoReveal": false
               },
               "icon": "lucide-folder-closed",
               "title": "Files"
@@ -221,11 +222,12 @@
   },
   "active": "ecc6668009899ee4",
   "lastOpenFiles": [
+    "Dec 6.md",
+    "How to generate sqlite db file for testing.md",
+    "Dec 8.md",
     "Dec 10.md",
     "How to use color codegen.md",
-    "Dec 8.md",
     "Study Group Platform.md",
-    "New Movies.md",
-    "Dec 6.md"
+    "New Movies.md"
   ]
 }

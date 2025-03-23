@@ -1,186 +1,3 @@
--- ENFORCE FOREIGN KEY CONSTRAINTS --
-PRAGMA foreign_keys = ON;
-
--- CREATE STATEMENTS BEGIN HERE --
-
-CREATE TABLE IF NOT EXISTS "days_of_week" (
-  "day" text PRIMARY KEY
-);
-
-CREATE TABLE IF NOT EXISTS "app_user" (
-  "id" INTEGER PRIMARY KEY,
-  "aws_cognito_sub" uuid UNIQUE NOT NULL,
-  "first_name" text,
-  "last_name" text,
-  "user_name" text,
-  "email" text NOT NULL,
-  "email_verified" boolean NOT NULL DEFAULT false,
-  "image_url" text,
-  "creation_date" text NOT NULL, -- represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ
-  "last_signed_in" text NOT NULL, -- represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ
-  "avg_daily_calorie_goal" int,
-  "bodyweight_goal" real,
-  "user_height" real
-);
-
-CREATE TABLE IF NOT EXISTS "exercise_type" (
-  "id" INTEGER PRIMARY KEY,
-  "title" text NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS "exercise_equipment" (
-  "id" INTEGER PRIMARY KEY,
-  "title" text UNIQUE NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS "body_part" (
-  "id" INTEGER PRIMARY KEY,
-  "title" text UNIQUE NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS "workout_tag" (
-  "id" INTEGER PRIMARY KEY,
-  "app_user_id" bigint NOT NULL,
-  "title" text UNIQUE NOT NULL,
-  FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "link_tag_workout" (
-  "id" INTEGER PRIMARY KEY,
-  "workout_tag_id" bigint NOT NULL,
-  "workout_id" bigint NOT NULL,
-  FOREIGN KEY ("workout_id") REFERENCES "workout" ("id"),
-  FOREIGN KEY ("workout_tag_id") REFERENCES "workout_tag" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "workout" (
-  "id" INTEGER PRIMARY KEY,
-  "app_user_id" bigint NOT NULL,
-  "title" text NOT NULL,
-  "list_order" int NOT NULL,
-  "last_session" text, -- represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ
-  FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "workout_days" (
-  "id" INTEGER PRIMARY KEY,
-  "workout_id" bigint,
-  "day" text NOT NULL,
-  FOREIGN KEY ("workout_id") REFERENCES "workout" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "exercise_class" (
-  "id" INTEGER PRIMARY KEY,
-  "app_user_id" bigint NOT NULL,
-  "exercise_type_id" bigint NOT NULL,
-  "exercise_equipment_id" bigint NOT NULL,
-  "body_part_id" bigint,
-  "is_archived" boolean NOT NULL DEFAULT false,
-  "title" text NOT NULL,
-  FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY ("exercise_type_id") REFERENCES "exercise_type" ("id"),
-  FOREIGN KEY ("exercise_equipment_id") REFERENCES "exercise_equipment" ("id"),
-  FOREIGN KEY ("body_part_id") REFERENCES "body_part" ("id")
-);
-
-CREATE TABLE IF NOT EXISTS "exercise" (
-  "id" INTEGER PRIMARY KEY,
-  "exercise_class_id" bigint NOT NULL,
-  "workout_id" bigint NOT NULL,
-  "list_order" int NOT NULL,
-  "initial_weight" real,
-  "notes" text,
-  FOREIGN KEY ("workout_id") REFERENCES "workout" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY ("exercise_class_id") REFERENCES "exercise_class" ("id") ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "exercise_set" (
-  "id" INTEGER PRIMARY KEY,
-  "exercise_id" bigint NOT NULL,
-  "title" text,
-  "list_order" int NOT NULL,
-  "reps" int NOT NULL DEFAULT 1,
-  "rest_time" int NOT NULL DEFAULT 0,
-  FOREIGN KEY ("exercise_id") REFERENCES "exercise" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "resistance_set" (
-  "id" INTEGER PRIMARY KEY,
-  "exercise_set_id" bigint UNIQUE NOT NULL,
-  "total_weight" real,
-  FOREIGN KEY ("exercise_set_id") REFERENCES "exercise_set" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "cardio_set" (
-  "id" INTEGER PRIMARY KEY,
-  "exercise_set_id" bigint UNIQUE NOT NULL,
-  "target_distance" real,
-  "target_time" int,
-  FOREIGN KEY ("exercise_set_id") REFERENCES "exercise_set" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "workout_session" (
-  "id" INTEGER PRIMARY KEY,
-  "app_user_id" bigint NOT NULL,
-  "title" text NOT NULL DEFAULT 'Custom Workout',
-  "started_on" text NOT NULL, -- represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ
-  "ended_on" text NOT NULL, -- represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ
-  "calories" int,
-  FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "exercise_session" (
-  "id" INTEGER PRIMARY KEY,
-  "workout_session_id" bigint NOT NULL,
-  "exercise_class_id" bigint NOT NULL,
-  FOREIGN KEY ("workout_session_id") REFERENCES "workout_session" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY ("exercise_class_id") REFERENCES "exercise_class" ("id") ON DELETE SET NULL
-);
-
-CREATE TABLE IF NOT EXISTS "set_session" (
-  "id" INTEGER PRIMARY KEY,
-  "exercise_session_id" bigint NOT NULL,
-  "reps" int NOT NULL DEFAULT 1,
-  "rest_time" int NOT NULL DEFAULT 0,
-  "completed" boolean NOT NULL DEFAULT false,
-  "set_type" int NOT NULL, -- 1 = resistance, 2 = cardio
-  "total_weight" real,
-  "target_distance" real,
-  "target_time" int,
-  "actual_distance" real,
-  "actual_time" int,
-  CHECK (
-    (set_type = 1 AND total_weight IS NOT NULL)
-    OR
-    (set_type = 2 AND total_weight IS NULL)
-  ),
-  FOREIGN KEY ("exercise_session_id") REFERENCES "exercise_session" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "user_bodyweight" (
-  "id" INTEGER PRIMARY KEY,
-  "app_user_id" bigint NOT NULL,
-  "weight" real NOT NULL,
-  "date" text NOT NULL, -- represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ
-  FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "pr_history" (
-  "id" INTEGER PRIMARY KEY,
-  "exercise_class_id" bigint NOT NULL,
-  "weight" real,
-  "reps" int,
-  "distance" real,
-  "time" int,
-  "date" text NOT NULL, -- represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ
-  FOREIGN KEY ("exercise_class_id") REFERENCES "exercise_class" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- END OF CREATE STATEMENTS --
-
-
--- INSERTS BEGIN HERE --
-
 INSERT INTO days_of_week values 
   ('Monday'), 
   ('Tuesday'), 
@@ -189,21 +6,25 @@ INSERT INTO days_of_week values
   ('Friday'), 
   ('Saturday'), 
   ('Sunday');
+--> statement-breakpoint
 
 INSERT INTO app_user (aws_cognito_sub, first_name, last_name, user_name, email, email_verified, image_url, creation_date, last_signed_in, avg_daily_calorie_goal, bodyweight_goal, user_height)
   VALUES
 	('c8bf7e34-7dcf-11ee-b962-0242ac120002', 'David', 'Shcherbina', 'kalashnikov', 'davidshcherbina@gmail.com', true, null, '2022-05-07T14:12:34.000Z', '2023-11-07T19:12:34.000Z', 150, 79.37866, 1.8288);
+--> statement-breakpoint
 
 INSERT INTO workout (app_user_id, title, list_order, last_session)
     VALUES
     (1, 'Upperbody',                1,  '2023-11-28T22:40:00.000Z'),
     (1, 'Legday workout + core',    2,  '2023-12-02T17:15:00.000Z'),
     (1, 'Warmup Stretches',         3,  '2022-11-28T22:40:00.000Z');
+--> statement-breakpoint
 
 INSERT INTO workout_tag (app_user_id, title)
     VALUES
     (1, 'Upper Body'),
     (1, 'Lower Body');
+--> statement-breakpoint
 
 INSERT INTO link_tag_workout (workout_tag_id, workout_id)
     VALUES
@@ -211,11 +32,13 @@ INSERT INTO link_tag_workout (workout_tag_id, workout_id)
     (1, 3),
     (2, 2),
     (2, 3);
+--> statement-breakpoint
 
 INSERT INTO exercise_type (title)
     VALUES
     ('Resistance'),
     ('Cardiovascular');
+--> statement-breakpoint
 
 INSERT INTO exercise_equipment (title)
     VALUES
@@ -224,6 +47,7 @@ INSERT INTO exercise_equipment (title)
     ('Machine'),
     ('Bodyweight'),
     ('Other');
+--> statement-breakpoint
 
 INSERT INTO body_part (title)
     VALUES
@@ -235,6 +59,7 @@ INSERT INTO body_part (title)
     ('Core'),
     ('Full Body'),
     ('Other');
+--> statement-breakpoint
 
 INSERT INTO exercise_class (app_user_id, exercise_type_id, exercise_equipment_id, body_part_id, title)
     VALUES
@@ -252,6 +77,7 @@ INSERT INTO exercise_class (app_user_id, exercise_type_id, exercise_equipment_id
     (1, 2, 4, 8, 'Jog'),
     (1, 2, 4, 8, 'Stretches'),
     (1, 1, 3, 4, 'Leg Press');
+--> statement-breakpoint
 
 INSERT INTO pr_history (weight, reps, distance, time, date, exercise_class_id)
     VALUES
@@ -271,6 +97,7 @@ INSERT INTO pr_history (weight, reps, distance, time, date, exercise_class_id)
     (179.169, 1, NULL, NULL, '2023-11-07T19:12:34.000Z', 10), -- should be Deadlift exercise_class
 
     (13.60777, 12, NULL, NULL, '2022-11-07T14:12:34.000Z', 4); -- should be Bicep Curls exercise_class
+--> statement-breakpoint
 
 INSERT INTO exercise (exercise_class_id, workout_id, list_order, initial_weight, notes)
     VALUES
@@ -287,6 +114,7 @@ INSERT INTO exercise (exercise_class_id, workout_id, list_order, initial_weight,
     (11,  2,  5,  45,    NULL),
     (12,  2,  6,  NULL,  NULL),
     (13,  3,  1,  NULL,  NULL);
+--> statement-breakpoint
 
 INSERT INTO "exercise_set" (exercise_id, title, list_order, reps, rest_time)
     VALUES
@@ -311,6 +139,7 @@ INSERT INTO "exercise_set" (exercise_id, title, list_order, reps, rest_time)
 
     (12,    'Cool-Down',    1,  1,        0),
     (13,    '',             1,  1,        0);
+--> statement-breakpoint
 
 INSERT INTO resistance_set (exercise_set_id, total_weight)
     VALUES
@@ -328,11 +157,13 @@ INSERT INTO resistance_set (exercise_set_id, total_weight)
     (12,    254.0117),
     (13,    61.23497),
     (14,    102.0583);
+--> statement-breakpoint
 
 INSERT INTO cardio_set (exercise_set_id, target_distance, target_time)
     VALUES
     (12,    NULL,   500),
     (13,    NULL,   180);
+--> statement-breakpoint
 
 INSERT INTO user_bodyweight (app_user_id, weight, date)
     VALUES
@@ -557,15 +388,18 @@ INSERT INTO user_bodyweight (app_user_id, weight, date)
     (1, 72.84693,'2024-04-12T07:34:12'),
     (1, 73.75412,'2024-04-20T07:34:12'),
     (1, 75.1149,'2024-04-22T07:34:12');
+--> statement-breakpoint
 
 INSERT INTO workout_days (workout_id, day)
     VALUES
     (1,'Tuesday'),
     (2,'Saturday');
+--> statement-breakpoint
 
 
 -- Create temporary table for dates
 CREATE TEMPORARY TABLE dates(date TEXT);
+--> statement-breakpoint
 
 -- Insert dates for the past year
 WITH RECURSIVE date_range(date) AS (
@@ -577,6 +411,7 @@ WITH RECURSIVE date_range(date) AS (
 )
 INSERT INTO dates(date)
 SELECT date FROM date_range;
+--> statement-breakpoint
 
 CREATE TEMPORARY TABLE workout_sessions(
     app_user_id INTEGER,
@@ -585,6 +420,7 @@ CREATE TEMPORARY TABLE workout_sessions(
     ended_on TEXT,
     calories INTEGER
 );
+--> statement-breakpoint
 INSERT INTO workout_sessions
 SELECT
     1 as app_user_id,
@@ -594,6 +430,7 @@ SELECT
     80 + ABS(random()) % 421 as calories
 FROM dates
 LIMIT 200;
+--> statement-breakpoint
 
 
 CREATE TEMPORARY TABLE exercise_sessions(
@@ -601,6 +438,7 @@ CREATE TEMPORARY TABLE exercise_sessions(
     exercise_class_id INTEGER,
     exercise_order INTEGER
 );
+--> statement-breakpoint
 INSERT INTO exercise_sessions
 SELECT
     ws.rowid as workout_session_id,
@@ -610,6 +448,7 @@ FROM workout_sessions ws
 CROSS JOIN exercise_class ec
 WHERE ec.exercise_type_id = 1
 AND ec.app_user_id = 1;
+--> statement-breakpoint
 
 CREATE TEMPORARY TABLE set_sessions(
     workout_session_id INTEGER,
@@ -621,6 +460,7 @@ CREATE TEMPORARY TABLE set_sessions(
     total_weight REAL,
     set_order INTEGER
 );
+--> statement-breakpoint
 INSERT INTO set_sessions
 SELECT
     es.workout_session_id,
@@ -633,6 +473,7 @@ SELECT
     ROW_NUMBER() OVER (PARTITION BY es.workout_session_id, es.exercise_class_id ORDER BY random()) as set_order
 FROM exercise_sessions es
 CROSS JOIN (SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5) nums;
+--> statement-breakpoint
 
 -- Insert workout sessions
 INSERT INTO workout_session (app_user_id, title, started_on, ended_on, calories)
@@ -651,12 +492,14 @@ SELECT
     ended_on,
     calories
 FROM workout_sessions;
+--> statement-breakpoint
 
 -- Insert exercise sessions
 INSERT INTO exercise_session (workout_session_id, exercise_class_id)
 SELECT workout_session_id, exercise_class_id
 FROM exercise_sessions
 WHERE exercise_order <= 3 + ABS(random()) % 3;
+--> statement-breakpoint
 
 -- Insert set sessions
 INSERT INTO set_session (exercise_session_id, reps, rest_time, completed, set_type, total_weight)
@@ -670,10 +513,13 @@ SELECT
 FROM set_sessions ss
 JOIN exercise_session es ON ss.workout_session_id = es.workout_session_id AND ss.exercise_class_id = es.exercise_class_id
 WHERE ss.set_order <= 3 + ABS(random()) % 3;
+--> statement-breakpoint
 
 -- Drop temporary tables
 DROP TABLE dates;
+--> statement-breakpoint
 DROP TABLE workout_sessions;
+--> statement-breakpoint
 DROP TABLE exercise_sessions;
+--> statement-breakpoint
 DROP TABLE set_sessions;
-
