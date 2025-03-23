@@ -13,7 +13,7 @@ if (process.env.EXPO_PUBLIC_ENABLE_FAKE_AUTH === undefined) {
 }
 
 const enableFakeAuth: boolean =
-  process.env.EXPO_PUBLIC_ENABLE_FAKE_AUTH === "true";
+  process.env.EXPO_PUBLIC_ENABLE_FAKE_AUTH.toLowerCase() === "true";
 
 const AWS_COGNITO_ACCESS_TOKEN_KEYWORD = "accessToken";
 const AWS_COGNITO_REFRESH_TOKEN_KEYWORD = "refreshToken";
