@@ -7,6 +7,14 @@ import { useSQLiteContext } from "expo-sqlite";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { BottomTabBar } from "@react-navigation/bottom-tabs";
 import { ThemedText } from "@/components/Themed";
+import { StyleSheet } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import {
+  useActiveWorkoutActions,
+  useActiveWorkoutElapsedTime,
+  useActiveWorkoutStatus,
+  useActiveWorkoutTitle,
+} from "@/context/active-workout-provider";
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
@@ -17,22 +25,9 @@ function TabBarIcon(props: {
 }) {
   return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
 }
-import { StyleSheet } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
-import {
-  useActiveWorkoutActions,
-  useActiveWorkoutElapsedTime,
-  useActiveWorkoutStatus,
-  useActiveWorkoutTitle,
-} from "@/context/active-workout-provider";
 
-const WorkoutMiniPlayer = ({
-  title,
-  onPress,
-}: {
-  title: string;
-  onPress: () => void;
-}) => {
+const WorkoutMiniPlayer = ({ onPress }: { onPress: () => void }) => {
+  const title = useActiveWorkoutTitle();
   const { toggleWorkoutTimer } = useActiveWorkoutActions();
   const elapsedTime = useActiveWorkoutElapsedTime();
   return (
@@ -61,7 +56,6 @@ export default function TabLayout() {
   // @ts-expect-error
   useDrizzleStudio(db); // idk why, but 'db' doesn't match functions expected input type. Drizzle doesn't work anyway now
   const isWorkoutInProgress = useActiveWorkoutStatus();
-  const activeWorkoutTitle = useActiveWorkoutTitle();
 
   // Only require authentication within the (app) group's layout as users
   // need to be able to access the (auth) group and sign in again.
@@ -82,7 +76,6 @@ export default function TabLayout() {
             <View>
               {isWorkoutInProgress && (
                 <WorkoutMiniPlayer
-                  title={activeWorkoutTitle}
                   onPress={() => {
                     router.navigate("/active-workout");
                   }}
