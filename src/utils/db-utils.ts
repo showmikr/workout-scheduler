@@ -4,12 +4,9 @@ import * as SQLite from "expo-sqlite";
 import { SQLiteDatabase } from "expo-sqlite";
 
 async function doesLocalDbExist(dbFileName: string) {
-  const dbExists = (
-    await FileSystem.getInfoAsync(
-      FileSystem.documentDirectory + "SQLite/" + dbFileName
-    )
-  ).exists;
-  return dbExists;
+  const filePath = FileSystem.documentDirectory + "SQLite/" + dbFileName;
+  const fileInfo = await FileSystem.getInfoAsync(filePath);
+  return fileInfo.exists;
 }
 
 /* deletes the database.
