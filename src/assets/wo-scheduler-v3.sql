@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS "workout" (
 CREATE TABLE IF NOT EXISTS "workout_days" (
   "id" INTEGER PRIMARY KEY,
   "workout_id" bigint,
-  "day" days_of_week NOT NULL,
+  "day" text NOT NULL,
   FOREIGN KEY ("workout_id") REFERENCES "workout" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
