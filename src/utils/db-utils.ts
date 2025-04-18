@@ -5,6 +5,8 @@ import { migrate } from "drizzle-orm/expo-sqlite/migrator";
 import { SQLiteDatabase } from "expo-sqlite";
 import migrations from "drizzle/migrations";
 
+type DrizzleDatabase = ReturnType<typeof drizzle>;
+
 async function doesLocalDbExist(dbFileName: string) {
   const filePath = FileSystem.documentDirectory + "SQLite/" + dbFileName;
   const fileInfo = await FileSystem.getInfoAsync(filePath);
@@ -67,3 +69,4 @@ async function initDb(db: SQLiteDatabase) {
 }
 
 export { deleteDB, initDb };
+export type { DrizzleDatabase };

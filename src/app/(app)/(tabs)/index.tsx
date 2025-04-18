@@ -13,9 +13,11 @@ import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
 import { ActivityCard } from "@/components/ActivityCard";
 import { figmaColors } from "@/constants/Colors";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { getWorkoutSessions } from "@/hooks/workout-sessions";
 
 type WorkoutSession = {
-  sessionId: number;
+  id: number;
   title: string;
   calories: number;
   elapsedTime: number;
@@ -76,6 +78,7 @@ will be NON-NULL - this means no more defensive 'data?.property' accesses from n
 */
 function useGraphData() {
   const myDB = useSQLiteContext();
+  const drizzleDb = drizzle(myDB);
   const [graphData, setGraphData] = useState<GraphData | null>(null);
 
   // If our graph data is already loaded, let 'em have it.
@@ -85,18 +88,7 @@ function useGraphData() {
 
   // Otherwise, asynchronously load it all up
   Promise.all([
-    myDB.getAllAsync<any>( // TODO: update this query to match the schema
-      `
-      SELECT 
-        ws.id,
-        ws.title,
-        unixepoch(ws.ended_on) - unixepoch(ws.started_on) AS elapsed_time,
-        ws.calories,
-        ws.started_on AS date
-      FROM workout_session AS ws
-      WHERE ws.app_user_id = 1
-      `
-    ),
+    getWorkoutSessions(drizzleDb),
     myDB.getAllAsync<any>(
       "SELECT * FROM user_bodyweight AS ubw ORDER BY ubw.date"
     ),
@@ -116,16 +108,14 @@ function useGraphData() {
       `
     ),
   ])
-    .then(([calorieRows, bodyWeightRows, userProfile, prRows]) => {
+    .then(([workoutSessionRows, bodyWeightRows, userProfile, prRows]) => {
       // Grab workout session calorie data
-      const caloriesResults = calorieRows.map((row) => {
-        const { title, calories, elapsed_time, date, id } = row;
+      const workoutSessions = workoutSessionRows.map((row) => {
+        const { calories, startDate } = row;
         const readData: WorkoutSession = {
-          sessionId: id,
-          title: title,
-          calories: calories,
-          elapsedTime: elapsed_time,
-          date: new Date(date),
+          ...row,
+          calories: calories ?? 0,
+          date: startDate,
         };
         return readData;
       });
@@ -177,7 +167,7 @@ function useGraphData() {
 
       // Set all state in one go
       setGraphData({
-        workoutSessionData: caloriesResults,
+        workoutSessionData: workoutSessions,
         bodyWeightData: bodyWeightResults,
         userProfileData: userProfileResult,
         personalRecordData: prHistoryResults,
@@ -652,12 +642,13 @@ export default function SummaryPage() {
   return (
     <SectionList
       initialNumToRender={4}
-      sections={groupActivityCards(
-        workoutSessionData
-          .filter((obj) => obj.date >= selectedTimeRange)
-          .slice()
-          .reverse()
-      )}
+      /* TODO
+      sections at the moment display ALL workout sessions,
+      but we'll ultimately want to modify this to show workouts
+      from JUST the last month, the last week, and so on. We want to
+      select a specific time range behind the present.
+      */
+      sections={groupActivityCards(workoutSessionData)}
       renderItem={({ item }) => (
         <ActivityCard
           title={item.title}
@@ -670,7 +661,7 @@ export default function SummaryPage() {
           <Text style={stats.viewTitle}>{title}</Text>
         </ThemedView>
       )}
-      keyExtractor={(item) => item.sessionId.toString()}
+      keyExtractor={(item) => item.id.toString()}
       // ListHeaderComponent={
       //   <Graph
       //     graphType
