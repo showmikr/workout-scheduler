@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS "app_user" (
   "email" text NOT NULL,
   "email_verified" boolean NOT NULL DEFAULT false,
   "image_url" text,
-  "creation_date" text NOT NULL, -- (represents ISO Date as string)
-  "last_signed_in" text NOT NULL, -- (represents ISO Date as string)
+  "creation_date" text NOT NULL, -- represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ
+  "last_signed_in" text NOT NULL, -- represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ
   "avg_daily_calorie_goal" int,
   "bodyweight_goal" real,
   "user_height" real
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS "workout" (
   "app_user_id" bigint NOT NULL,
   "title" text NOT NULL,
   "list_order" int NOT NULL,
-  "last_session" text, -- (represents ISO Date as string)
+  "last_session" text, -- represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -123,8 +123,8 @@ CREATE TABLE IF NOT EXISTS "workout_session" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
   "title" text NOT NULL DEFAULT 'Custom Workout',
-  "started_on" text NOT NULL, -- (represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ)
-  "ended_on" text NOT NULL, -- (represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ)
+  "started_on" text NOT NULL, -- represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ
+  "ended_on" text NOT NULL, -- represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ
   "calories" int,
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS "user_bodyweight" (
   "id" INTEGER PRIMARY KEY,
   "app_user_id" bigint NOT NULL,
   "weight" real NOT NULL,
-  "date" text NOT NULL, -- (represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ)
+  "date" text NOT NULL, -- represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ
   FOREIGN KEY ("app_user_id") REFERENCES "app_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS "pr_history" (
   "reps" int,
   "distance" real,
   "time" int,
-  "date" text NOT NULL, -- (represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ)
+  "date" text NOT NULL, -- represents ISO 8601 date YYYY-MM-DDTHH:MM:SS.SSSZ
   FOREIGN KEY ("exercise_class_id") REFERENCES "exercise_class" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
