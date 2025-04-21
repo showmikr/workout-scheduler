@@ -2,7 +2,6 @@ import {
   exerciseEnums,
   ResistanceSection,
   UnifiedResistanceSet,
-  WorkoutStats,
 } from "@/utils/exercise-types";
 import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
 import { useQuery } from "@tanstack/react-query";
@@ -14,18 +13,18 @@ const getResistanceSets = async (
 ): Promise<UnifiedResistanceSet[]> => {
   return db.getAllAsync<UnifiedResistanceSet>(
     `
-        SELECT 
-          exercise_set.id AS exercise_set_id,
-          exercise_set.list_order,
-          exercise_set.reps,
-          exercise_set.rest_time,
-          exercise_set.title,
-          resistance_set.id AS resistance_set_id,
-          resistance_set.total_weight
-        FROM exercise_set 
-        INNER JOIN resistance_set ON exercise_set.id = resistance_set.exercise_set_id 
-        WHERE exercise_set.exercise_id = ?
-        `,
+    SELECT 
+      exercise_set.id AS exercise_set_id,
+      exercise_set.list_order,
+      exercise_set.reps,
+      exercise_set.rest_time,
+      exercise_set.title,
+      resistance_set.exercise_set_id AS resistance_set_id,
+      resistance_set.total_weight
+    FROM exercise_set 
+    INNER JOIN resistance_set ON exercise_set.id = resistance_set.exercise_set_id 
+    WHERE exercise_set.exercise_id = ?
+    `,
     exerciseId
   );
 };
@@ -89,7 +88,7 @@ const useWorkoutSection = <T = WorkoutSection>(
 
 const useWorkoutStats = (workoutId: number) => {
   const selectStats = useCallback(
-    (data: WorkoutStats) => ({
+    (data: WorkoutSection) => ({
       totalExercises: data.totalExercises,
       totalSets: data.totalSets,
     }),

@@ -118,9 +118,8 @@ export const exerciseSet = sqliteTable("exercise_set", {
 });
 
 export const resistanceSet = sqliteTable("resistance_set", {
-  id: integer().primaryKey(),
   exerciseSetId: integer("exercise_set_id")
-    .notNull()
+    .primaryKey()
     .references(() => exerciseSet.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
@@ -129,9 +128,8 @@ export const resistanceSet = sqliteTable("resistance_set", {
 });
 
 export const cardioSet = sqliteTable("cardio_set", {
-  id: integer().primaryKey(),
   exerciseSetId: integer("exercise_set_id")
-    .notNull()
+    .primaryKey()
     .references(() => exerciseSet.id, {
       onDelete: "cascade",
       onUpdate: "cascade",

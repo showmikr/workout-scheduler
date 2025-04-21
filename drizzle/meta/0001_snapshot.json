@@ -1,6 +1,6 @@
 {
-  "id": "84003ea7-44f4-45b6-bdd9-6f7f5cafb92e",
-  "prevId": "0d082e9e-7d96-4ccb-b065-e1827a733354",
+  "id": "53319102-cb73-4ff4-8dc6-59532acf7da8",
+  "prevId": "24d6b5f6-2b48-40a9-93e1-28e47ceefce0",
   "version": "6",
   "dialect": "sqlite",
   "tables": {
@@ -141,17 +141,10 @@
     "cardio_set": {
       "name": "cardio_set",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
         "exercise_set_id": {
           "name": "exercise_set_id",
           "type": "integer",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
@@ -690,17 +683,10 @@
     "resistance_set": {
       "name": "resistance_set",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
         "exercise_set_id": {
           "name": "exercise_set_id",
           "type": "integer",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },

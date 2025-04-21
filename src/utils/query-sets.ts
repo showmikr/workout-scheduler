@@ -14,7 +14,7 @@ const getCardioSets = async (
       exercise_set.reps,
       exercise_set.rest_time,
       exercise_set.title,
-      cardio_set.id AS cardio_set_id,
+      cardio_set.exercise_set_id AS cardio_set_id,
       cardio_set.target_distance,
       cardio_set.target_time
     FROM exercise_set 

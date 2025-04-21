@@ -16,7 +16,12 @@ import { Workout } from "@/utils/exercise-types";
  * @returns Wrapper Component for a workout card
  */
 const WorkoutCardWrapper = (props: { workout: Workout }) => {
-  const { data: workoutStats } = useWorkoutStats(props.workout.id);
+  const { data: workoutStats, error } = useWorkoutStats(props.workout.id);
+
+  if (error) {
+    console.error("Error fetching workout stats:", error);
+  }
+
   if (!workoutStats) {
     return null;
   }
@@ -26,7 +31,11 @@ const WorkoutCardWrapper = (props: { workout: Workout }) => {
 const LineSeparator = () => <View style={styles.lineSeparator} />;
 
 export default function TabTwoScreen() {
-  const { data: workouts } = useWorkouts();
+  const { data: workouts, error } = useWorkouts();
+
+  if (error) {
+    console.error("Error fetching workouts:", error);
+  }
 
   if (!workouts) {
     return (

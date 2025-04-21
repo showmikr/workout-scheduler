@@ -107,13 +107,13 @@ export const exerciseRelations = relations(exercise, ({ one, many }) => ({
   exerciseSets: many(exerciseSet),
 }));
 
-export const exerciseSetRelations = relations(exerciseSet, ({ one, many }) => ({
+export const exerciseSetRelations = relations(exerciseSet, ({ one }) => ({
   exercise: one(exercise, {
     fields: [exerciseSet.exerciseId],
     references: [exercise.id],
   }),
-  resistanceSets: many(resistanceSet),
-  cardioSets: many(cardioSet),
+  resistanceSets: one(resistanceSet),
+  cardioSets: one(cardioSet),
 }));
 
 export const resistanceSetRelations = relations(resistanceSet, ({ one }) => ({

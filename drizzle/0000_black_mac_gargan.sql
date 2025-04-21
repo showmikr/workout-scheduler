@@ -21,8 +21,7 @@ CREATE TABLE `body_part` (
 );
 --> statement-breakpoint
 CREATE TABLE `cardio_set` (
-	`id` integer PRIMARY KEY NOT NULL,
-	`exercise_set_id` integer NOT NULL,
+	`exercise_set_id` integer PRIMARY KEY NOT NULL,
 	`target_distance` real,
 	`target_time` integer,
 	FOREIGN KEY (`exercise_set_id`) REFERENCES `exercise_set`(`id`) ON UPDATE cascade ON DELETE cascade
@@ -101,8 +100,7 @@ CREATE TABLE `pr_history` (
 );
 --> statement-breakpoint
 CREATE TABLE `resistance_set` (
-	`id` integer PRIMARY KEY NOT NULL,
-	`exercise_set_id` integer NOT NULL,
+	`exercise_set_id` integer PRIMARY KEY NOT NULL,
 	`total_weight` real,
 	FOREIGN KEY (`exercise_set_id`) REFERENCES `exercise_set`(`id`) ON UPDATE cascade ON DELETE cascade
 );

@@ -50,7 +50,7 @@ const addResistanceSet = async ({
       `
       INSERT INTO resistance_set (exercise_set_id, total_weight)
       VALUES (?, 0)
-      RETURNING id AS resistance_set_id, total_weight;;
+      RETURNING exercise_set_id AS resistance_set_id, total_weight;
       `,
       [exerciseSetId]
     );

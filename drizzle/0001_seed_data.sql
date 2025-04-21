@@ -106,8 +106,7 @@ INSERT INTO exercise (exercise_class_id, workout_id, list_order, initial_weight,
     (13,  3,  1,  NULL,  NULL);
 --> statement-breakpoint
 
-INSERT INTO "exercise_set" (exercise_id, title, list_order, reps, rest_time)
-    VALUES
+INSERT INTO exercise_set (exercise_id, title, list_order, reps, rest_time) VALUES
     
     (1,     'Warm-Up',      1,  5,      180),
     (1,     'Main Set',     2,  12,     180),
@@ -127,12 +126,12 @@ INSERT INTO "exercise_set" (exercise_id, title, list_order, reps, rest_time)
     (11,    'Warm-Up',      1,  5,      180),
     (11,    'Main Set',     2,  12,     180),
 
+    -- Start of cardio sets
     (12,    'Cool-Down',    1,  1,        0),
     (13,    '',             1,  1,        0);
 --> statement-breakpoint
 
-INSERT INTO resistance_set (exercise_set_id, total_weight)
-    VALUES
+INSERT INTO resistance_set (exercise_set_id, total_weight) VALUES
     (1,     56.69905),
     (2,     79.37866),
     (3,     73.48196),
@@ -151,8 +150,8 @@ INSERT INTO resistance_set (exercise_set_id, total_weight)
 
 INSERT INTO cardio_set (exercise_set_id, target_distance, target_time)
     VALUES
-    (12,    NULL,   500),
-    (13,    NULL,   180);
+    (15,    NULL,   500),
+    (16,    NULL,   180);
 --> statement-breakpoint
 
 INSERT INTO user_bodyweight (app_user_id, weight, date)
