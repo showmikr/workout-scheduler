@@ -10,7 +10,7 @@ dotenv.config({ path: ".env.local" });
 const dbFilePath = process.env.DB_FILE_NAME;
 if (!dbFilePath) {
   throw new Error(
-    "Failed to read `DB_FILE_PATH` environment variable specified in `.env.local`"
+    "Failed to read `DB_FILE_NAME` environment variable specified in `.env.local`"
   );
 }
 
