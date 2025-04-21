@@ -1,13 +1,3 @@
-INSERT INTO days_of_week values 
-  ('Monday'), 
-  ('Tuesday'), 
-  ('Wednesday'), 
-  ('Thursday'), 
-  ('Friday'), 
-  ('Saturday'), 
-  ('Sunday');
---> statement-breakpoint
-
 INSERT INTO app_user (aws_cognito_sub, first_name, last_name, user_name, email, email_verified, image_url, creation_date, last_signed_in, avg_daily_calorie_goal, bodyweight_goal, user_height)
   VALUES
 	('c8bf7e34-7dcf-11ee-b962-0242ac120002', 'David', 'Shcherbina', 'kalashnikov', 'davidshcherbina@gmail.com', true, null, '2022-05-07T14:12:34.000Z', '2023-11-07T19:12:34.000Z', 150, 79.37866, 1.8288);
@@ -389,13 +379,6 @@ INSERT INTO user_bodyweight (app_user_id, weight, date)
     (1, 73.75412,'2024-04-20T07:34:12'),
     (1, 75.1149,'2024-04-22T07:34:12');
 --> statement-breakpoint
-
-INSERT INTO workout_days (workout_id, day)
-    VALUES
-    (1,'Tuesday'),
-    (2,'Saturday');
---> statement-breakpoint
-
 
 -- Create temporary table for dates
 CREATE TEMPORARY TABLE dates(date TEXT);

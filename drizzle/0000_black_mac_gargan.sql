@@ -28,10 +28,6 @@ CREATE TABLE `cardio_set` (
 	FOREIGN KEY (`exercise_set_id`) REFERENCES `exercise_set`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `days_of_week` (
-	`day` text PRIMARY KEY NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE `exercise` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`exercise_class_id` integer NOT NULL,
@@ -141,13 +137,6 @@ CREATE TABLE `workout` (
 	`list_order` integer NOT NULL,
 	`last_session` text,
 	FOREIGN KEY (`app_user_id`) REFERENCES `app_user`(`id`) ON UPDATE cascade ON DELETE cascade
-);
---> statement-breakpoint
-CREATE TABLE `workout_days` (
-	`id` integer PRIMARY KEY NOT NULL,
-	`workout_id` integer,
-	`day` text NOT NULL,
-	FOREIGN KEY (`workout_id`) REFERENCES `workout`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `workout_session` (

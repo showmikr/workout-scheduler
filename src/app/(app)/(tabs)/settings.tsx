@@ -17,14 +17,14 @@ import { twColors } from "@/constants/Colors";
 import { useAppUserId } from "@/context/app-user-id-provider";
 import WeightAdjustView from "@/components/WeightAdjustView";
 import { drizzle } from "drizzle-orm/expo-sqlite";
-import { daysOfWeek } from "@/db/schema";
+import { appUser } from "@/db/schema";
 
 export default function TabOneScreen() {
   const appUserId = useAppUserId();
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db);
   const readDb = async () => {
-    const results = await drizzleDb.select().from(daysOfWeek);
+    const results = await drizzleDb.select().from(appUser);
     results.forEach((item) => {
       console.log(item);
     });

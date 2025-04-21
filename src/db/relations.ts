@@ -4,7 +4,6 @@ import {
   workoutTag,
   linkTagWorkout,
   workout,
-  workoutDays,
   bodyPart,
   exerciseClass,
   exerciseEquipment,
@@ -53,15 +52,7 @@ export const workoutRelations = relations(workout, ({ one, many }) => ({
     fields: [workout.appUserId],
     references: [appUser.id],
   }),
-  workoutDays: many(workoutDays),
   exercises: many(exercise),
-}));
-
-export const workoutDaysRelations = relations(workoutDays, ({ one }) => ({
-  workout: one(workout, {
-    fields: [workoutDays.workoutId],
-    references: [workout.id],
-  }),
 }));
 
 export const exerciseClassRelations = relations(

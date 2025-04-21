@@ -6,10 +6,6 @@ import {
   real,
 } from "drizzle-orm/sqlite-core";
 
-export const daysOfWeek = sqliteTable("days_of_week", {
-  day: text().primaryKey(),
-});
-
 export const appUser = sqliteTable("app_user", {
   id: integer().primaryKey(),
   awsCognitoSub: numeric("aws_cognito_sub", { mode: "string" })
@@ -74,15 +70,6 @@ export const workout = sqliteTable("workout", {
   title: text().notNull(),
   listOrder: integer("list_order").notNull(),
   lastSession: text("last_session"),
-});
-
-export const workoutDays = sqliteTable("workout_days", {
-  id: integer().primaryKey(),
-  workoutId: integer("workout_id").references(() => workout.id, {
-    onDelete: "cascade",
-    onUpdate: "cascade",
-  }),
-  day: text().notNull(),
 });
 
 export const exerciseClass = sqliteTable("exercise_class", {

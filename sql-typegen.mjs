@@ -1,9 +1,17 @@
-/* 
-Just run 'node sql-typegen.mjs' in your terminal 
+/**
+Just run 'node sql-typegen.mjs' in your terminal
 to generate typescript definitions for your sqlite database
 */
 
-import sqlts from "@rmp135/sql-ts";
+/**
+ * At this point this file has no purpose, I've long
+ * since deleted the `sql-ts` dependency that does the db
+ * interospection. I'm keeping this file b/c I have paranoia
+ * that it may be useful in the future, but I'm most likely going
+ * to delete it.
+ */
+
+import sqlts from "@rmp135/sql-ts"; // I've uninstalled sql-ts! This file won't even run you dummy!
 import { writeFileSync, readFileSync, rmSync } from "node:fs";
 import sqlite3 from "sqlite3";
 
@@ -50,34 +58,37 @@ function main() {
     for (const query of queryStrings) {
       db.run(query);
     }
-    db.all("SELECT day FROM days_of_week;", (err, rows) => {
-      if (err) {
-        return console.log(err);
-      }
-      sqlts
-        .toObject(config)
-        .then((definitions) => {
-          const tsTypes = sqlts.fromObject(renameTables(definitions));
-          writeFileSync("./sqlite-types.ts", tsTypes);
-          console.log("Database types created: sqlite-types.ts");
-        })
-        .then(() => {
-          db.close((err) => {
-            if (err) {
-              return console.log(err);
-            }
-            console.log("Closed db");
+    db.all(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%';",
+      (err, rows) => {
+        if (err) {
+          return console.log(err);
+        }
+        sqlts
+          .toObject(config)
+          .then((definitions) => {
+            const tsTypes = sqlts.fromObject(renameTables(definitions));
+            writeFileSync("./sqlite-types.ts", tsTypes);
+            console.log("Database types created: sqlite-types.ts");
+          })
+          .then(() => {
+            db.close((err) => {
+              if (err) {
+                return console.log(err);
+              }
+              console.log("Closed db");
+            });
+          })
+          .then(() => {
+            rmSync("./file"); // Removes the temporary 'file' that gets made after closing the db
+            console.log("Deleted temporary db file");
+          })
+          .catch((reason) => {
+            console.log(reason);
+            console.log("Couldn't get definitions");
           });
-        })
-        .then(() => {
-          rmSync("./file"); // Removes the temporary 'file' that gets made after closing the db
-          console.log("Deleted temporary db file");
-        })
-        .catch((reason) => {
-          console.log(reason);
-          console.log("Couldn't get definitions");
-        });
-    });
+      }
+    );
   });
 }
 

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "227fa06b-d100-4b53-855c-788220532f31",
+  "id": "0d082e9e-7d96-4ccb-b065-e1827a733354",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "app_user": {
@@ -186,23 +186,6 @@
           "onUpdate": "cascade"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "days_of_week": {
-      "name": "days_of_week",
-      "columns": {
-        "day": {
-          "name": "day",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -951,51 +934,6 @@
           "tableTo": "app_user",
           "columnsFrom": [
             "app_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "workout_days": {
-      "name": "workout_days",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "workout_id": {
-          "name": "workout_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "day": {
-          "name": "day",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "workout_days_workout_id_workout_id_fk": {
-          "name": "workout_days_workout_id_workout_id_fk",
-          "tableFrom": "workout_days",
-          "tableTo": "workout",
-          "columnsFrom": [
-            "workout_id"
           ],
           "columnsTo": [
             "id"
