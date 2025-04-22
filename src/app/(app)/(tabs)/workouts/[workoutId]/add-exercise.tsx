@@ -1,7 +1,7 @@
 import AddExerciseList from "@/components/AddExerciseList";
 import { useAddExercise } from "@/hooks/exercises/exercises";
 import { ExerciseClass } from "@/utils/exercise-types";
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native";
 
 export default function AddExerciseFromWorkoutTemplate() {
@@ -22,15 +22,9 @@ export default function AddExerciseFromWorkoutTemplate() {
   const addExerciseMutation = useAddExercise(workoutIdNumber);
 
   // onPress handler when user navigates to this page from a workout template screen
-  const onPressAddTemplateExercise = (exerciseClass: ExerciseClass) => {
-    router.navigate({
-      pathname: "/workouts/[workoutId]",
-      params: {
-        workoutId: workoutIdNumber,
-        workoutTitle: workoutTitle,
-      },
-    });
+  const onPressAddTemplateExercise = async (exerciseClass: ExerciseClass) => {
     addExerciseMutation.mutate({ exerciseClass });
+    router.dismiss();
   };
 
   return (
