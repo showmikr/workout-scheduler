@@ -40,7 +40,8 @@
       "expo-router",
       "expo-asset",
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-sqlite"
     ],
     "scheme": "workoutscheduler",
     "experiments": {
