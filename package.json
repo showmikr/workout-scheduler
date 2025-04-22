@@ -43,7 +43,7 @@
     "react-dom": "18.3.1",
     "react-native": "0.76.9",
     "react-native-element-dropdown": "^2.12.1",
-    "react-native-gesture-handler": "~2.20.2",
+    "react-native-gesture-handler": "^2.25.0",
     "react-native-gifted-charts": "^1.4.3",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-reanimated": "~3.16.1",
@@ -68,6 +68,13 @@
     "react-native-svg-transformer": "^1.5.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.3.3"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "react-native-gesture-handler"
+      ]
+    }
   },
   "private": true
 }
