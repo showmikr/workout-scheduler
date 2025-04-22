@@ -16,7 +16,7 @@ import WorkoutHeader from "@/components/WorkoutHeader";
 import FloatingAddButton, {
   floatingAddButtonStyles,
 } from "@/components/FloatingAddButton";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { ResistanceSection } from "@/utils/exercise-types";
 import { useExerciseSections } from "@/hooks/exercises/exercises";
 import {
@@ -45,12 +45,12 @@ export default function ExercisesPage() {
 
   const { data: exercises } = useExerciseSections(workoutIdNumber);
 
-  const onPressFloatingAddBtn = useCallback(() => {
+  const onPressFloatingAddBtn = () => {
     router.push({
       pathname: "/workouts/[workoutId]/add-exercise",
       params: { workoutId: workoutId, workoutTitle: workoutTitle },
     });
-  }, [workoutId, workoutTitle]);
+  };
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
