@@ -3,7 +3,7 @@ import { SQLiteDatabase } from "expo-sqlite";
 import { DrizzleDatabase } from "@/utils/db-utils";
 import { workoutSession } from "@/db/schema";
 import { getTableColumns, sql, desc, eq } from "drizzle-orm";
-import { useDrizzle } from "./drizzle-hook";
+import { useDrizzle } from "@/db/drizzle-context";
 
 type ExerciseSession = {
   id: number;
