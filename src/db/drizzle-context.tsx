@@ -1,8 +1,10 @@
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
 import { createContext, useContext } from "react";
+import * as schema from "./schema";
 
-const DrizzleContext = createContext<ReturnType<typeof drizzle> | null>(null);
+type DrizzleDatabase = ReturnType<typeof drizzle<typeof schema>>;
+const DrizzleContext = createContext<DrizzleDatabase | null>(null);
 
 const DrizzleProvider = ({ children }: { children?: React.ReactNode }) => {
   const db = useSQLiteContext();
@@ -12,7 +14,7 @@ const DrizzleProvider = ({ children }: { children?: React.ReactNode }) => {
       "useDrizzle must be used within a DrizzleProvider or maybe the database path may also be be null"
     );
   }
-  const drizzleDb = drizzle(db);
+  const drizzleDb = drizzle(db, { schema });
   return (
     <DrizzleContext.Provider value={drizzleDb}>
       {children}
@@ -26,3 +28,4 @@ const useDrizzle = () => {
 };
 
 export { DrizzleProvider, useDrizzle };
+export type { DrizzleDatabase };
