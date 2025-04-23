@@ -9,7 +9,7 @@ function debounce<T extends (...args: any[]) => any>(
   fn: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null;
+  let timeout: number | null = null;
 
   return function (this: any, ...args: Parameters<T>): void {
     const context = this;
@@ -38,7 +38,7 @@ function immediateDebounce<T extends (...args: any[]) => any>(
   fn: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null;
+  let timeout: number | null = null;
   let canCall = true;
 
   return function (this: any, ...args: Parameters<T>): void {
