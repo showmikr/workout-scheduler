@@ -91,7 +91,7 @@ type InputWorkout = {
 };
 
 function createTimer() {
-  let intervalId: NodeJS.Timeout | null = null;
+  let intervalId: number | null = null;
   const stopFn = () => {
     if (intervalId) {
       clearInterval(intervalId);
@@ -112,8 +112,8 @@ function createTimer() {
 }
 
 const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
-  let exerciseIncrement = createAutoIncrement();
-  let setIncrement = createAutoIncrement();
+  let exerciseIdIncrement = createAutoIncrement();
+  let setIdIncrement = createAutoIncrement();
 
   let appStateSubscription: NativeEventSubscription | undefined;
 
@@ -176,8 +176,8 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
         const myExerciseSets: { [exerciseId: number]: ActiveSet[] } = {};
 
         for (const exercise of inputWorkout.exercises) {
-          const setIds = exercise.sets.map(() => setIncrement());
-          const nextExerciseId = exerciseIncrement();
+          const setIds = exercise.sets.map(() => setIdIncrement());
+          const nextExerciseId = exerciseIdIncrement();
 
           myExercises[nextExerciseId] = {
             id: nextExerciseId,
@@ -247,8 +247,8 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
       },
       endAndResetWorkout: () => {
         // reset incrementers
-        setIncrement = createAutoIncrement();
-        exerciseIncrement = createAutoIncrement();
+        setIdIncrement = createAutoIncrement();
+        exerciseIdIncrement = createAutoIncrement();
         if (appStateSubscription) {
           appStateSubscription.remove();
         } else {
@@ -277,8 +277,8 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
         }
       ) => {
         set((state) => {
-          const nextSetId = setIncrement();
-          const nextExerciseId = exerciseIncrement();
+          const nextSetId = setIdIncrement();
+          const nextExerciseId = exerciseIdIncrement();
           return {
             exercises: {
               ids: [...state.exercises.ids, nextExerciseId],
@@ -343,7 +343,7 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
           return;
         }
         set((state) => {
-          const nextSetId = setIncrement();
+          const nextSetId = setIdIncrement();
           const lastSetId = state.exercises.entities[exerciseId]?.setIds.at(-1);
           const placeHolderSet: ActiveSet =
             lastSetId !== undefined ?

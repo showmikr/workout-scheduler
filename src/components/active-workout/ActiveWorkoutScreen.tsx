@@ -150,7 +150,7 @@ const ActiveWorkoutFooter = () => {
             contentContainerStyle={{ flex: 1 }}
             style={styles.cancelWorkoutButton}
             onPress={() => {
-              router.dismiss();
+              router.back();
               endAndResetWorkout();
             }}
           >
@@ -220,8 +220,8 @@ const ActiveWorkoutFooter = () => {
               </ThemedText>
               <TouchableOpacity
                 onPress={() => {
+                  router.back();
                   saveWorkout();
-                  router.dismiss();
                   endAndResetWorkout();
                 }}
                 style={{

@@ -1,13 +1,12 @@
 import { useActiveWorkoutStatus } from "@/context/active-workout-provider";
-import { router } from "expo-router";
+import { Redirect } from "expo-router";
 import ActiveWorkoutScreen from "@/components/active-workout/ActiveWorkoutScreen";
 
 export default function ActiveWorkoutPage() {
   const isActive = useActiveWorkoutStatus();
 
   if (!isActive) {
-    // Return to previous page
-    router.dismiss();
+    return <Redirect href=".." />; // same as router.back() but declarative
   }
 
   return <ActiveWorkoutScreen />;
