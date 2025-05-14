@@ -2,11 +2,11 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
-    "skipLibCheck": true, /* Skip checking all .d.ts files */
+    "skipLibCheck": true, // Skip checking all .d.ts files
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    },
+    }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }
