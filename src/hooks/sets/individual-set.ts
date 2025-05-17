@@ -1,70 +1,89 @@
+import { exerciseSet, resistanceSet } from "@/db/schema";
+import { DrizzleDatabase } from "@/db/drizzle-context";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { SQLiteDatabase } from "expo-sqlite";
+import { eq } from "drizzle-orm";
+import {
+  IndividualWorkout,
+  individualWorkoutKey,
+  useWorkoutDrizzle,
+} from "../workouts/individual-workout";
+import { useCallback } from "react";
+
+const useIndividualSet = (workoutId: number, setId: number) => {
+  const selectSet = useCallback(
+    (workout: IndividualWorkout) => workout.exerciseSets.entities[setId],
+    [setId]
+  );
+  return useWorkoutDrizzle(workoutId, selectSet);
+};
 
 type setRepArgs = {
-  db: SQLiteDatabase;
+  db: DrizzleDatabase;
   exerciseSetId: number;
-  reps: number;
+  newReps: number;
 };
-async function updateResistanceSetReps({
+async function updateExerciseSetReps({
   db,
   exerciseSetId,
-  reps,
+  newReps,
 }: setRepArgs) {
-  const updatedReps = await db.getFirstAsync<{ reps: number }>(
-    `
-    UPDATE exercise_set
-    SET reps = ?
-    WHERE id = ?
-    RETURNING exercise_set.reps;
-    `,
-    [reps, exerciseSetId]
-  );
-  //  Non-null assert is okay here b/c we can handle the error
-  //  in the onError() handler for the weightMutation
-  return updatedReps;
+  const updatedReps = await db
+    .update(exerciseSet)
+    .set({ reps: newReps })
+    .where(eq(exerciseSet.id, exerciseSetId))
+    .returning({ reps: exerciseSet.reps });
+  return updatedReps.at(0);
 }
 
-const useRepsMutation = (workoutId: number) => {
+const useRepsMutation = (workoutId: number, setId: number) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: updateResistanceSetReps,
+    mutationFn: updateExerciseSetReps,
     onError: (error) => {
       console.error(error);
     },
     onSuccess: (data) => {
-      console.log(
-        data?.reps ?
-          "updatedReps: " + data.reps
-        : "No data returned from updateResistanceSetReps"
+      if (!data) {
+        console.error("No data returned from updateExerciseSetReps");
+        return;
+      }
+      console.log(`setId ${setId}: changed to ${data.reps} reps`);
+      queryClient.setQueryData(
+        individualWorkoutKey(workoutId),
+        (old: IndividualWorkout): IndividualWorkout => ({
+          ...old,
+          exerciseSets: {
+            ...old.exerciseSets,
+            entities: {
+              ...old.exerciseSets.entities,
+              [setId]: {
+                ...old.exerciseSets.entities[setId],
+                reps: data.reps,
+              },
+            },
+          },
+        })
       );
-      queryClient.invalidateQueries({
-        queryKey: ["workout-section", workoutId],
-      });
     },
   });
 };
 
 type SetWeightArgs = {
-  db: SQLiteDatabase;
-  exerciseSetId: number;
-  weight: number;
+  db: DrizzleDatabase;
+  setId: number;
+  newWeight: number;
 };
 
-async function updateSetWeight({ db, exerciseSetId, weight }: SetWeightArgs) {
-  const updatedWeight = await db.getFirstAsync<{ total_weight: number }>(
-    `
-    UPDATE resistance_set
-    SET total_weight = ?
-    WHERE exercise_set_id = ?
-    RETURNING resistance_set.total_weight;
-    `,
-    [weight, exerciseSetId]
-  );
-  return updatedWeight;
+async function updateSetWeight({ db, setId, newWeight }: SetWeightArgs) {
+  const result = await db
+    .update(resistanceSet)
+    .set({ totalWeight: newWeight })
+    .where(eq(resistanceSet.exerciseSetId, setId))
+    .returning({ totalWeight: resistanceSet.totalWeight });
+  return result.at(0);
 }
 
-const useWeightMutation = (workoutId: number) => {
+const useWeightMutation = (workoutId: number, setId: number) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateSetWeight,
@@ -72,65 +91,90 @@ const useWeightMutation = (workoutId: number) => {
       console.log(error);
     },
     onSuccess: (data) => {
+      if (!data) {
+        console.error("updateSetWeight failed to return any data on mutation!");
+        return;
+      }
       console.log(
-        data?.total_weight ?
-          "updatedWeight " + data.total_weight
-        : "No data returned from updateResistanceSetWeight"
+        `setId: ${setId} updated to ${data.totalWeight} units of weight`
       );
-      queryClient.invalidateQueries({
-        queryKey: ["workout-section", workoutId],
-      });
+      queryClient.setQueryData(
+        individualWorkoutKey(workoutId),
+        (old: IndividualWorkout): IndividualWorkout => ({
+          ...old,
+          exerciseSets: {
+            ...old.exerciseSets,
+            entities: {
+              ...old.exerciseSets.entities,
+              [setId]: {
+                ...old.exerciseSets.entities[setId],
+                totalWeight: data.totalWeight,
+              },
+            },
+          },
+        })
+      );
     },
   });
 };
 
-type SetRestTimeArgs = {
-  db: SQLiteDatabase;
-  exerciseSetId: number;
-  restTime: number;
-};
-/**
- * Updates the rest time for an exercise set in the database.
- *
- * @param db - The SQLite database instance.
- * @param exerciseSetId - The ID of the exercise set to update.
- * @param restTime - The new rest time value to set for the exercise set (in seconds).
- * @returns The updated rest time value for the exercise set.
- */
-const updateExerciseSetRestTime = async ({
+const updateSetRest = async ({
   db,
-  exerciseSetId,
-  restTime,
-}: SetRestTimeArgs) => {
-  return db.getFirstAsync<{ rest_time: number }>(
-    `
-    UPDATE exercise_set
-    SET rest_time = ?
-    WHERE id = ?
-    RETURNING exercise_set.rest_time;
-    `,
-    [restTime, exerciseSetId]
-  );
+  setId,
+  newRest,
+}: {
+  db: DrizzleDatabase;
+  setId: number;
+  newRest: number;
+}) => {
+  const result = await db
+    .update(exerciseSet)
+    .set({ restTime: newRest })
+    .where(eq(exerciseSet.id, setId))
+    .returning({ restTime: exerciseSet.restTime });
+  return result.at(0);
 };
 
-const useRestMutation = (workoutId: number) => {
+const useRestMutation = (workoutId: number, setId: number) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: updateExerciseSetRestTime,
+    mutationFn: updateSetRest,
     onError: (error) => {
       console.error(error);
     },
     onSuccess: (data) => {
+      if (!data) {
+        console.error("Couldn't update rest properly");
+        return;
+      }
+      queryClient.setQueryData(
+        individualWorkoutKey(workoutId),
+        (old: IndividualWorkout): IndividualWorkout => ({
+          ...old,
+          exerciseSets: {
+            ...old.exerciseSets,
+            entities: {
+              ...old.exerciseSets.entities,
+              [setId]: {
+                ...old.exerciseSets.entities[setId],
+                restTime: data.restTime,
+              },
+            },
+          },
+        })
+      );
       console.log(
-        data?.rest_time ?
-          "updatedRestTime " + data.rest_time
+        data ?
+          `updatedRestTime for setId: ${setId} to ${data.restTime}`
         : "No data returned from updateResistanceSetRestTime"
       );
-      queryClient.invalidateQueries({
-        queryKey: ["workout-section", workoutId],
-      });
     },
   });
 };
 
-export { useRepsMutation, useWeightMutation, useRestMutation };
+export {
+  useRepsMutation,
+  useWeightMutation,
+  useRestMutation,
+  useIndividualSet,
+};

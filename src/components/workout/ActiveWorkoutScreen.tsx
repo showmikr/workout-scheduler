@@ -19,6 +19,8 @@ import {
   Modal,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  Button,
+  LayoutAnimation,
 } from "react-native";
 import { ThemedText } from "../Themed";
 import { router } from "expo-router";
@@ -26,13 +28,13 @@ import {
   ActiveSetItem,
   ActiveSetHeader,
   AddSetButton,
-  LIST_CONTAINER_HORIZONTAL_MARGIN,
-} from "./ActiveExerciseCard";
+} from "../workout/ActiveExerciseCard";
+import { LIST_CONTAINER_HORIZONTAL_MARGIN } from "../workout/SharedUI";
 import { colorBox, figmaColors } from "@/constants/Colors";
 import { useSaveWorkoutSession } from "@/hooks/active-workout";
 import { useSQLiteContext } from "expo-sqlite";
 import { useAppUserId } from "@/context/app-user-id-provider";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import CustomAnimatedButton from "@/components/CustomAnimatedButton";
 import { calculatePlates } from "../CardUnderlay";
 
@@ -70,9 +72,6 @@ const ActiveWorkoutHeader = () => {
 const ActiveWorkoutSectionList = () => {
   const inventory = [45, 35, 25, 10, 5, 2.5];
   const plates = calculatePlates(350, inventory);
-  for (const { weight, quantity } of plates) {
-    console.log("plate: %d, quantity: %d", weight, quantity);
-  }
   const exerciseIds = useActiveWorkoutExerciseIds();
   const exerciseEntities = useActiveWorkoutExerciseEntities();
   const sections = exerciseIds.map((id) => ({
@@ -80,6 +79,7 @@ const ActiveWorkoutSectionList = () => {
     exerciseClass: exerciseEntities[id].exerciseClass,
     data: exerciseEntities[id].setIds,
   }));
+
   console.log("SectionList re-rendered");
 
   return (
@@ -144,6 +144,12 @@ const ActiveWorkoutFooter = () => {
   return (
     <>
       <View style={styles.footerView}>
+        <Button
+          title="Log State"
+          onPress={() => {
+            console.log(getLatestActiveWorkoutSnapshot());
+          }}
+        />
         <AddExerciseButton />
         <View style={styles.cancelFinishButtonContainer}>
           <CustomAnimatedButton

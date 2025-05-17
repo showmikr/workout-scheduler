@@ -1,3 +1,4 @@
+import { IndividualWorkout } from "@/hooks/workouts/individual-workout";
 import {
   AppState,
   AppStateStatus,
@@ -56,6 +57,7 @@ type ActiveWorkoutActions = {
   changeWeight: (setId: number, weight: number) => void;
   changeRest: (setId: number, targetRest: number) => void;
   toggleSetDone: (setId: number) => void;
+  newStart: (input: { workout: IndividualWorkout; title: string }) => void;
 };
 
 type ActiveWorkoutStore = ActiveWorkout & {
@@ -168,6 +170,83 @@ const useActiveWorkoutStore = create<ActiveWorkoutStore>()((set, get) => {
   return {
     ...initialActiveWorkout,
     actions: {
+      newStart: (input) => {
+        const exerciseEntities = input.workout.exercises.entities;
+        const exerciseIdList = input.workout.exercises.ids;
+        exerciseIdIncrement = createAutoIncrement(
+          1 + exerciseIdList.reduce((prev, curr) => Math.max(prev, curr), 0)
+        );
+        const activeExerciseIdList = input.workout.exercises.ids.map(() =>
+          exerciseIdIncrement()
+        );
+
+        const inputSetIdList = input.workout.exerciseSets.ids;
+        setIdIncrement = createAutoIncrement(
+          1 + inputSetIdList.reduce((prev, curr) => Math.max(prev, curr), 0)
+        );
+
+        const exerciseTuples = Object.entries(exerciseEntities).map(
+          ([exId, exEntity], idx) =>
+            [
+              activeExerciseIdList[idx],
+              {
+                id: activeExerciseIdList[idx],
+                exerciseClass: {
+                  title: exEntity.title,
+                  id: exerciseEntities[exId].exerciseClassId,
+                },
+                setIds: exerciseEntities[exId].setIds,
+              },
+            ] satisfies [number, ActiveExercise]
+        );
+
+        const inputSetEntities = input.workout.exerciseSets.entities;
+        const setTuples = Object.entries(inputSetEntities).map(
+          ([setId, setEntity], idx) => {
+            return [
+              Number(setId),
+              {
+                id: Number(setId),
+                reps: setEntity.reps,
+                targetRest: setEntity.restTime,
+                weight: setEntity.totalWeight,
+                elapsedRest: 0,
+                isCompleted: false,
+              },
+            ] satisfies [number, ActiveSet];
+          }
+        );
+
+        const setEntities = Object.fromEntries(setTuples);
+        for (const [key, val] of Object.entries(setEntities)) {
+          console.log(`key: ${key}, val: ${val.weight}`);
+        }
+
+        appStateSubscription = AppState.addEventListener(
+          "change",
+          handleAppStateChange
+        );
+
+        set((state) => {
+          workoutTimer.start(workoutTimerCallback);
+          return {
+            isActive: true,
+            restingSet: null,
+            elapsedTime: 0,
+            isPaused: !state.isPaused,
+            workoutStartTime: Date.now(),
+            title: input.title,
+            exercises: {
+              ids: activeExerciseIdList,
+              entities: Object.fromEntries(exerciseTuples),
+            },
+            sets: {
+              ids: inputSetIdList,
+              entities: Object.fromEntries(setTuples),
+            },
+          } satisfies ActiveWorkout;
+        });
+      },
       startWorkout: (inputWorkout: InputWorkout) => {
         const allExerciseIds: Array<number> = [];
         const allSetIds: Array<number> = [];

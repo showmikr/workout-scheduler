@@ -3,7 +3,7 @@ import {
   DeleteUnderlay,
   PlatesUnderlay,
 } from "@/components/CardUnderlay";
-import { ThemedText, ThemedTextInput } from "@/components/Themed";
+import { ThemedText } from "@/components/Themed";
 import { colorBox } from "@/constants/Colors";
 import {
   useActiveWorkoutActions,
@@ -18,7 +18,7 @@ import {
 import { immediateDebounce } from "@/utils/debounce-utils";
 import { FontAwesome6 } from "@expo/vector-icons";
 import MaskedView from "@react-native-masked-view/masked-view";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -26,42 +26,47 @@ import {
   LayoutAnimation,
   LayoutAnimationConfig,
 } from "react-native";
-import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import Animated, {
   useSharedValue,
   Easing,
   withTiming,
-  ZoomIn,
 } from "react-native-reanimated";
 import CustomAnimatedButton from "../CustomAnimatedButton";
+import React from "react";
+import {
+  ExerciseHeader,
+  LIST_CONTAINER_HORIZONTAL_MARGIN,
+  RepsCellDisplay,
+  RestInputDisplay,
+  SetSwipeable,
+  WeightCellDisplay,
+  dataStyles,
+  exerciseHeaderStyles,
+} from "./SharedUI";
 
 const ActiveExerciseHeader = ({ exerciseId }: { exerciseId: number }) => {
   const { id: exerciseClassId, title } =
     useActiveWorkoutExerciseClass(exerciseId);
   return (
-    <View style={styles.activeExerciseHeaderContainer}>
-      <ThemedText style={styles.activeExerciseTitle}>{title}</ThemedText>
-      <View style={styles.columnLabelsContainer}>
-        <ThemedText style={styles.columnLabel}>Rest</ThemedText>
-        <ThemedText style={styles.columnLabel}>Kg</ThemedText>
-        <ThemedText style={styles.columnLabel}>Reps</ThemedText>
-        <View style={styles.headerCheckBox}>
-          <FontAwesome6
-            name="check"
-            size={CHECKMARK_ICON_SIZE}
-            color={colorBox.stoneGrey500}
-          />
-        </View>
+    <ExerciseHeader title={title}>
+      <ThemedText style={exerciseHeaderStyles.columnLabel}>Rest</ThemedText>
+      <ThemedText style={exerciseHeaderStyles.columnLabel}>Kg</ThemedText>
+      <ThemedText style={exerciseHeaderStyles.columnLabel}>Reps</ThemedText>
+      <View style={styles.headerCheckBox}>
+        <FontAwesome6
+          name="check"
+          size={CHECKMARK_ICON_SIZE}
+          color={colorBox.stoneGrey500}
+        />
       </View>
-    </View>
+    </ExerciseHeader>
   );
 };
 
 const listUpdateAnimationConfig: LayoutAnimationConfig = {
   duration: 400, // default fallback duration. shouldn't be used
-  update: {
+  delete: {
     type: LayoutAnimation.Types.spring,
-    springDamping: 0.7,
     duration: 200,
   },
 };
@@ -92,89 +97,47 @@ const ActiveSetItem = ({
     }, 200),
     [exerciseId, setId]
   );
+  console.log(`ActiveSetItem rendered, setId: ${setId}`);
   return (
-    <Animated.View entering={ZoomIn.springify(150).dampingRatio(0.8)}>
-      <Swipeable
-        renderRightActions={(_progress, drag) => (
-          <DeleteUnderlay drag={drag} onPress={debouncedDelete} />
-        )}
-        renderLeftActions={(_progress, drag) => (
-          <PlatesUnderlay drag={drag} plates={plates} />
-        )}
-        friction={2}
-        overshootFriction={8}
-        rightThreshold={20}
-        leftThreshold={20}
-        dragOffsetFromLeftEdge={30}
-        childrenContainerStyle={[
-          styles.setContainer,
-          { paddingHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN },
-        ]}
-      >
-        <RestCell setId={setId} />
-        <WeightCell setId={setId} />
-        <RepsCell setId={setId} />
-        <CheckboxCell setId={setId} />
-      </Swipeable>
-    </Animated.View>
+    <SetSwipeable
+      renderRightActions={(_progress, drag) => (
+        <DeleteUnderlay drag={drag} onPress={debouncedDelete} />
+      )}
+    >
+      <RestCell setId={setId} />
+      <WeightCell setId={setId} />
+      <RepsCell setId={setId} />
+      <CheckboxCell setId={setId} />
+    </SetSwipeable>
   );
 };
 
-const WEIGHT_REGEX = /^\d*\.?\d+/;
+const MemoizedActiveSetItem = React.memo(ActiveSetItem);
+
 const WeightCell = ({ setId }: { setId: number }) => {
   const { changeWeight } = useActiveWorkoutActions();
   const weight = useActiveWorkoutSetWeight(setId);
-  const [weightText, setWeightText] = useState(() => weight.toString());
-  return (
-    <ThemedTextInput
-      numberOfLines={1}
-      maxLength={6}
-      inputMode="decimal"
-      value={weightText}
-      returnKeyType="done"
-      style={[styles.dataCell, styles.dataText]}
-      onChangeText={(text) => {
-        setWeightText(text);
-      }}
-      onEndEditing={(e) => {
-        const parsedWeight = Number(
-          e.nativeEvent.text.match(WEIGHT_REGEX)?.at(0) ?? "0"
-        );
-        const truncatedWeight = Math.round(parsedWeight * 10) / 10;
-        setWeightText(truncatedWeight.toString());
-        changeWeight(setId, truncatedWeight);
-      }}
-    />
+  const onUpdate = useCallback(
+    (newWeight: number) => {
+      changeWeight(setId, newWeight);
+    },
+    [setId]
   );
+  return <WeightCellDisplay weight={weight} onUpdate={onUpdate} />;
 };
 
-const REPS_REGEX = /^0*(\d+)/;
 const RepsCell = ({ setId }: { setId: number }) => {
   const { changeReps } = useActiveWorkoutActions();
   const reps = useActiveWorkoutSetReps(setId);
-  const [repsText, setRepsText] = useState(() => reps.toString());
-  return (
-    <ThemedTextInput
-      numberOfLines={1}
-      maxLength={3}
-      inputMode="numeric"
-      value={repsText}
-      returnKeyType="done"
-      style={[styles.dataCell, styles.dataText]}
-      onChangeText={(text) => {
-        const matchedText = text.match(REPS_REGEX)?.at(0) ?? "";
-        setRepsText(matchedText);
-      }}
-      onEndEditing={() => {
-        const parsedReps = Number(repsText); // Note, Number(<empty string>) = 0
-        setRepsText(parsedReps.toString());
-        changeReps(setId, parsedReps);
-      }}
-    />
+  const onUpdate = useCallback(
+    (newReps: number) => {
+      changeReps(setId, newReps);
+    },
+    [setId]
   );
+  return <RepsCellDisplay reps={reps} onUpdate={onUpdate} />;
 };
 
-const SINGLE_DIGIT_REGEX = /^\d$/;
 const RestCell = ({ setId }: { setId: number }) => {
   const restingSetId = useActiveWorkoutRestingSetId();
 
@@ -184,7 +147,7 @@ const RestCell = ({ setId }: { setId: number }) => {
         flex: 1,
         flexDirection: "row",
       }}
-      maskElement={<View style={styles.dataCell} />}
+      maskElement={<View style={dataStyles.dataCell} />}
     >
       {restingSetId === setId ?
         <RestCountdown setId={setId} />
@@ -194,62 +157,15 @@ const RestCell = ({ setId }: { setId: number }) => {
 };
 
 const RestInput = ({ setId }: { setId: number }) => {
-  const cursorRange = { start: 5, end: 5 };
   const rest = useActiveWorkoutSetTargetRest(setId);
   const { changeRest } = useActiveWorkoutActions();
-
-  const minutes = Math.trunc(rest / 60);
-  const seconds = rest - minutes * 60;
-  const minutesString = minutes.toString().padStart(2, "0");
-  const secondsString = seconds.toString().padStart(2, "0");
-  const [digitChars, setDigitChars] = useState([
-    ...minutesString,
-    ...secondsString,
-  ]);
-  const textOutput =
-    digitChars[0] + digitChars[1] + ":" + digitChars[2] + digitChars[3];
-
-  return (
-    <ThemedTextInput
-      numberOfLines={1}
-      maxLength={5}
-      inputMode="numeric"
-      value={textOutput}
-      selection={cursorRange}
-      returnKeyType="done"
-      style={[styles.dataCell, styles.dataText]}
-      onKeyPress={(e) => {
-        const key = e.nativeEvent.key;
-        const digitPressed = key.match(SINGLE_DIGIT_REGEX)?.at(0) !== undefined;
-        if (digitPressed) {
-          setDigitChars([...digitChars.slice(1), key]);
-        } else if (key === "Backspace") {
-          setDigitChars(["0", ...digitChars.slice(0, -1)]);
-        }
-      }}
-      onEndEditing={() => {
-        // handle seconds overflow
-        const minutes = Number(digitChars[0] + digitChars[1]);
-        const seconds = Number(digitChars[2] + digitChars[3]);
-        const adjustedMinutes = Math.min(
-          99,
-          minutes + Math.trunc(seconds / 60)
-        );
-        const adjustedSeconds =
-          adjustedMinutes >= 99 && seconds >= 60 ? 59 : seconds % 60;
-        if (seconds >= 60) {
-          const minutesString = adjustedMinutes.toString().padStart(2, "0");
-          const secondsString = adjustedSeconds.toString().padStart(2, "0");
-          const [minutesArray, secondsArray] = [
-            [...minutesString],
-            [...secondsString],
-          ];
-          setDigitChars([...minutesArray, ...secondsArray]);
-        }
-        changeRest(setId, adjustedMinutes * 60 + adjustedSeconds);
-      }}
-    />
+  const onUpdate = useCallback(
+    (totalSeconds: number) => {
+      changeRest(setId, totalSeconds);
+    },
+    [setId]
   );
+  return <RestInputDisplay totalSeconds={rest} onUpdate={onUpdate} />;
 };
 
 const RestCountdown = ({ setId }: { setId: number }) => {
@@ -276,9 +192,9 @@ const RestCountdown = ({ setId }: { setId: number }) => {
         if (dimensions) return;
         setDimensions({ width, height });
       }}
-      style={[styles.dataCell]}
+      style={[dataStyles.dataCell]}
     >
-      <ThemedText style={[styles.dataText, { zIndex: 1 }]}>
+      <ThemedText style={[dataStyles.dataText, { zIndex: 1 }]}>
         {minutesText + ":" + secondsText}
       </ThemedText>
       {dimensions && (
@@ -368,53 +284,15 @@ const ROW_ITEM_MIN_HEIGHT = 34;
 /// The size of the checkmark icon, calculated as a fraction of the minimum row item height.
 const CHECKMARK_ICON_SIZE = Math.floor((2 / 3) * ROW_ITEM_MIN_HEIGHT);
 
-const LIST_CONTAINER_HORIZONTAL_MARGIN = 16;
-
 const styles = StyleSheet.create({
   cardContainer: {
     alignItems: "flex-start",
-  },
-  setContainer: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 16,
-    gap: 24,
-  },
-  activeExerciseHeaderContainer: {
-    paddingHorizontal: LIST_CONTAINER_HORIZONTAL_MARGIN,
-  },
-  activeExerciseTitle: {
-    fontSize: 24,
-    color: colorBox.stoneGrey100,
-    fontWeight: 600,
   },
   columnLabelsContainer: {
     flex: 1,
     flexDirection: "row",
     marginTop: 12,
     marginBottom: -10,
-  },
-  columnLabel: {
-    flex: 1,
-    color: colorBox.stoneGrey500,
-    fontSize: 16,
-    fontWeight: 500,
-  },
-  dataCell: {
-    flex: 1,
-    backgroundColor: colorBox.stoneGrey850,
-    borderBottomColor: colorBox.stoneGrey900,
-    borderBottomWidth: 1,
-    borderColor: colorBox.stoneGrey900,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  dataText: {
-    fontSize: 20,
-    color: colorBox.stoneGrey000,
-    textAlign: "center",
   },
   animatedSlider: {
     position: "absolute",
@@ -453,8 +331,7 @@ const styles = StyleSheet.create({
 
 export {
   styles as activeExStyles,
-  LIST_CONTAINER_HORIZONTAL_MARGIN,
-  ActiveSetItem,
+  MemoizedActiveSetItem as ActiveSetItem,
   ActiveExerciseHeader as ActiveSetHeader,
   AddSetButton,
 };

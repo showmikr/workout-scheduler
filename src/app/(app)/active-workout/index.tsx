@@ -1,6 +1,6 @@
 import { useActiveWorkoutStatus } from "@/context/active-workout-provider";
 import { Redirect } from "expo-router";
-import ActiveWorkoutScreen from "@/components/active-workout/ActiveWorkoutScreen";
+import ActiveWorkoutScreen from "@/components/workout/ActiveWorkoutScreen";
 
 export default function ActiveWorkoutPage() {
   const isActive = useActiveWorkoutStatus();

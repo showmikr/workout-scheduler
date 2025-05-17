@@ -8,6 +8,7 @@ import {
   LayoutAnimation,
   Text,
   TouchableOpacity,
+  SectionList,
 } from "react-native";
 import { figmaColors, twColors } from "@/constants/Colors";
 import { ExerciseCard } from "@/components/ExerciseCard";
@@ -18,11 +19,20 @@ import FloatingAddButton, {
 } from "@/components/FloatingAddButton";
 import { useEffect } from "react";
 import { ResistanceSection } from "@/utils/exercise-types";
-import { useExerciseSections } from "@/hooks/exercises/exercises";
+import {
+  IndividualWorkout,
+  individualWorkoutKey,
+  useExerciseSectionsDrizzle,
+} from "@/hooks/workouts/individual-workout";
 import {
   useActiveWorkoutActions,
   useActiveWorkoutStatus,
 } from "@/context/active-workout-provider";
+import {
+  TemplateExerciseHeader,
+  TemplateExerciseSet,
+} from "@/components/workout/TemplateExercise";
+import { useQueryClient } from "@tanstack/react-query";
 
 function OverlaySeparator() {
   return <View style={styles.overlaySeparator} />;
@@ -43,7 +53,8 @@ export default function ExercisesPage() {
     throw new Error("Workout ID is not a number. This should not happen");
   }
 
-  const { data: exercises } = useExerciseSections(workoutIdNumber);
+  const { data: sections, isLoading } =
+    useExerciseSectionsDrizzle(workoutIdNumber);
 
   const onPressFloatingAddBtn = () => {
     router.push({
@@ -52,40 +63,66 @@ export default function ExercisesPage() {
     });
   };
 
+  if (isLoading || !sections) {
+    return (
+      <SafeAreaView style={styles.safeAreaView}>
+        <ActivityIndicator color={twColors.neutral500} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <WorkoutHeader title={workoutTitle} />
-      {exercises ?
-        <ExerciseList
-          workoutId={workoutIdNumber}
-          workoutTitle={workoutTitle}
-          data={exercises}
-        />
-      : <ActivityIndicator
-          style={{ alignSelf: "center" }}
-          color={twColors.neutral500}
-        />
-      }
+      <SectionList
+        sections={sections}
+        renderItem={({ item, section }) => (
+          <TemplateExerciseSet
+            workoutId={workoutIdNumber}
+            exerciseId={section.exerciseId}
+            setId={item}
+          />
+        )}
+        initialNumToRender={16} // This vastly improves loading performance when there are many exercises
+        renderSectionHeader={({ section: { exerciseId } }) => (
+          <TemplateExerciseHeader exerciseId={exerciseId} />
+        )}
+        ListFooterComponent={
+          <ThemedView style={floatingAddButtonStyles.blankSpaceMargin}>
+            <StartWorkoutButton
+              workoutTitle={workoutTitle}
+              workoutId={workoutIdNumber}
+            />
+          </ThemedView>
+        }
+        stickySectionHeadersEnabled={false}
+      />
+      {/* // <ExerciseList
+          //   workoutId={workoutIdNumber}
+          //   workoutTitle={workoutTitle}
+          //   exercises={sections}
+          // /> */}
       <FloatingAddButton onPress={onPressFloatingAddBtn} />
     </SafeAreaView>
   );
 }
 
+// will phase out soon
 const ExerciseList = ({
-  data,
   workoutId,
   workoutTitle,
+  exercises,
 }: {
-  data: ResistanceSection[];
+  exercises: ResistanceSection[];
   workoutId: number;
   workoutTitle: string;
 }) => {
   // Trigger layout animation when list items are added or removed
   useEffect(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-  }, [data.length]);
+  }, [exercises.length]);
 
-  if (data.length === 0) {
+  if (exercises.length === 0) {
     return (
       <ThemedText
         style={{
@@ -105,10 +142,14 @@ const ExerciseList = ({
       ItemSeparatorComponent={OverlaySeparator}
       ListFooterComponent={
         <ThemedView style={floatingAddButtonStyles.blankSpaceMargin}>
-          <StartWorkoutButton workoutTitle={workoutTitle} exercises={data} />
+          <StartWorkoutButton
+            workoutTitle={workoutTitle}
+            workoutId={workoutId}
+            exercises={exercises}
+          />
         </ThemedView>
       }
-      data={data}
+      data={exercises}
       keyExtractor={(item) => item.exercise_id.toString()}
       renderItem={({ item }) => (
         <ExerciseCard workoutId={workoutId} exercise={item} />
@@ -119,38 +160,36 @@ const ExerciseList = ({
 
 const StartWorkoutButton = ({
   workoutTitle,
-  exercises,
+  workoutId,
+  // exercises,
 }: {
   workoutTitle: string;
-  exercises: ResistanceSection[];
+  workoutId: number;
+  // exercises: ResistanceSection[];
 }) => {
   const isActive = useActiveWorkoutStatus();
-  const { startWorkout } = useActiveWorkoutActions();
+  const { startWorkout, newStart } = useActiveWorkoutActions();
+  const queryClient = useQueryClient();
 
   return (
     <TouchableOpacity
       style={styles.startWorkoutButton}
       activeOpacity={0.6}
       onPress={() => {
-        // if there is already an active workout, do nothing
         if (isActive) {
           return;
         }
+        const myWorkout = queryClient.getQueryData<IndividualWorkout>(
+          individualWorkoutKey(workoutId)
+        );
+        if (!myWorkout) {
+          console.error(
+            "We don't have the workout data in the query cache to start the workout!"
+          );
+          return;
+        }
         // otherwise start the workout
-        startWorkout({
-          title: workoutTitle,
-          exercises: exercises.map((exercise) => ({
-            exerciseClass: {
-              id: exercise.exercise_class_id,
-              title: exercise.title,
-            },
-            sets: exercise.sets.map((set) => ({
-              weight: set.total_weight,
-              reps: set.reps,
-              targetRest: set.rest_time,
-            })),
-          })),
-        });
+        newStart({ workout: myWorkout, title: workoutTitle });
         router.push("/active-workout");
       }}
     >
