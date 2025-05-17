@@ -124,7 +124,7 @@ export const resistanceSet = sqliteTable("resistance_set", {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
-  totalWeight: real("total_weight"),
+  totalWeight: real("total_weight").default(0).notNull(),
 });
 
 export const cardioSet = sqliteTable("cardio_set", {

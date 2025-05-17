@@ -1,6 +1,6 @@
 {
-  "id": "53319102-cb73-4ff4-8dc6-59532acf7da8",
-  "prevId": "24d6b5f6-2b48-40a9-93e1-28e47ceefce0",
+  "id": "eaa2bd5f-30c9-432e-95c7-1f533900d2f3",
+  "prevId": "56e4dacd-d9e9-45c2-b3ad-ac37467ba9fc",
   "version": "6",
   "dialect": "sqlite",
   "tables": {
@@ -694,8 +694,9 @@
           "name": "total_weight",
           "type": "real",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
         }
       },
       "indexes": {},

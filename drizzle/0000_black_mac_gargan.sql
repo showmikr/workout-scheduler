@@ -101,7 +101,7 @@ CREATE TABLE `pr_history` (
 --> statement-breakpoint
 CREATE TABLE `resistance_set` (
 	`exercise_set_id` integer PRIMARY KEY NOT NULL,
-	`total_weight` real,
+	`total_weight` real DEFAULT 0 NOT NULL,
 	FOREIGN KEY (`exercise_set_id`) REFERENCES `exercise_set`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
