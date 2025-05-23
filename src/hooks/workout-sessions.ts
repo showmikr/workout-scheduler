@@ -1,9 +1,10 @@
 import { exerciseEnums } from "@/utils/exercise-types";
 import { SQLiteDatabase } from "expo-sqlite";
-import { DrizzleDatabase } from "@/utils/db-utils";
 import { workoutSession } from "@/db/schema";
 import { getTableColumns, sql, desc, eq } from "drizzle-orm";
-import { useDrizzle } from "@/db/drizzle-context";
+import { DrizzleDatabase, useDrizzle } from "@/db/drizzle-context";
+import { useAppUserId } from "@/context/app-user-id-provider";
+import { useQuery } from "@tanstack/react-query";
 
 type ExerciseSession = {
   id: number;
@@ -19,7 +20,7 @@ type SetSession = {
 };
 
 // TODO: do something about app_user_id being set to 1. We really shouldn't be arbitrarily setting these
-export async function getWorkoutSessions(db: DrizzleDatabase) {
+async function getWorkoutSessions(db: DrizzleDatabase, appUserId: number) {
   const { id, title, calories, startedOn, endedOn } =
     getTableColumns(workoutSession);
   const results = await db
@@ -33,10 +34,24 @@ export async function getWorkoutSessions(db: DrizzleDatabase) {
       elapsedTime: sql<number>`unixepoch(${endedOn}) - unixepoch(${startedOn})`,
     })
     .from(workoutSession)
-    .where(eq(workoutSession.appUserId, 1))
+    .where(eq(workoutSession.appUserId, appUserId))
     .orderBy(desc(startedOn));
   return results;
 }
+
+const workoutSessionKey = (appUserId: number) => [
+  "workout-sessions",
+  appUserId,
+];
+
+const useWorkoutSessions = () => {
+  const db = useDrizzle();
+  const appUserId = useAppUserId();
+  return useQuery({
+    queryKey: workoutSessionKey(appUserId),
+    queryFn: () => getWorkoutSessions(db, appUserId),
+  });
+};
 
 /**
  * @returns a list of lists of all Workout Sessions grouped by month
@@ -129,3 +144,5 @@ async function getResistanceSetSession({
   }
   return exerciseSessions;
 }
+
+export { useWorkoutSessions };

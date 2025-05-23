@@ -8,14 +8,13 @@ import {
   TextInput,
   View,
   SectionList,
-  SafeAreaView,
 } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
 import { ActivityCard } from "@/components/ActivityCard";
 import { figmaColors } from "@/constants/Colors";
 import { drizzle } from "drizzle-orm/expo-sqlite";
-import { getWorkoutSessions } from "@/hooks/workout-sessions";
+import GraphPage from "@/components/WorkoutSessionGraph";
 
 type WorkoutSession = {
   id: number;
@@ -220,38 +219,7 @@ function groupActivityCards(list: WorkoutSession[]) {
 }
 
 export default function SummaryPage() {
-  return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <ThemedView
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          marginHorizontal: 24,
-        }}
-      >
-        <ThemedText style={{ color: figmaColors.primaryWhite, fontSize: 24 }}>
-          🚧{" "}
-        </ThemedText>
-        <ThemedText style={{ color: figmaColors.primaryWhite, fontSize: 24 }}>
-          This page is under construction...
-        </ThemedText>
-        <ThemedText
-          style={{
-            color: figmaColors.primaryWhite,
-            marginVertical: 24,
-            fontSize: 14,
-          }}
-        >
-          If you must know why, reloading the app causes the app to crash. And
-          it happens specifically when trying to render this page. It seems to
-          have something to do with trying to access a supposedly closed
-          database handle. Not sure why, but we'll fix this later when revamping
-          this page.
-        </ThemedText>
-      </ThemedView>
-    </SafeAreaView>
-  );
+  return <GraphPage />;
   const graphData = useGraphData();
 
   const personalRecordOptions = ["Bench Press", "Squat", "Deadlift"]; // replace with dynamic type after querying (bench, squat, etc)
