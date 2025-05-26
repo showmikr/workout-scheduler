@@ -8,7 +8,7 @@ import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { BottomTabBar } from "@react-navigation/bottom-tabs";
 import { ThemedText } from "@/components/Themed";
 import { StyleSheet } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native";
 import {
   useActiveWorkoutActions,
   useActiveWorkoutElapsedTime,
