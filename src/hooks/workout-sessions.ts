@@ -4,8 +4,8 @@ import { workoutSession } from "@/db/schema";
 import { getTableColumns, sql, desc, eq, and, isNotNull } from "drizzle-orm";
 import { DrizzleDatabase, useDrizzle } from "@/db/drizzle-context";
 import { useAppUserId } from "@/context/app-user-id-provider";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { year } from "drizzle-orm/mysql-core";
+import { useQuery } from "@tanstack/react-query";
+import { bisectRight } from "@/utils/bisect";
 
 type ExerciseSession = {
   id: number;
@@ -30,10 +30,13 @@ type SetSession = {
  * @param appUserId
  * @returns top level workout sessions (as in, no joins at the db level)
  */
-async function getWorkoutSessions(db: DrizzleDatabase, appUserId: number) {
+async function getOneYearWorkoutSessions(
+  db: DrizzleDatabase,
+  appUserId: number
+) {
   const { id, title, calories, startedOn, endedOn } =
     getTableColumns(workoutSession);
-  const results = await db
+  const workoutSessions = await db
     .select({
       id,
       title,
@@ -45,8 +48,13 @@ async function getWorkoutSessions(db: DrizzleDatabase, appUserId: number) {
     })
     .from(workoutSession)
     .where(and(eq(workoutSession.appUserId, appUserId), isNotNull(calories)))
-    .orderBy(desc(startedOn));
-  return results.map((res) => ({ ...res, calories: res.calories ?? 0 })); // WIP: gaurantee calories aren't null for graph
+    .orderBy(desc(startedOn)) // Sort by most recent workout session first
+    .limit(512); // Limit to 512 sessions for performance reasons
+
+  return workoutSessions.map((res) => ({
+    ...res,
+    calories: res.calories ?? 0,
+  })); // WIP: gaurantee calories aren't null for graph
 }
 
 type WorkoutSessionKeyArgs =
@@ -72,17 +80,16 @@ const workoutSessionKey = (args: WorkoutSessionKeyArgs) => {
   }
 };
 
-type WorkoutSession = Awaited<ReturnType<typeof getWorkoutSessions>>[number];
+type WorkoutSession = Awaited<
+  ReturnType<typeof getOneYearWorkoutSessions>
+>[number];
 
-const useWorkoutSessions = <T = WorkoutSession[]>(
-  select?: (workoutSessions: WorkoutSession[]) => T
-) => {
+const useOneYearWorkoutSessions = () => {
   const db = useDrizzle();
   const appUserId = useAppUserId();
   return useQuery({
     queryKey: workoutSessionKey({ appUserId, type: "full" }),
-    queryFn: () => getWorkoutSessions(db, appUserId),
-    select,
+    queryFn: () => getOneYearWorkoutSessions(db, appUserId),
   });
 };
 
@@ -94,10 +101,58 @@ type WorkoutSessionsTimeSpan =
 
 const timeSpanLabels: WorkoutSessionsTimeSpan[] = ["W", "M", "6M", "Y"];
 
+const calculateCutoffDate = (
+  timeSpan: WorkoutSessionsTimeSpan,
+  now: number
+) => {
+  const dayMilliseconds = 24 * 60 * 60 * 1000;
+  const timeSpanMilliseconds =
+    timeSpan === "Y" ? 365 * dayMilliseconds
+    : timeSpan === "6M" ? 6 * (365 / 12) * dayMilliseconds
+    : timeSpan === "M" ? (365 / 12) * dayMilliseconds
+    : 7 * dayMilliseconds; // 1 week case
+
+  const cutoff = new Date(now - timeSpanMilliseconds);
+  cutoff.setUTCHours(0, 0, 0, 0); // Set to start of the day
+  return cutoff;
+};
+
+const findCutoffIndices = (sessions: WorkoutSession[]) => {
+  const now = Date.now();
+  const yearUpperBound = bisectRight({
+    array: sessions,
+    value: calculateCutoffDate("Y", now),
+    valueExtractor: (session) => session.startDate,
+  });
+  const sixMonthUpperBound = bisectRight({
+    array: sessions,
+    value: calculateCutoffDate("6M", now),
+    valueExtractor: (session) => session.startDate,
+    searchWindow: [0, yearUpperBound],
+  });
+  const oneMonthUpperBound = bisectRight({
+    array: sessions,
+    value: calculateCutoffDate("M", now),
+    valueExtractor: (session) => session.startDate,
+    searchWindow: [0, sixMonthUpperBound],
+  });
+  const oneWeekUpperBound = bisectRight({
+    array: sessions,
+    value: calculateCutoffDate("W", now),
+    valueExtractor: (session) => session.startDate,
+    searchWindow: [0, oneMonthUpperBound],
+  });
+  return {
+    W: oneWeekUpperBound,
+    M: oneMonthUpperBound,
+    "6M": sixMonthUpperBound,
+    Y: yearUpperBound,
+  };
+};
+
 const useWorkoutSessionsByTimeSpan = (timeSpan: WorkoutSessionsTimeSpan) => {
-  const queryClient = useQueryClient();
   const appUserId = useAppUserId();
-  const { data: workoutSessions } = useWorkoutSessions();
+  const { data: workoutSessions } = useOneYearWorkoutSessions();
 
   const { data: cutoffIndices } = useQuery({
     queryKey: workoutSessionKey({ type: "cutoffIndex", appUserId, timeSpan }),
@@ -127,28 +182,10 @@ const useWorkoutSessionsByTimeSpan = (timeSpan: WorkoutSessionsTimeSpan) => {
     },
     enabled: !!workoutSessions,
   });
-
-  // const { data: cutoffIndex } = useQuery({
-  //   queryKey: workoutSessionKey({ type: "cutoffIndex", appUserId, timeSpan }),
-  //   queryFn: () => timeSpanCutoffIndex(workoutSessions!, timeSpan),
-  //   enabled: !!workoutSessions,
-  // });
-
-  return useQuery({
-    queryKey: workoutSessionKey({ type: "partial", appUserId, timeSpan }),
-    queryFn: async () => {
-      const allWorkoutSessions =
-        queryClient.getQueryData<WorkoutSession[]>(
-          workoutSessionKey({ type: "full", appUserId })
-        ) ?? [];
-      return allWorkoutSessions.slice(0, cutoffIndices![timeSpan]);
-    },
-    enabled: !!cutoffIndices,
-  });
 };
 
 /**
- * Keep in mind this useQuery selection function assumes
+ * Keep in mind this function assumes
  * that the workoutSessions list is sorted in descending order
  * (most recent workout to least recent or biggest timestamp
  * to smallest timestamp). This function assumes the list is
@@ -170,7 +207,7 @@ const timeSpanCutoffIndex = (
     timeSpan === "Y" ? 365 * dayMilliseconds
     : timeSpan === "6M" ? 6 * (365 / 12) * dayMilliseconds
     : timeSpan === "M" ? (365 / 12) * dayMilliseconds
-    : 7 * dayMilliseconds; // "W" (1 week) case
+    : 7 * dayMilliseconds; // 1 week case
 
   const cutoff = new Date(now - timeSpanMilliseconds);
   cutoff.setUTCHours(0, 0, 0, 0); // Set to start of the day
@@ -282,6 +319,6 @@ async function getResistanceSetSession({
   return exerciseSessions;
 }
 
-export { useWorkoutSessions, useWorkoutSessionsByTimeSpan, timeSpanLabels };
+export { useOneYearWorkoutSessions, findCutoffIndices, timeSpanLabels };
 
 export type { WorkoutSessionsTimeSpan };
