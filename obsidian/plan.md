@@ -51,3 +51,33 @@ I thought using the viewport bounds would work for limiting the area of the grap
 ## Big Note about how to translate chart X,Y coordinate to actual canvas pixel position
 
 the x and y axis labels are APART of the chartBounds! That means that if the chart has y-axis labels on the left side that take up 10 pixels of width, and x-axis labels on the bottom side that take up 12 pixels of heigth, then the pixel position of the origin of that chart is actually `{xPosition: 12 + chartBounds.bottom, yPosition: 10 + chartBounds.left}`. If you think about it, this makes sense because the labels take up some of the chart's occupied space. The chart's bounds tell us how much of this space is used in values like `chartBounds.left` and `chartBounds.bottom`: they tell us where the bounds of the visible graph actually begin compared to the bounds of the Skia Canvas that holds both the chart and the labels combined.
+
+# 6/9/2025
+
+- Learn a bit more about `xScale` and `yScale` on the `onScaleChange` prop for `CartesianChart` in `victory-native`
+- `xScale` & `yScale` refer to a D3 Linear Scale (D3 is a JS graphing library that `victory-native` depends on)
+- A linear scale in D3 refers to a continuous linear mapping (i.e y = mx + b) of a domain to a range (i.e 1 to 100 mapped to 300 to 900)
+
+## What I learned
+
+- `xScale` and `yScale` are also available in the render function for the points in the graph. Look it up in the [docs](https://nearform.com/open-source/victory-native/docs/cartesian/cartesian-chart/#xscale). `xScale` and `yScale` are the mapping functions used to go from an (x,y) coordinate to an actual position on the canvas. For example, if you had coordinates (20, 30) on your graph, you could make a Skia Circle at (20,30) by writing this:
+
+```tsx
+<CartesianChart>
+  {({ points, xScale, yScale }) => {
+    //...Skip irrelevant props
+    return (
+      <>
+        <Line
+          points={points.calories}
+          color="red"
+          opacity={chartOpacity}
+          strokeWidth={1}
+        />
+        {/** This allows us to see the (20,30) coordinate in the screen position on the graph */}
+        <Circle cx={xScale(20)} cy={yScale(30)} color={"cyan"} r={3} />
+      </>
+    );
+  }}
+</CartesianChart>
+```
