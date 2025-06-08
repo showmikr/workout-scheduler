@@ -123,23 +123,27 @@ const findCutoffIndices = (sessions: WorkoutSession[]) => {
     array: sessions,
     value: calculateCutoffDate("Y", now),
     valueExtractor: (session) => session.startDate,
+    ascending: false,
   });
   const sixMonthUpperBound = bisectRight({
     array: sessions,
     value: calculateCutoffDate("6M", now),
     valueExtractor: (session) => session.startDate,
+    ascending: false,
     searchWindow: [0, yearUpperBound],
   });
   const oneMonthUpperBound = bisectRight({
     array: sessions,
     value: calculateCutoffDate("M", now),
     valueExtractor: (session) => session.startDate,
+    ascending: false,
     searchWindow: [0, sixMonthUpperBound],
   });
   const oneWeekUpperBound = bisectRight({
     array: sessions,
     value: calculateCutoffDate("W", now),
     valueExtractor: (session) => session.startDate,
+    ascending: false,
     searchWindow: [0, oneMonthUpperBound],
   });
   return {
