@@ -41,3 +41,13 @@ I thought using the viewport bounds would work for limiting the area of the grap
   1. Shift the viewport range ahead/behind by the units moved
   2. Can we animate this motion? 3. We probably can by doing the graphical movement first, then setting the viewport after the animation finishes
   3. We can use the `withCallback` function from `react-native-reanimated` to run our panning animation when we click on a different time-range and then run the callback to set the viewport x-axis range. We'll want to make sure we call this callback with `runOnJS` so that we can run the callback on the JS thread when dealing with data not associated with `reanimated`
+
+# 6/5/2025
+
+# Goal
+
+- Want to implement scrollOff feature where letting go of a swipe gesture causes the graph to keep scrolling a little bit after
+
+## Big Note about how to translate chart X,Y coordinate to actual canvas pixel position
+
+the x and y axis labels are APART of the chartBounds! That means that if the chart has y-axis labels on the left side that take up 10 pixels of width, and x-axis labels on the bottom side that take up 12 pixels of heigth, then the pixel position of the origin of that chart is actually `{xPosition: 12 + chartBounds.bottom, yPosition: 10 + chartBounds.left}`. If you think about it, this makes sense because the labels take up some of the chart's occupied space. The chart's bounds tell us how much of this space is used in values like `chartBounds.left` and `chartBounds.bottom`: they tell us where the bounds of the visible graph actually begin compared to the bounds of the Skia Canvas that holds both the chart and the labels combined.
