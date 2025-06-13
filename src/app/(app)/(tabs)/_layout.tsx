@@ -55,7 +55,7 @@ export default function TabLayout() {
   const db = useSQLiteContext();
 
   // Use drizzle studio to help debug and query on-device db from your browser - might wanna disable for production
-  useDrizzleStudio(db as any); // cast to any b/c compiler complains despite `db` being the correct type
+  useDrizzleStudio(db); // cast to any b/c compiler complains despite `db` being the correct type
 
   const isWorkoutInProgress = useActiveWorkoutStatus();
 

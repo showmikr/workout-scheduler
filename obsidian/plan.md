@@ -81,3 +81,7 @@ the x and y axis labels are APART of the chartBounds! That means that if the cha
   }}
 </CartesianChart>
 ```
+
+# 6/11/2025
+
+- Work on workout session card UI (copy from figma design)

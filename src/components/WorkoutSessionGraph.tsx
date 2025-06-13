@@ -25,6 +25,7 @@ import {
   withTiming,
 } from "react-native-reanimated";
 import { Gesture } from "react-native-gesture-handler";
+import { WorkoutSessionDisplayCard } from "./WorkoutSessionCard";
 
 export default function GraphPage() {
   const { data: sessions, isLoading } = useOneYearWorkoutSessions();
@@ -218,6 +219,11 @@ const Graph = ({
           lastPanX.value = 0;
           scrollOffX.value = 0;
         }}
+      />
+      <WorkoutSessionDisplayCard
+        title={"Leg Day Workout"}
+        calories={330}
+        dateDisplay={"May 24"}
       />
     </>
   );
