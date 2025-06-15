@@ -64,8 +64,20 @@ export default function TabOneScreen() {
         style={styles.btnStyle}
         onPress={() => {
           const subject = session.subjectClaim;
-          signOut();
-          deleteDB(`${subject}.db`).then();
+          deleteDB(db)
+            .then((isDeleted) => {
+              if (!isDeleted) {
+                console.log(`${subject}.db doesn't exist, quitting deletion`);
+              } else {
+                console.log(`successfully deleted ${subject}.db`);
+              }
+            })
+            .then(() => {
+              signOut();
+            })
+            .catch((err) => {
+              console.error(err);
+            });
         }}
       >
         <ThemedText style={styles.btnTitle}>Reinitialize Database</ThemedText>

@@ -4,12 +4,7 @@ import * as SQLite from "expo-sqlite";
 import { migrate } from "drizzle-orm/expo-sqlite/migrator";
 import { SQLiteDatabase } from "expo-sqlite";
 import migrations from "drizzle/migrations";
-
-async function doesLocalDbExist(dbFileName: string) {
-  const filePath = FileSystem.documentDirectory + "SQLite/" + dbFileName;
-  const fileInfo = await FileSystem.getInfoAsync(filePath);
-  return fileInfo.exists;
-}
+import * as schema from "@/db/schema";
 
 /* deletes the database.
  * We're expecting that there's a sql init script that
@@ -18,18 +13,28 @@ async function doesLocalDbExist(dbFileName: string) {
  * be used in conjunction with reinitializing the db when we change
  * the sql init script. Also, understand that this function should
  * ONLY be used in development mode, NOT for release builds!
+ *
+ * @returns true if the db was deleted, false if it didn't exist
  */
-async function deleteDB(dbFileName: string) {
-  const dbExists = await doesLocalDbExist(dbFileName);
-  if (!dbExists) {
-    console.log("db doesn't exist, quitting deletion");
-    return;
+async function deleteDB(db: SQLiteDatabase): Promise<boolean> {
+  try {
+    const dbFilePathInfo = await FileSystem.getInfoAsync(db.databasePath);
+    const pathSegments = db.databasePath.split("/");
+    const dbName = pathSegments[pathSegments.length - 1];
+
+    if (!dbFilePathInfo.exists) {
+      console.log(`${db.databasePath} doesn't exist, quitting deletion`);
+      return false;
+    }
+
+    // Otherwise, delete the db
+    await db.closeAsync();
+    await SQLite.deleteDatabaseAsync(dbName);
+    return true;
+  } catch (err) {
+    console.error(err);
+    return false;
   }
-  // Otherwise, delete the db
-  const db = await SQLite.openDatabaseAsync(dbFileName);
-  await db.closeAsync();
-  await SQLite.deleteDatabaseAsync(dbFileName);
-  console.log(`${dbFileName} successfully deleted`);
 }
 
 async function initDb(db: SQLiteDatabase) {
@@ -58,12 +63,13 @@ async function initDb(db: SQLiteDatabase) {
     return;
   }
 
-  const drizzleDb = drizzle(db);
+  const drizzleDb = drizzle(db, { schema });
   await migrate(drizzleDb, migrations);
 
   console.log(
-    `${db.databasePath} successfully created and initialized w/ all necessary sql migrations`
+    "successfully created and initialized w/ all necessary sql migrations"
   );
+  console.log(`Created database path: ${db.databasePath}`);
 }
 
 export { deleteDB, initDb };
