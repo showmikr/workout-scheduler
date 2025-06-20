@@ -5,6 +5,7 @@ import { initDb } from "@/utils/db-utils";
 import { View } from "react-native";
 import { AppUserIdProvider } from "@/context/app-user-id-provider";
 import { DrizzleProvider } from "@/db/drizzle-context";
+import { DrizzleTestDbProvider } from "@/db/drizzle-test-db";
 
 export default function AppLayout() {
   const { session } = useSession();
@@ -19,29 +20,31 @@ export default function AppLayout() {
       options={{ enableChangeListener: true }} // Enable change listener for SQLite for live updates with drizzle's `useLiveQuery`
     >
       <DrizzleProvider>
-        <AppUserIdProvider>
-          <Stack screenOptions={{ animation: "default", headerShown: true }}>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-            <Stack.Screen
-              name="active-workout/index"
-              options={{ title: "Active Workout" }}
-            />
-            <Stack.Screen
-              name="active-workout/add-exercise"
-              options={{ presentation: "modal", title: "Choose an exercise" }}
-            />
-            <Stack.Screen
-              name="hello"
-              options={{
-                headerBackTitle: "Back",
-                headerBackground: () => (
-                  <View style={{ flex: 1, opacity: 1 }} />
-                ),
-              }}
-            />
-          </Stack>
-        </AppUserIdProvider>
+        <DrizzleTestDbProvider>
+          <AppUserIdProvider>
+            <Stack screenOptions={{ animation: "default", headerShown: true }}>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+              <Stack.Screen
+                name="active-workout/index"
+                options={{ title: "Active Workout" }}
+              />
+              <Stack.Screen
+                name="active-workout/add-exercise"
+                options={{ presentation: "modal", title: "Choose an exercise" }}
+              />
+              <Stack.Screen
+                name="hello"
+                options={{
+                  headerBackTitle: "Back",
+                  headerBackground: () => (
+                    <View style={{ flex: 1, opacity: 1 }} />
+                  ),
+                }}
+              />
+            </Stack>
+          </AppUserIdProvider>
+        </DrizzleTestDbProvider>
       </DrizzleProvider>
     </SQLiteProvider>
   );

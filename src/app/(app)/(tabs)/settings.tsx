@@ -18,6 +18,7 @@ import { useAppUserId } from "@/context/app-user-id-provider";
 import WeightAdjustView from "@/components/WeightAdjustView";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { appUser } from "@/db/schema";
+import { useDeleteDrizzleTestDb } from "@/db/drizzle-test-db";
 
 export default function TabOneScreen() {
   const appUserId = useAppUserId();
@@ -29,6 +30,8 @@ export default function TabOneScreen() {
       console.log(item);
     });
   };
+
+  const deleteDrizzleTestDb = useDeleteDrizzleTestDb();
 
   type UserFields = {
     id: number;
@@ -71,6 +74,9 @@ export default function TabOneScreen() {
               } else {
                 console.log(`successfully deleted ${subject}.db`);
               }
+            })
+            .then(() => {
+              deleteDrizzleTestDb();
             })
             .then(() => {
               signOut();

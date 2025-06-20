@@ -9,8 +9,8 @@ export default function SignIn() {
   const colorScheme = useColorScheme();
   // `deleteDB` is for when I want to delete and reinit the db on app start
   // useful for when db is corrupted or failing to load
-  // This assumes the db file is using the subjectClaim written in the session-provider.tsx file
-  // deleteDB("c8bf7e34-7dcf-11ee-b962-0242ac120002.db");
+  // const drizzleDb = useDrizzle();
+  // deleteDB(drizzleDb.$client);
 
   return !session ?
       <View

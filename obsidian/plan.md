@@ -85,3 +85,20 @@ the x and y axis labels are APART of the chartBounds! That means that if the cha
 # 6/11/2025
 
 - Work on workout session card UI (copy from figma design)
+
+# 6/15/2025
+
+I have to create all the tables in the test database manually for the test drizzle db b/c it's not running the migrations of the
+main db. Hence, the need for the manual creaion of tables in the test db.
+
+# 6/17/2025
+
+- Need to figure out why `deleteDatabaseAsync` isn't working on the test db. According to the error message, it's because the db is still open. It might have to do with the fact that the db reference I'm passing to `deleteDatabaseAsync` function isn't the same as the one I'm using in the `useDrizzleTestDb` hook. I'll have to investigate this further.
+
+# 6/18/2025
+
+The reason for teh errors for `deleteDatabaseAsync` is because I made more than one call to `openDatabaseAsync` in the code (like useEffect calling it twice or the page loading twice). Multiple calls to `openDatabaseAsync` will create multiple connections in the pool and the `deleteDatabaseAsync` function will only delete the database without error once you've called `closeAsync` (on any one of the connections) for as many times as there are connections in the pool.
+
+# 6/19/2025
+
+- I'm going to make it so that we can properly open and close the test db without errors/warnings. Everytime we open the db, we'll need to make sure we close it (that means we return a cleanup function from the useEffect hook).
