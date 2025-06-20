@@ -1,16 +1,21 @@
-import { Pressable, View, StyleSheet, useColorScheme } from "react-native";
+import {
+  Pressable,
+  View,
+  StyleSheet,
+  useColorScheme,
+  Button,
+} from "react-native";
 import { useSession } from "@/context/session-provider";
 import { Redirect } from "expo-router";
 import { TokenResponse } from "expo-auth-session";
 import { ThemedText } from "@/components/Themed";
+import { useDeleteDrizzleTestDb } from "@/db/drizzle-test-db";
 
 export default function SignIn() {
   const { signIn, session } = useSession();
   const colorScheme = useColorScheme();
-  // `deleteDB` is for when I want to delete and reinit the db on app start
-  // useful for when db is corrupted or failing to load
-  // const drizzleDb = useDrizzle();
-  // deleteDB(drizzleDb.$client);
+
+  const deleteDB = useDeleteDrizzleTestDb();
 
   return !session ?
       <View
@@ -34,6 +39,9 @@ export default function SignIn() {
         >
           <ThemedText style={styles.textStyle}>Sign In</ThemedText>
         </Pressable>
+        <View style={{ marginTop: 36 }}>
+          <Button title="Delete DB" onPress={deleteDB} />
+        </View>
       </View>
     : <Redirect href="/" />;
 }

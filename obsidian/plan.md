@@ -109,3 +109,10 @@ I want to genereate the seed data for the test db using drizzle-seed.
 
 1. We'll need to generate arrays of the constants (like exercises, exercise classes, etc.)
 2. We'll plug in those arrays to the seed data generator function to randomly select from the arrays
+
+# 6/22/2025
+
+Finish up seeding all the data for test db
+
+- This means inserting all workouts, associated exercises, exercise sets and...
+- reading out the workout and exercise data

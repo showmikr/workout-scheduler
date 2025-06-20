@@ -56,6 +56,7 @@ const onInit = async (db: SQLiteDatabase) => {
       migrations: { m0000: myMigrations.m0000 },
     });
     await seedData.generate(db);
+    // await seedData.generate(db);
   } catch (err) {
     console.error(err);
   }
