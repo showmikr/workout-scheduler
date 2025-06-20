@@ -5,7 +5,7 @@ import { initDb } from "@/utils/db-utils";
 import { View } from "react-native";
 import { AppUserIdProvider } from "@/context/app-user-id-provider";
 import { DrizzleProvider } from "@/db/drizzle-context";
-import { DrizzleTestDbProvider } from "@/db/drizzle-test-db";
+import { DrizzleTestDbProvider } from "@/db/drizzle-test-db-provider";
 
 export default function AppLayout() {
   const { session } = useSession();

@@ -102,3 +102,10 @@ The reason for teh errors for `deleteDatabaseAsync` is because I made more than 
 # 6/19/2025
 
 - I'm going to make it so that we can properly open and close the test db without errors/warnings. Everytime we open the db, we'll need to make sure we close it (that means we return a cleanup function from the useEffect hook).
+
+# 6/21/2025
+
+I want to genereate the seed data for the test db using drizzle-seed.
+
+1. We'll need to generate arrays of the constants (like exercises, exercise classes, etc.)
+2. We'll plug in those arrays to the seed data generator function to randomly select from the arrays

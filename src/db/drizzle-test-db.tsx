@@ -1,12 +1,6 @@
-import { deleteDatabaseAsync, openDatabaseAsync } from "expo-sqlite";
-import { drizzle } from "drizzle-orm/expo-sqlite";
-import { migrate } from "drizzle-orm/expo-sqlite/migrator";
-import migrations from "drizzle/migrations";
-import * as schema from "@/db/schema";
+import { deleteDatabaseAsync } from "expo-sqlite";
 import { create } from "zustand";
 import { DrizzleDatabase } from "./drizzle-context";
-import { ActivityIndicator, SafeAreaView } from "react-native";
-import { useEffect } from "react";
 
 const testDbName = "test.db";
 
@@ -16,6 +10,7 @@ type DrizzleTestDbStore = {
   setFetching: (loading: boolean) => void;
   error: Error | null;
   setError: (error: Error | null) => void;
+  hasDbBeenInitialized: boolean;
   setDatabase: (db: DrizzleDatabase | null) => void;
   deleteDb: () => Promise<void>;
 };
@@ -23,18 +18,20 @@ type DrizzleTestDbStore = {
 const useDrizzleTestDbStore = create<DrizzleTestDbStore>()((set, get) => {
   return {
     db: null,
-    setDatabase: (inputDb) => set({ db: inputDb }),
+    setDatabase: (inputDb) =>
+      set({ db: inputDb, hasDbBeenInitialized: inputDb ? true : false }),
     isFetching: false,
     setFetching: (inputLoading) => set({ isFetching: inputLoading }),
     error: null,
     setError: (inputError) => set({ error: inputError }),
+    hasDbBeenInitialized: false,
     deleteDb: async () => {
       const db = get().db;
       const setFetching = get().setFetching;
       try {
         setFetching(true);
         if (!db) {
-          throw new Error("db is null");
+          throw new Error("db reference is null");
         }
         await db.$client.closeAsync();
         await deleteDatabaseAsync(testDbName);
@@ -48,56 +45,6 @@ const useDrizzleTestDbStore = create<DrizzleTestDbStore>()((set, get) => {
     },
   } satisfies DrizzleTestDbStore;
 });
-
-const LoadingSpinnerScreen = () => {
-  return (
-    <SafeAreaView
-      style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-    >
-      <ActivityIndicator />
-    </SafeAreaView>
-  );
-};
-
-const DrizzleTestDbProvider = (props: React.PropsWithChildren) => {
-  const { db, setDatabase, isFetching, setFetching, setError } =
-    useDrizzleTestDbStore();
-
-  const garbageCollect = async () => {
-    try {
-      await db?.$client.closeAsync();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    if (db) {
-      console.log("db already exists, skipping init");
-      return;
-    }
-    setFetching(true);
-    openDatabaseAsync(testDbName)
-      .then((expoDb) => {
-        const drizzleTestDb = drizzle(expoDb, { schema });
-        setDatabase(drizzleTestDb);
-        console.log("opened test db");
-      })
-      .catch((err) => {
-        setError(err);
-        console.error(err);
-      })
-      .finally(() => {
-        setFetching(false);
-      });
-
-    return () => {
-      garbageCollect();
-    };
-  }, []);
-
-  return !db || isFetching ? <LoadingSpinnerScreen /> : props.children;
-};
 
 const useDrizzleTestDb = () => {
   const db = useDrizzleTestDbStore((state) => state.db);
@@ -113,4 +60,9 @@ const useDeleteDrizzleTestDb = () => {
   return useDrizzleTestDbStore((state) => state.deleteDb);
 };
 
-export { DrizzleTestDbProvider, useDrizzleTestDb, useDeleteDrizzleTestDb };
+export {
+  useDrizzleTestDb,
+  useDrizzleTestDbStore,
+  useDeleteDrizzleTestDb,
+  testDbName,
+};

@@ -26,6 +26,8 @@ import {
 } from "react-native-reanimated";
 import { Gesture } from "react-native-gesture-handler";
 import { WorkoutSessionDisplayCard } from "./WorkoutSessionCard";
+import { useDrizzleTestDb } from "@/db/drizzle-test-db";
+import { seedData } from "@/db/drizzle-seed-data";
 
 export default function GraphPage() {
   const { data: sessions, isLoading } = useOneYearWorkoutSessions();
@@ -65,6 +67,7 @@ const Graph = ({
   >;
   isLoading: boolean;
 }) => {
+  const testDb = useDrizzleTestDb();
   const font = useFont(require("src/assets/fonts/SpaceMono-Regular.ttf"), 12);
 
   const timeSpanCutoffIndices = useMemo(
@@ -225,6 +228,23 @@ const Graph = ({
         calories={330}
         dateDisplay={"May 24"}
       />
+      <View style={{ marginTop: 32 }}>
+        <Button
+          title="Read Test DB"
+          onPress={() => {
+            seedData
+              .read(testDb)
+              .then((res) => {
+                res.forEach((row) => {
+                  console.log(row);
+                });
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+          }}
+        />
+      </View>
     </>
   );
 };

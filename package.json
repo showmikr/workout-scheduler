@@ -25,6 +25,7 @@
     "babel-plugin-inline-import": "^3.0.0",
     "core-js": "^3.37.1",
     "drizzle-orm": "^0.41.0",
+    "drizzle-seed": "^0.3.1",
     "expo": "53.0.9",
     "expo-asset": "~11.1.5",
     "expo-auth-session": "~6.1.5",
