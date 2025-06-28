@@ -5,7 +5,7 @@ import { SQLiteDatabase } from "expo-sqlite";
 type WorkoutDetails = {
   title: string;
   startTime: string; // expecting ISO 8601 date time format: YYYY-MM-DDTHH:mm:ss.sssZ
-  endTime: string; // expecting ISO 8601 date time format: YYYY-MM-DDTHH:mm:ss.sssZ
+  duration: number; // in seconds
   exercises: Map<
     number,
     { activeExercise: ActiveExercise; activeSets: ActiveSet[] }
@@ -21,15 +21,15 @@ const saveWorkoutSession = async ({
   appUserId: number;
   workoutDetails: WorkoutDetails;
 }) => {
-  const { title, startTime, endTime, exercises } = workoutDetails;
+  const { title, startTime, duration, exercises } = workoutDetails;
   // Write single entry to workout_session table
   db.withTransactionAsync(async () => {
     const workoutSessionInsert = await db.runAsync(
       `
-    INSERT INTO workout_session (app_user_id, title, started_on, ended_on) 
+    INSERT INTO workout_session (app_user_id, title, started_on, duration) 
     VALUES (?, ?, ?, ?)
     `,
-      [appUserId, title, startTime, endTime]
+      [appUserId, title, startTime, duration]
     );
     const workoutSessionId = workoutSessionInsert.lastInsertRowId;
     console.log("workout_session_id:", workoutSessionId);

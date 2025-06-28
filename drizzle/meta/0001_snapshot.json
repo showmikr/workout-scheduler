@@ -1,6 +1,6 @@
 {
-  "id": "eaa2bd5f-30c9-432e-95c7-1f533900d2f3",
-  "prevId": "56e4dacd-d9e9-45c2-b3ad-ac37467ba9fc",
+  "id": "eeffe3a8-8141-46c5-b773-2156eaa86c27",
+  "prevId": "57ceb559-0c00-4f22-a647-716f6dba95a9",
   "version": "6",
   "dialect": "sqlite",
   "tables": {
@@ -965,9 +965,9 @@
           "notNull": true,
           "autoincrement": false
         },
-        "ended_on": {
-          "name": "ended_on",
-          "type": "text",
+        "duration": {
+          "name": "duration",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

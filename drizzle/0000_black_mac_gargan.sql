@@ -142,7 +142,7 @@ CREATE TABLE `workout_session` (
 	`app_user_id` integer NOT NULL,
 	`title` text DEFAULT 'Custom Workout' NOT NULL,
 	`started_on` text NOT NULL,
-	`ended_on` text NOT NULL,
+	`duration` integer NOT NULL,
 	`calories` integer,
 	FOREIGN KEY (`app_user_id`) REFERENCES `app_user`(`id`) ON UPDATE cascade ON DELETE cascade
 );

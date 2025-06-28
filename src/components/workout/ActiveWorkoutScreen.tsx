@@ -21,7 +21,6 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Button,
-  LayoutAnimation,
 } from "react-native";
 import { ThemedText } from "../Themed";
 import { router } from "expo-router";
@@ -35,7 +34,7 @@ import { colorBox, figmaColors } from "@/constants/Colors";
 import { useSaveWorkoutSession } from "@/hooks/active-workout";
 import { useSQLiteContext } from "expo-sqlite";
 import { useAppUserId } from "@/context/app-user-id-provider";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import CustomAnimatedButton from "@/components/CustomAnimatedButton";
 import { calculatePlates } from "../CardUnderlay";
 
@@ -112,7 +111,7 @@ const ActiveWorkoutFooter = () => {
   const saveWorkoutMutation = useSaveWorkoutSession();
   const saveWorkout = useCallback(() => {
     console.log("Class Dismissed");
-    const { exercises, sets, title, workoutStartTime } =
+    const { exercises, sets, title, workoutStartTime, elapsedTime } =
       getLatestActiveWorkoutSnapshot();
     const exerciseEntries: Array<
       [number, { activeExercise: ActiveExercise; activeSets: ActiveSet[] }]
@@ -128,9 +127,8 @@ const ActiveWorkoutFooter = () => {
     const exerciseMap = new Map(exerciseEntries);
     console.log("workoutStartTime", workoutStartTime);
     const startTimeISO = new Date(workoutStartTime).toISOString();
-    const endTimeISO = new Date().toISOString();
     console.log("start", startTimeISO);
-    console.log("end", endTimeISO);
+    console.log("elapsedTime", elapsedTime);
     saveWorkoutMutation.mutate({
       db,
       appUserId,
@@ -138,7 +136,7 @@ const ActiveWorkoutFooter = () => {
         title,
         exercises: exerciseMap,
         startTime: startTimeISO,
-        endTime: endTimeISO,
+        duration: elapsedTime,
       },
     });
   }, [saveWorkoutMutation, db, appUserId]);

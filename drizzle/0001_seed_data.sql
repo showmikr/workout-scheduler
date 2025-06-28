@@ -1,4 +1,5 @@
 -- Custom SQL migration file, put your code below! --
+-- Custom SQL migration file, put your code below! --
 INSERT INTO app_user (aws_cognito_sub, first_name, last_name, user_name, email, email_verified, image_url, creation_date, last_signed_in, avg_daily_calorie_goal, bodyweight_goal, user_height)
   VALUES
 	('c8bf7e34-7dcf-11ee-b962-0242ac120002', 'David', 'Shcherbina', 'kalashnikov', 'davidshcherbina@gmail.com', true, null, '2022-05-07T14:12:34.000Z', '2023-11-07T19:12:34.000Z', 150, 79.37866, 1.8288);
@@ -400,7 +401,7 @@ CREATE TEMPORARY TABLE workout_sessions(
     app_user_id INTEGER,
     title_id INTEGER,
     started_on TEXT,
-    ended_on TEXT,
+    duration INTEGER,
     calories INTEGER
 );
 --> statement-breakpoint
@@ -409,7 +410,7 @@ SELECT
     1 as app_user_id,
     (ABS(random()) % 7 + 1) as title_id,
     date as started_on,
-    datetime(date, '+' || (20 + ABS(random()) % 161) || ' minutes') as ended_on,
+    ((20 + ABS(random()) % 161) * 60) as duration,
     80 + ABS(random()) % 421 as calories
 FROM dates
 LIMIT 200;
@@ -459,7 +460,7 @@ CROSS JOIN (SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5
 --> statement-breakpoint
 
 -- Insert workout sessions
-INSERT INTO workout_session (app_user_id, title, started_on, ended_on, calories)
+INSERT INTO workout_session (app_user_id, title, started_on, duration, calories)
 SELECT
     app_user_id,
     CASE title_id
@@ -472,7 +473,7 @@ SELECT
         WHEN 7 THEN 'Power Lifting'
     END as title,
     started_on,
-    ended_on,
+    duration,
     calories
 FROM workout_sessions;
 --> statement-breakpoint

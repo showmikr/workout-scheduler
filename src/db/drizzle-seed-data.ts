@@ -1,6 +1,6 @@
 import { DrizzleDatabase } from "./drizzle-context";
 import { drizzle } from "drizzle-orm/expo-sqlite";
-import { asc, eq, and } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { SQLiteDatabase } from "expo-sqlite";
 import {
   appUser,
@@ -13,6 +13,7 @@ import {
   linkTagWorkout,
   resistanceSet,
   workout,
+  workoutSession,
   workoutTag,
 } from "./schema";
 
@@ -177,6 +178,19 @@ const lbsToKg = (lbs: number) => Math.round(lbs * 0.453592);
 function zipArrays<T, U>(arr1: Array<T>, arr2: Array<U>): Array<[T, U]> {
   const shortestArray = arr1.length < arr2.length ? arr1 : arr2;
   return shortestArray.map((_, index) => [arr1[index], arr2[index]]);
+}
+
+function generateLastYearDates() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const lastYear = new Date(today);
+  lastYear.setFullYear(today.getFullYear() - 1);
+  const dates: string[] = [];
+  for (let d = lastYear; d <= today; d.setDate(d.getDate() + 1)) {
+    dates.push(d.toISOString());
+  }
+  const filteredDates = dates.filter((_date) => Math.random() <= 0.6);
+  return filteredDates;
 }
 
 async function generateSeedData(expoDb: SQLiteDatabase) {
@@ -480,6 +494,15 @@ async function generateSeedData(expoDb: SQLiteDatabase) {
       }
     }
   }
+
+  const workoutSessionsList = generateLastYearDates().map((date) => ({
+    title: workoutList[Math.floor(Math.random() * workoutList.length)].title,
+    appUserId: testUserId,
+    calories: Math.floor(Math.random() * 500 + 200),
+    startedOn: date,
+    duration: Math.floor((Math.random() * 110 + 30) * 60),
+  }));
+  await db.insert(workoutSession).values(workoutSessionsList);
 }
 
 /**
@@ -593,36 +616,7 @@ const prHistoryList = [
 ];
 
 const realReadTestDb = async (db: DrizzleDatabase) => {
-  // building out a query to test if we can get all seeded workouts and their exercises
-  const res = await db
-    .select({
-      title: exerciseClass.title,
-      exerciseType: exerciseType.title,
-      exerciseEquipment: exerciseEquipment.title,
-      bodyPart: bodyPart.title,
-      workoutId: workout.id,
-      reps: exerciseSet.reps,
-      totalWeight: resistanceSet.totalWeight,
-    })
-    .from(workout)
-    .innerJoin(exercise, eq(exercise.workoutId, workout.id))
-    .innerJoin(exerciseClass, eq(exerciseClass.id, exercise.exerciseClassId))
-    .innerJoin(
-      exerciseEquipment,
-      eq(exerciseEquipment.id, exerciseClass.exerciseEquipmentId)
-    )
-    .innerJoin(bodyPart, eq(bodyPart.id, exerciseClass.bodyPartId))
-    .innerJoin(exerciseType, eq(exerciseType.id, exerciseClass.exerciseTypeId))
-    .innerJoin(exerciseSet, eq(exerciseSet.exerciseId, exercise.id))
-    .innerJoin(resistanceSet, eq(resistanceSet.exerciseSetId, exerciseSet.id))
-    .where(
-      and(
-        eq(workout.appUserId, 1),
-        eq(workout.id, 2),
-        eq(exerciseType.title, "Resistance")
-      )
-    );
-
+  const res = await db.select().from(workoutSession);
   return res;
 };
 

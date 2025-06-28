@@ -145,7 +145,7 @@ export const workoutSession = sqliteTable("workout_session", {
     .references(() => appUser.id, { onDelete: "cascade", onUpdate: "cascade" }),
   title: text().default("Custom Workout").notNull(),
   startedOn: text("started_on").notNull(),
-  endedOn: text("ended_on").notNull(),
+  duration: integer("duration").notNull(), // measured in seconds
   calories: integer(),
 });
 
