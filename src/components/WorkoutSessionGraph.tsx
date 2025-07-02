@@ -47,16 +47,6 @@ export default function GraphPage() {
   );
 }
 
-const useChartBounds = (initialChartBounds?: ChartBounds) => {
-  const bounds = initialChartBounds ?? {
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-  };
-  return useState(bounds);
-};
-
 const Graph = ({
   sessions,
   isLoading,
