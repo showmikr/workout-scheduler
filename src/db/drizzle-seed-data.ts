@@ -182,7 +182,14 @@ function zipArrays<T, U>(arr1: Array<T>, arr2: Array<U>): Array<[T, U]> {
   return shortestArray.map((_, index) => [arr1[index], arr2[index]]);
 }
 
-function generateLastYearDates() {
+/**
+ *
+ * @param percentKept - percentage of dates to keep from the last year
+ *                      (0.6 means 60% of the dates will be kept)
+ * @returns An array of ISO date strings representing each day from the last year,
+ *          with a random selection based on the percentKept parameter.
+ */
+function generateLastYearDates(percentKept: number = 0.6) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const lastYear = new Date(today);
@@ -191,7 +198,7 @@ function generateLastYearDates() {
   for (let d = lastYear; d <= today; d.setDate(d.getDate() + 1)) {
     dates.push(d.toISOString());
   }
-  const filteredDates = dates.filter((_date) => Math.random() <= 0.6);
+  const filteredDates = dates.filter((_date) => Math.random() <= percentKept);
   return filteredDates;
 }
 
@@ -500,7 +507,7 @@ async function generateSeedData(expoDb: SQLiteDatabase) {
   const workoutSessionsList = generateLastYearDates().map((date) => ({
     title: workoutList[Math.floor(Math.random() * workoutList.length)].title,
     appUserId: testUserId,
-    calories: Math.floor(Math.random() * 400 + 100),
+    calories: Math.floor(Math.random() * 200 + 100),
     startedOn: date,
     duration: Math.floor((Math.random() * 110 + 30) * 60),
   }));
@@ -701,7 +708,7 @@ const prHistoryList = [
   },
 ];
 
-const realReadTestDb = async (db: DrizzleDatabase) => {
+const readTestDb = async (db: DrizzleDatabase) => {
   const workoutCount = await db
     .select({ count: count(workoutSession.id) })
     .from(workoutSession);
@@ -730,6 +737,6 @@ const realReadTestDb = async (db: DrizzleDatabase) => {
   return res;
 };
 
-const seedData = { generate: generateSeedData, read: realReadTestDb };
+const seedData = { generate: generateSeedData, read: readTestDb };
 
 export { seedData };
