@@ -1,6 +1,6 @@
 import { DrizzleDatabase } from "./drizzle-context";
 import { drizzle } from "drizzle-orm/expo-sqlite";
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, and, count } from "drizzle-orm";
 import { SQLiteDatabase } from "expo-sqlite";
 import {
   appUser,
@@ -8,10 +8,12 @@ import {
   exercise,
   exerciseClass,
   exerciseEquipment,
+  exerciseSession,
   exerciseSet,
   exerciseType,
   linkTagWorkout,
   resistanceSet,
+  setSession,
   workout,
   workoutSession,
   workoutTag,
@@ -498,11 +500,95 @@ async function generateSeedData(expoDb: SQLiteDatabase) {
   const workoutSessionsList = generateLastYearDates().map((date) => ({
     title: workoutList[Math.floor(Math.random() * workoutList.length)].title,
     appUserId: testUserId,
-    calories: Math.floor(Math.random() * 500 + 200),
+    calories: Math.floor(Math.random() * 400 + 100),
     startedOn: date,
     duration: Math.floor((Math.random() * 110 + 30) * 60),
   }));
   await db.insert(workoutSession).values(workoutSessionsList);
+
+  const workoutSessionIdList = await db
+    .select({ id: workoutSession.id })
+    .from(workoutSession)
+    .orderBy(asc(workoutSession.id));
+
+  for (const workoutSessionId of workoutSessionIdList.map(({ id }) => id)) {
+    const randomExerciseList = generateExercises(
+      Math.floor(Math.random() * 4 + 2)
+    );
+    for (const exercise of randomExerciseList) {
+      const exerciseSessionId = (
+        await db
+          .insert(exerciseSession)
+          .values({
+            workoutSessionId,
+            exerciseClassId: exerciseClassMap[exercise].id,
+          })
+          .returning({ id: exerciseSession.id })
+      ).at(0)?.id;
+      if (!exerciseSessionId) {
+        throw Error(
+          "exercise session id not returned while seeding workout session"
+        );
+      }
+      const randomizedSets = generateSets({
+        quantity: Math.floor(Math.random() * 4 + 2),
+        prWeight: Math.round(Math.random() * 300 + 50),
+        maxReps: Math.floor(Math.random() * 6 + 18),
+      }).map((set) => {
+        const exerciseTypeString = exerciseClassMap[exercise].exerciseType;
+        const exerciseTypeId = exerciseTypeIdMap[exerciseTypeString];
+        return {
+          exerciseSessionId,
+          reps: set.reps,
+          restTime: set.restTime,
+          totalWeight: set.weight,
+          setType: exerciseTypeId,
+          completed: Math.random() < 0.8, // 80% chance of being completed
+        };
+      });
+      await db.insert(setSession).values(randomizedSets);
+    }
+  }
+}
+
+function getRandomElements<T>(arr: Array<T>, quantity: number): Array<T> {
+  const alreadySelected = new Set<T>();
+  while (alreadySelected.size < quantity) {
+    const selected =
+      arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
+    alreadySelected.add(selected);
+  }
+  return Array.from(alreadySelected);
+}
+
+function generateExercises(quantity: number = 3) {
+  const exerciseClasses = getRandomElements(
+    exerciseClassTitleList as unknown as Array<string>,
+    quantity
+  ) as Array<ExerciseClassTitle>;
+  return exerciseClasses;
+}
+
+function generateSets({
+  quantity,
+  prWeight,
+  maxReps = 20,
+}: {
+  quantity: number;
+  prWeight: number;
+  maxReps?: number; // Optional, defaults to 20
+}) {
+  const logisticGrowth = (x: number) => prWeight / (1 + Math.exp(-x));
+  const logisticDescent = (x: number) => (maxReps * 2) / (1 + Math.exp(x));
+  const sets = Array.from({ length: quantity }, (_, i) => {
+    const xValue = (2 / (quantity - 1)) * i;
+    return {
+      reps: Math.round(logisticDescent(xValue)),
+      weight: Math.round(logisticGrowth(xValue)),
+      restTime: Math.floor(Math.random() * 150 + 30), // Random rest time between 30 and 180 seconds
+    };
+  });
+  return sets;
 }
 
 /**
@@ -616,7 +702,31 @@ const prHistoryList = [
 ];
 
 const realReadTestDb = async (db: DrizzleDatabase) => {
-  const res = await db.select().from(workoutSession);
+  const workoutCount = await db
+    .select({ count: count(workoutSession.id) })
+    .from(workoutSession);
+  console.log("Workout session count:", workoutCount[0].count);
+  const res = await db
+    .select({
+      id: setSession.id,
+      exerciseId: exerciseSession.id,
+      title: exerciseClass.title,
+      reps: setSession.reps,
+      weight: setSession.totalWeight,
+      restTime: setSession.restTime,
+      completed: setSession.completed,
+    })
+    .from(workoutSession)
+    .innerJoin(
+      exerciseSession,
+      eq(workoutSession.id, exerciseSession.workoutSessionId)
+    )
+    .innerJoin(
+      exerciseClass,
+      eq(exerciseSession.exerciseClassId, exerciseClass.id)
+    )
+    .innerJoin(setSession, eq(exerciseSession.id, setSession.exerciseSessionId))
+    .where(and(eq(workoutSession.appUserId, 1), eq(workoutSession.id, 1)));
   return res;
 };
 

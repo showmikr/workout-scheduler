@@ -116,3 +116,9 @@ Finish up seeding all the data for test db
 
 - This means inserting all workouts, associated exercises, exercise sets and...
 - reading out the workout and exercise data
+
+# 6/23/2025
+
+- Make a function that can make random seed exercise with sets. The weight of each set should follow an upward trend.
+- Need to test if I'm properly adding the exercise sessions and set sessions now that I've written the code for it.
+  - Above is done and looks to be working. I can see the data in the test db and it looks correct.
