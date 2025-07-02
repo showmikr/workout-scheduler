@@ -82,10 +82,11 @@ const Graph = ({
   );
 
   useEffect(() => {
-    chartOpacity.value = withSequence(
-      withTiming(0, { duration: 10, easing: Easing.in(Easing.ease) }),
-      withTiming(1, { duration: 350, easing: Easing.out(Easing.ease) })
-    );
+    chartOpacity.value = 0;
+    chartOpacity.value = withTiming(1, {
+      duration: 350,
+      easing: Easing.out(Easing.ease),
+    });
     state.matrix.value = setTranslate(state.matrix.value, 0, 0);
     lastPanX.value = 0;
     scrollOffX.value = 0;
