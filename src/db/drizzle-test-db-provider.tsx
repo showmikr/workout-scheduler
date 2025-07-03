@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { openDatabaseAsync, SQLiteDatabase } from "expo-sqlite";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { migrate } from "drizzle-orm/expo-sqlite/migrator";
-import { seedData } from "./drizzle-seed-data";
+import { generateSeedData } from "./drizzle-seed-data";
 import * as schema from "@/db/schema";
 import migrations from "drizzle/migrations";
 import { ThemedText } from "@/components/Themed";
@@ -55,8 +55,7 @@ const onInit = async (db: SQLiteDatabase) => {
       journal: { ...myJournal, entries: [myJournal.entries[0]] },
       migrations: { m0000: myMigrations.m0000 },
     });
-    await seedData.generate(db);
-    // await seedData.generate(db);
+    await generateSeedData(drizzleDb);
   } catch (err) {
     console.error(err);
   }

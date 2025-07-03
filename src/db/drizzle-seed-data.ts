@@ -1,7 +1,5 @@
 import { DrizzleDatabase } from "./drizzle-context";
-import { drizzle } from "drizzle-orm/expo-sqlite";
 import { asc, eq, and, count } from "drizzle-orm";
-import { SQLiteDatabase } from "expo-sqlite";
 import {
   appUser,
   bodyPart,
@@ -202,9 +200,7 @@ function generateLastYearDates(percentKept: number = 0.6) {
   return filteredDates;
 }
 
-async function generateSeedData(expoDb: SQLiteDatabase) {
-  const db = drizzle(expoDb);
-
+async function generateSeedData(db: DrizzleDatabase) {
   await db.insert(appUser).values(testUser);
 
   await db.insert(workoutTag).values([
@@ -708,7 +704,7 @@ const prHistoryList = [
   },
 ];
 
-const readTestDb = async (db: DrizzleDatabase) => {
+const readSeedData = async (db: DrizzleDatabase) => {
   const workoutCount = await db
     .select({ count: count(workoutSession.id) })
     .from(workoutSession);
@@ -737,6 +733,4 @@ const readTestDb = async (db: DrizzleDatabase) => {
   return res;
 };
 
-const seedData = { generate: generateSeedData, read: readTestDb };
-
-export { seedData };
+export { generateSeedData, readSeedData };

@@ -1,7 +1,6 @@
 import { ActivityIndicator, Button, SafeAreaView, View } from "react-native";
 import {
   CartesianChart,
-  ChartBounds,
   Line,
   Scatter,
   setTranslate,
@@ -27,7 +26,7 @@ import {
 import { Gesture } from "react-native-gesture-handler";
 import { WorkoutSessionDisplayCard } from "./WorkoutSessionCard";
 import { useDrizzleTestDb } from "@/db/drizzle-test-db";
-import { seedData } from "@/db/drizzle-seed-data";
+import { readSeedData } from "@/db/drizzle-seed-data";
 
 export default function GraphPage() {
   const { data: sessions, isLoading } = useOneYearWorkoutSessions();
@@ -223,8 +222,7 @@ const Graph = ({
         <Button
           title="Read Test DB"
           onPress={() => {
-            seedData
-              .read(testDb)
+            readSeedData(testDb)
               .then((res) => {
                 res.forEach((row) => {
                   console.log(row);
