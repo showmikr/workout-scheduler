@@ -1,24 +1,9 @@
-import { exerciseEnums } from "@/utils/exercise-types";
-import { SQLiteDatabase } from "expo-sqlite";
 import { workoutSession } from "@/db/schema";
-import { getTableColumns, sql, desc, eq, and, isNotNull } from "drizzle-orm";
+import { getTableColumns, desc, eq, and, isNotNull } from "drizzle-orm";
 import { DrizzleDatabase, useDrizzle } from "@/db/drizzle-context";
 import { useAppUserId } from "@/context/app-user-id-provider";
 import { useQuery } from "@tanstack/react-query";
 import { bisectRight } from "@/utils/bisect";
-
-type ExerciseSession = {
-  id: number;
-  exerciseClassId: number;
-};
-
-type SetSession = {
-  id: number;
-  reps: number;
-  totalWeight: number;
-  rest: number;
-  completed: boolean;
-};
 
 /**
  * Gets all workout sessions in sorted order from most recent to least recent
@@ -34,7 +19,7 @@ async function getOneYearWorkoutSessions(
   db: DrizzleDatabase,
   appUserId: number
 ) {
-  const { id, title, calories, startedOn, endedOn } =
+  const { id, title, calories, startedOn, duration } =
     getTableColumns(workoutSession);
   const workoutSessions = await db
     .select({
@@ -44,7 +29,7 @@ async function getOneYearWorkoutSessions(
       startDate: startedOn
         .getSQL()
         .mapWith((isoTimestamp: string) => new Date(isoTimestamp)),
-      elapsedTime: sql<number>`unixepoch(${endedOn}) - unixepoch(${startedOn})`,
+      elapsedTime: duration,
     })
     .from(workoutSession)
     .where(and(eq(workoutSession.appUserId, appUserId), isNotNull(calories)))
@@ -188,6 +173,13 @@ const useWorkoutSessionsByTimeSpan = (timeSpan: WorkoutSessionsTimeSpan) => {
   });
 };
 
+const dayMilliseconds = 24 * 60 * 60 * 1000;
+const timeSpanMilliseconds = {
+  Y: 365 * dayMilliseconds,
+  "6M": 6 * (365 / 12) * dayMilliseconds,
+  M: (365 / 12) * dayMilliseconds,
+  W: 7 * dayMilliseconds, // 1 week case
+} as const;
 /**
  * Keep in mind this function assumes
  * that the workoutSessions list is sorted in descending order
@@ -206,29 +198,16 @@ const timeSpanCutoffIndex = (
   windowLength: number = workoutSessions.length
 ) => {
   const now = Date.now();
-  const dayMilliseconds = 24 * 60 * 60 * 1000;
-  const timeSpanMilliseconds =
-    timeSpan === "Y" ? 365 * dayMilliseconds
-    : timeSpan === "6M" ? 6 * (365 / 12) * dayMilliseconds
-    : timeSpan === "M" ? (365 / 12) * dayMilliseconds
-    : 7 * dayMilliseconds; // 1 week case
-
-  const cutoff = new Date(now - timeSpanMilliseconds);
+  const cutoff = new Date(now - timeSpanMilliseconds[timeSpan]);
   cutoff.setUTCHours(0, 0, 0, 0); // Set to start of the day
 
-  // Perform binary search to find the index of the first workout session
-  // that is older than the cutoff date
-  let left = 0;
-  let right = windowLength;
-  while (left < right) {
-    const mid = Math.floor((left + right) / 2);
-    if (workoutSessions[mid].startDate >= cutoff) {
-      left = mid + 1;
-    } else {
-      right = mid;
-    }
-  }
-  return left;
+  return bisectRight({
+    array: workoutSessions,
+    value: cutoff,
+    valueExtractor: (session) => session.startDate,
+    ascending: false,
+    searchWindow: [0, windowLength],
+  });
 };
 
 /**
@@ -238,7 +217,7 @@ const timeSpanCutoffIndex = (
  * which requires a list of sections as data.
  */
 export async function useMonthlyWorkoutSessions() {
-  const { id, title, startedOn, endedOn, appUserId } =
+  const { id, title, startedOn, duration, appUserId } =
     getTableColumns(workoutSession);
   const db = useDrizzle();
   const workoutSessions = await db
@@ -248,9 +227,7 @@ export async function useMonthlyWorkoutSessions() {
       startedOn: startedOn
         .getSQL()
         .mapWith((timestamp: string) => new Date(timestamp)),
-      elapsedTime: sql<number>`unixepoch(${endedOn}) - unixepoch(${startedOn})`,
-      // year: sql<number>`strftime(%Y, ${startedOn})`,
-      // month: sql<number>`strftime(%m, ${startedOn})`,
+      elapsedTime: duration,
     })
     .from(workoutSession)
     .where(eq(appUserId, 1))
@@ -278,49 +255,6 @@ export async function useMonthlyWorkoutSessions() {
   }
 
   return workoutSections;
-}
-
-async function getExerciseSessions({
-  db,
-  workoutSessionId,
-}: {
-  db: SQLiteDatabase;
-  workoutSessionId: number;
-}) {
-  return db.getAllAsync<ExerciseSession>(
-    `SELECT
-      id,
-      exercise_class_id as exerciseClassId
-    FROM exercise_session
-    WHERE workout_session_id = ?`,
-    [workoutSessionId]
-  );
-}
-
-async function getResistanceSetSession({
-  db,
-  exerciseSessionId,
-}: {
-  db: SQLiteDatabase;
-  exerciseSessionId: number;
-}) {
-  const exerciseSessions = await db.getAllAsync<SetSession>(
-    `SELECT
-      id,
-      reps,
-      total_weight,
-      rest_time,
-      completed
-    FROM set_session
-    WHERE exercise_session_id = ? AND set_type = ?`,
-    [exerciseSessionId, exerciseEnums.RESISTANCE_ENUM]
-  );
-  // Cast the completed property to boolean
-  for (let i = 0; i < exerciseSessions.length; i++) {
-    exerciseSessions[i].completed =
-      exerciseSessions[i].completed ? true : false;
-  }
-  return exerciseSessions;
 }
 
 export { useOneYearWorkoutSessions, findCutoffIndices, timeSpanLabels };

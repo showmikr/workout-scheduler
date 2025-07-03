@@ -75,6 +75,7 @@ function bisectLeft<T, U extends Comparable>({
  * @param valueExtractor a function that extracts the comparable value from each item in the array
  * @returns the index of the rightmost insertion point for x in the array, in other words, it'll insert behind the index we return
  * (ex: x = 5, array = [7, 6, 4, 3, 2, 1] would return 2)
+ * @param ascending determines if the array is sorted in ascending order (when true) or descending order (when false). Defaults to true
  */
 function bisectRight<T, U extends Comparable>({
   array,
