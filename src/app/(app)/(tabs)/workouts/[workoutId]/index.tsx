@@ -83,6 +83,7 @@ export default function ExercisesPage() {
             setId={item}
           />
         )}
+        keyExtractor={(item) => item.toString()}
         initialNumToRender={16} // This vastly improves loading performance when there are many exercises
         renderSectionHeader={({ section: { exerciseId } }) => (
           <TemplateExerciseHeader exerciseId={exerciseId} />

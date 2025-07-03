@@ -20,13 +20,13 @@ import {
   useAnimatedReaction,
   useSharedValue,
   withDecay,
-  withSequence,
   withTiming,
 } from "react-native-reanimated";
 import { Gesture } from "react-native-gesture-handler";
 import { WorkoutSessionDisplayCard } from "./WorkoutSessionCard";
 import { useDrizzleTestDb } from "@/db/drizzle-test-db";
 import { readSeedData } from "@/db/drizzle-seed-data";
+import { useDrizzle } from "@/db/drizzle-context";
 
 export default function GraphPage() {
   const { data: sessions, isLoading } = useOneYearWorkoutSessions();
@@ -56,7 +56,7 @@ const Graph = ({
   >;
   isLoading: boolean;
 }) => {
-  const testDb = useDrizzleTestDb();
+  const db = useDrizzle();
   const font = useFont(require("src/assets/fonts/SpaceMono-Regular.ttf"), 12);
 
   const timeSpanCutoffIndices = useMemo(
@@ -220,9 +220,9 @@ const Graph = ({
       />
       <View style={{ marginTop: 32 }}>
         <Button
-          title="Read Test DB"
+          title="Read DB"
           onPress={() => {
-            readSeedData(testDb)
+            readSeedData(db)
               .then((res) => {
                 res.forEach((row) => {
                   console.log(row);

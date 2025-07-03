@@ -11,24 +11,21 @@
  */
 
 import { execSync } from "node:child_process";
-import { readFileSync, rmSync, appendFileSync } from "node:fs";
+import { rmSync } from "node:fs";
 
 function main() {
-  const seedDataName = "seed_data";
-  const seedDataMigrationFileName = `./drizzle/0001_${seedDataName}.sql`;
+  /**
+  Yes, despite this file being in the ./src/db directory,
+  b/c we execute this script from the project root directory,
+  everything is relative to the project root directory
+  */
   const drizzleConfigFileName = "./drizzle.config.ts";
 
   try {
-    const seedDataText = readFileSync(seedDataMigrationFileName, "utf-8");
     rmSync("./drizzle", { recursive: true });
     execSync(
       `npx drizzle-kit generate --name=black_mac_gargan --config=${drizzleConfigFileName}`
     );
-    execSync(
-      `npx drizzle-kit generate --custom --name=${seedDataName} --config=${drizzleConfigFileName}`
-    );
-    appendFileSync(seedDataMigrationFileName, "\n");
-    appendFileSync(seedDataMigrationFileName, seedDataText);
     console.log("Drizzle schema update and migrations files created");
   } catch (error) {
     console.error("Error updating schema:", error);

@@ -5,6 +5,7 @@ import { migrate } from "drizzle-orm/expo-sqlite/migrator";
 import { SQLiteDatabase } from "expo-sqlite";
 import migrations from "drizzle/migrations";
 import * as schema from "@/db/schema";
+import { generateSeedData } from "@/db/drizzle-seed-data";
 
 /* deletes the database.
  * We're expecting that there's a sql init script that
@@ -65,6 +66,7 @@ async function initDb(db: SQLiteDatabase) {
 
   const drizzleDb = drizzle(db, { schema });
   await migrate(drizzleDb, migrations);
+  await generateSeedData(drizzleDb);
 
   console.log(
     "successfully created and initialized w/ all necessary sql migrations"

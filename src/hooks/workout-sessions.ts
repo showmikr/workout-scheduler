@@ -4,6 +4,7 @@ import { DrizzleDatabase, useDrizzle } from "@/db/drizzle-context";
 import { useAppUserId } from "@/context/app-user-id-provider";
 import { useQuery } from "@tanstack/react-query";
 import { bisectRight } from "@/utils/bisect";
+import { useDrizzleTestDb } from "@/db/drizzle-test-db";
 
 /**
  * Gets all workout sessions in sorted order from most recent to least recent
@@ -26,9 +27,7 @@ async function getOneYearWorkoutSessions(
       id,
       title,
       calories,
-      startDate: startedOn
-        .getSQL()
-        .mapWith((isoTimestamp: string) => new Date(isoTimestamp)),
+      startDate: startedOn,
       elapsedTime: duration,
     })
     .from(workoutSession)
@@ -71,6 +70,7 @@ type WorkoutSession = Awaited<
 
 const useOneYearWorkoutSessions = () => {
   const db = useDrizzle();
+  // const db = useDrizzleTestDb();
   const appUserId = useAppUserId();
   return useQuery({
     queryKey: workoutSessionKey({ appUserId, type: "full" }),
@@ -90,44 +90,38 @@ const calculateCutoffDate = (
   timeSpan: WorkoutSessionsTimeSpan,
   now: number
 ) => {
-  const dayMilliseconds = 24 * 60 * 60 * 1000;
-  const timeSpanMilliseconds =
-    timeSpan === "Y" ? 365 * dayMilliseconds
-    : timeSpan === "6M" ? 6 * (365 / 12) * dayMilliseconds
-    : timeSpan === "M" ? (365 / 12) * dayMilliseconds
-    : 7 * dayMilliseconds; // 1 week case
-
-  const cutoff = new Date(now - timeSpanMilliseconds);
+  const cutoff = new Date(now - timeSpanMilliseconds[timeSpan]);
   cutoff.setUTCHours(0, 0, 0, 0); // Set to start of the day
-  return cutoff;
+  return cutoff.toISOString();
 };
 
 const findCutoffIndices = (sessions: WorkoutSession[]) => {
+  const valueExtractor = (session: WorkoutSession) => session.startDate;
   const now = Date.now();
   const yearUpperBound = bisectRight({
     array: sessions,
     value: calculateCutoffDate("Y", now),
-    valueExtractor: (session) => session.startDate,
+    valueExtractor,
     ascending: false,
   });
   const sixMonthUpperBound = bisectRight({
     array: sessions,
     value: calculateCutoffDate("6M", now),
-    valueExtractor: (session) => session.startDate,
+    valueExtractor,
     ascending: false,
     searchWindow: [0, yearUpperBound],
   });
   const oneMonthUpperBound = bisectRight({
     array: sessions,
     value: calculateCutoffDate("M", now),
-    valueExtractor: (session) => session.startDate,
+    valueExtractor,
     ascending: false,
     searchWindow: [0, sixMonthUpperBound],
   });
   const oneWeekUpperBound = bisectRight({
     array: sessions,
     value: calculateCutoffDate("W", now),
-    valueExtractor: (session) => session.startDate,
+    valueExtractor,
     ascending: false,
     searchWindow: [0, oneMonthUpperBound],
   });
@@ -203,7 +197,7 @@ const timeSpanCutoffIndex = (
 
   return bisectRight({
     array: workoutSessions,
-    value: cutoff,
+    value: cutoff.toISOString(),
     valueExtractor: (session) => session.startDate,
     ascending: false,
     searchWindow: [0, windowLength],

@@ -203,18 +203,6 @@ function generateLastYearDates(percentKept: number = 0.6) {
 async function generateSeedData(db: DrizzleDatabase) {
   await db.insert(appUser).values(testUser);
 
-  await db.insert(workoutTag).values([
-    { appUserId: 1, title: "Upper Body" },
-    { appUserId: 1, title: "Lower Body" },
-  ]);
-
-  await db.insert(linkTagWorkout).values([
-    { workoutTagId: 1, workoutId: 1 },
-    { workoutTagId: 1, workoutId: 3 },
-    { workoutTagId: 2, workoutId: 2 },
-    { workoutTagId: 2, workoutId: 3 },
-  ]);
-
   await db
     .insert(exerciseType)
     .values(exerciseTypeList.map((type) => ({ title: type })));
@@ -429,6 +417,19 @@ async function generateSeedData(db: DrizzleDatabase) {
       lastSession: null,
     }))
   );
+
+  // TODO: delete workoutTags from schema, this data really isn't necessary anymore
+  await db.insert(workoutTag).values([
+    { appUserId: 1, title: "Upper Body" },
+    { appUserId: 1, title: "Lower Body" },
+  ]);
+
+  await db.insert(linkTagWorkout).values([
+    { workoutTagId: 1, workoutId: 1 },
+    { workoutTagId: 1, workoutId: 3 },
+    { workoutTagId: 2, workoutId: 2 },
+    { workoutTagId: 2, workoutId: 3 },
+  ]);
 
   const workoutIdList = await db
     .select({ id: workout.id, title: workout.title })

@@ -55,7 +55,7 @@ const onInit = async (db: SQLiteDatabase) => {
       journal: { ...myJournal, entries: [myJournal.entries[0]] },
       migrations: { m0000: myMigrations.m0000 },
     });
-    await generateSeedData(drizzleDb);
+    // await generateSeedData(drizzleDb);
   } catch (err) {
     console.error(err);
   }

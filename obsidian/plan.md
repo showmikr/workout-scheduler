@@ -122,3 +122,10 @@ Finish up seeding all the data for test db
 - Make a function that can make random seed exercise with sets. The weight of each set should follow an upward trend.
 - Need to test if I'm properly adding the exercise sessions and set sessions now that I've written the code for it.
   - Above is done and looks to be working. I can see the data in the test db and it looks correct.
+
+# 7/3/2025
+
+- Replaced all seed data (originally using manually written SQL script) with new seed data generating function using drizzle.
+- Noticed a visual bug where deleting sets in workout template page causes next set rendered to also display swiped-left state showing the delete button. I have a hunch this has to do with us querying the data in each set individually versus normally querying the whole list of sets and then rendering them. This _may_ be because the Tanstack Query's `useMutation` hook is not properly updating the state of the set when we delete it, so the next set rendered is still in the "swiped-left" state. Will need to investigate this further.
+- it's the `SetSwipeable` component that is not properly resetting its state when the set is deleted. I think that it either is memoized or it needs a key prop to reset its state when the set is deleted. I will try adding a key prop to the `SetSwipeable` component that is based on the set's id and see if that fixes the issue.
+- DISREGARD ABOVE VISUAL GLITCH!: I just fixed the visual bug! It had to do with the section list in the `[workoutId]/index.tsx` not using a `keyExtractor` prop. I added a `keyExtractor` prop to the section list that uses the set's id as the key and now the visual bug is gone! The next set rendered no longer shows the swiped-left state when a set is deleted.
