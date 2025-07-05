@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: figmaColors.greyDark,
     borderTopColor: figmaColors.greyDarkBorder,
-    paddingHorizontal: 1 * 14,
+    paddingHorizontal: 1 * 16,
     paddingVertical: 7,
     columnGap: 7,
     alignItems: "center",
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderTopWidth: 1,
     borderTopEndRadius: 10,
-    marginHorizontal: 1 * 14,
+    marginHorizontal: 1 * 16,
   },
   mainContent: {
     flexGrow: 1,

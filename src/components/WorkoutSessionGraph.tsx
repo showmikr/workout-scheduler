@@ -1,4 +1,11 @@
-import { ActivityIndicator, Button, SafeAreaView, View } from "react-native";
+import {
+  ActivityIndicator,
+  Button,
+  SafeAreaView,
+  ScrollView,
+  View,
+  StyleSheet,
+} from "react-native";
 import {
   CartesianChart,
   Line,
@@ -10,6 +17,7 @@ import {
   findCutoffIndices,
   timeSpanLabels,
   useOneYearWorkoutSessions,
+  useWorkoutSessionsByTimeSpan,
   WorkoutSessionsTimeSpan,
 } from "@/hooks/workout-sessions";
 import { useFont, DashPathEffect, Circle } from "@shopify/react-native-skia";
@@ -24,27 +32,93 @@ import {
 } from "react-native-reanimated";
 import { Gesture } from "react-native-gesture-handler";
 import { WorkoutSessionDisplayCard } from "./WorkoutSessionCard";
-import { useDrizzleTestDb } from "@/db/drizzle-test-db";
 import { readSeedData } from "@/db/drizzle-seed-data";
 import { useDrizzle } from "@/db/drizzle-context";
+import { ThemedText } from "./Themed";
+
+const MARGIN_HORIZONTAL = 16;
+
+const dayIndexToLabel = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+] as const;
 
 export default function GraphPage() {
+  const db = useDrizzle();
   const { data: sessions, isLoading } = useOneYearWorkoutSessions();
 
   // TODO: handle UI when workoutSessionList is empty
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        justifyContent: "center",
-      }}
-    >
+    <SafeAreaView style={styles.safeAreaView}>
       {sessions ?
-        <Graph sessions={sessions} isLoading={isLoading} />
+        <ScrollView>
+          <Graph sessions={sessions} isLoading={isLoading} />
+          <WorkoutSessionMonthSection />
+          <View style={{ marginTop: 32 }}>
+            <Button
+              title="Read DB"
+              onPress={() => {
+                readSeedData(db)
+                  .then((res) => {
+                    res.forEach((row) => {
+                      console.log(row);
+                    });
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                  });
+              }}
+            />
+          </View>
+        </ScrollView>
       : <ActivityIndicator />}
     </SafeAreaView>
   );
 }
+
+const WorkoutSessionMonthSection = () => {
+  const now = new Date();
+  const oneWeekAgo = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() - 6, // 7 days back inclusive
+    0,
+    0,
+    0,
+    0
+  );
+  const { data: sessions, isLoading } = useWorkoutSessionsByTimeSpan("M");
+  return (
+    <View style={styles.sessionsContainer}>
+      <ThemedText style={styles.sectionHeaderTitle}>Last 30 Days</ThemedText>
+      {isLoading ?
+        <ActivityIndicator style={{ alignSelf: "center" }} />
+      : <View style={styles.sessionsListContainer}>
+          {sessions &&
+            sessions.map((session) => {
+              return (
+                <WorkoutSessionDisplayCard
+                  key={session.id}
+                  title={session.title}
+                  calories={session.calories}
+                  dateDisplay={
+                    oneWeekAgo.toISOString() <= session.startDate ?
+                      dayIndexToLabel[new Date(session.startDate).getDay()]
+                    : new Date(session.startDate).toLocaleDateString()
+                  }
+                />
+              );
+            })}
+        </View>
+      }
+    </View>
+  );
+};
 
 const Graph = ({
   sessions,
@@ -56,7 +130,6 @@ const Graph = ({
   >;
   isLoading: boolean;
 }) => {
-  const db = useDrizzle();
   const font = useFont(require("src/assets/fonts/SpaceMono-Regular.ttf"), 12);
 
   const timeSpanCutoffIndices = useMemo(
@@ -129,8 +202,8 @@ const Graph = ({
       <View
         style={{
           flex: 1,
-          maxHeight: 300,
-          paddingHorizontal: 16,
+          minHeight: 300,
+          marginHorizontal: MARGIN_HORIZONTAL,
         }}
       >
         <CartesianChart
@@ -157,7 +230,7 @@ const Graph = ({
           transformState={state}
           transformConfig={{
             pinch: { enabled: false },
-            pan: { enabled: false },
+            pan: { enabled: false }, // we handle pan with gesture handler
           }}
           customGestures={Gesture.Race(gesture)}
           viewport={{
@@ -194,7 +267,7 @@ const Graph = ({
       </View>
       <SegmentedControl
         enabled={!isLoading}
-        style={{ width: "100%" }}
+        style={{ marginHorizontal: MARGIN_HORIZONTAL }}
         selectedIndex={timeSpanLabels.indexOf(timeSpan)}
         values={timeSpanLabels}
         onChange={(event) => {
@@ -213,27 +286,23 @@ const Graph = ({
           scrollOffX.value = 0;
         }}
       />
-      <WorkoutSessionDisplayCard
-        title={"Leg Day Workout"}
-        calories={330}
-        dateDisplay={"May 24"}
-      />
-      <View style={{ marginTop: 32 }}>
-        <Button
-          title="Read DB"
-          onPress={() => {
-            readSeedData(db)
-              .then((res) => {
-                res.forEach((row) => {
-                  console.log(row);
-                });
-              })
-              .catch((err) => {
-                console.log(err);
-              });
-          }}
-        />
-      </View>
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  safeAreaView: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  sessionsContainer: {
+    marginTop: 16,
+    flex: 1,
+    marginHorizontal: MARGIN_HORIZONTAL,
+  },
+  sessionsListContainer: {
+    rowGap: 8,
+    alignItems: "stretch",
+  },
+  sectionHeaderTitle: { fontWeight: "bold", fontSize: 18, marginBottom: 20 },
+});

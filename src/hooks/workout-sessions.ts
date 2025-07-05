@@ -1,10 +1,9 @@
-import { workoutSession } from "@/db/schema";
+import { exerciseClass, exerciseSession, workoutSession } from "@/db/schema";
 import { getTableColumns, desc, eq, and, isNotNull } from "drizzle-orm";
 import { DrizzleDatabase, useDrizzle } from "@/db/drizzle-context";
 import { useAppUserId } from "@/context/app-user-id-provider";
 import { useQuery } from "@tanstack/react-query";
 import { bisectRight } from "@/utils/bisect";
-import { useDrizzleTestDb } from "@/db/drizzle-test-db";
 
 /**
  * Gets all workout sessions in sorted order from most recent to least recent
@@ -70,7 +69,6 @@ type WorkoutSession = Awaited<
 
 const useOneYearWorkoutSessions = () => {
   const db = useDrizzle();
-  // const db = useDrizzleTestDb();
   const appUserId = useAppUserId();
   return useQuery({
     queryKey: workoutSessionKey({ appUserId, type: "full" }),
@@ -133,6 +131,16 @@ const findCutoffIndices = (sessions: WorkoutSession[]) => {
   };
 };
 
+/**
+ *
+ * This hook uses a "base" query to get all workout sessions in the last year and then
+ * uses a derived query to get the workout sessions that are within the given time span.
+ *
+ * @param timeSpan refers to the last x workout sessions you want to consider by time span (i.e week, month, year, etc)
+ * @description This hook will return a list of workout sessions that are within the given time span
+ * (i.e last week, month, year, etc). It will also return the cutoff
+ * @returns a list of workout sessions that are within the given time span
+ */
 const useWorkoutSessionsByTimeSpan = (timeSpan: WorkoutSessionsTimeSpan) => {
   const appUserId = useAppUserId();
   const { data: workoutSessions } = useOneYearWorkoutSessions();
@@ -164,6 +172,12 @@ const useWorkoutSessionsByTimeSpan = (timeSpan: WorkoutSessionsTimeSpan) => {
       } satisfies Record<WorkoutSessionsTimeSpan, number>;
     },
     enabled: !!workoutSessions,
+  });
+
+  return useQuery({
+    queryKey: workoutSessionKey({ type: "partial", appUserId, timeSpan }),
+    queryFn: () => workoutSessions!.slice(0, cutoffIndices![timeSpan]),
+    enabled: !!cutoffIndices,
   });
 };
 
@@ -251,6 +265,11 @@ export async function useMonthlyWorkoutSessions() {
   return workoutSections;
 }
 
-export { useOneYearWorkoutSessions, findCutoffIndices, timeSpanLabels };
+export {
+  useOneYearWorkoutSessions,
+  findCutoffIndices,
+  timeSpanLabels,
+  useWorkoutSessionsByTimeSpan,
+};
 
 export type { WorkoutSessionsTimeSpan };
