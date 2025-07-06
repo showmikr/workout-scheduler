@@ -134,3 +134,10 @@ Finish up seeding all the data for test db
 
 - List out all workout session cards in list view for last 30 days
 - Put a "show more" button at the bottom of the list that will navigate to another page that shows all workout sessions in the last year.
+
+# 7/6/2025
+
+- Show a title for calories burned in the graph
+- Add an "Add Set" button to the template workout page
+- Need to properly add a new set when adding a new exercise to the workout template
+- Implement the "Add Set" button to add a new set to the current workout template

@@ -56,7 +56,7 @@ export default function GraphPage() {
   return (
     <SafeAreaView style={styles.safeAreaView}>
       {sessions ?
-        <ScrollView>
+        <ScrollView style={{ flex: 1, paddingTop: MARGIN_HORIZONTAL }}>
           <Graph sessions={sessions} isLoading={isLoading} />
           <WorkoutSessionMonthSection />
           <View style={{ marginTop: 32 }}>
@@ -198,17 +198,16 @@ const Graph = ({
   );
 
   return (
-    <>
+    <View style={{ flex: 1, marginHorizontal: MARGIN_HORIZONTAL }}>
+      <ThemedText style={styles.graphHeaderTitle}>Calories</ThemedText>
       <View
         style={{
-          flex: 1,
-          minHeight: 300,
-          marginHorizontal: MARGIN_HORIZONTAL,
+          minHeight: 240,
         }}
       >
         <CartesianChart
           data={sessions}
-          domainPadding={{ left: 8, right: 8, top: 32, bottom: 32 }}
+          domainPadding={{ left: 8, right: 8 }}
           xAxis={{
             font,
             lineColor: "grey",
@@ -267,7 +266,9 @@ const Graph = ({
       </View>
       <SegmentedControl
         enabled={!isLoading}
-        style={{ marginHorizontal: MARGIN_HORIZONTAL }}
+        style={{
+          marginTop: MARGIN_HORIZONTAL,
+        }}
         selectedIndex={timeSpanLabels.indexOf(timeSpan)}
         values={timeSpanLabels}
         onChange={(event) => {
@@ -286,7 +287,7 @@ const Graph = ({
           scrollOffX.value = 0;
         }}
       />
-    </>
+    </View>
   );
 };
 
@@ -304,5 +305,14 @@ const styles = StyleSheet.create({
     rowGap: 8,
     alignItems: "stretch",
   },
-  sectionHeaderTitle: { fontWeight: "bold", fontSize: 18, marginBottom: 20 },
+  graphHeaderTitle: {
+    fontWeight: "bold",
+    fontSize: 16,
+    marginBottom: MARGIN_HORIZONTAL * 1.5,
+  },
+  sectionHeaderTitle: {
+    fontWeight: "bold",
+    fontSize: 16,
+    marginBottom: MARGIN_HORIZONTAL,
+  },
 });
