@@ -15,7 +15,6 @@ import {
 } from "victory-native";
 import {
   findCutoffIndices,
-  timeSpanLabels,
   useOneYearWorkoutSessions,
   useWorkoutSessionsByTimeSpan,
   WorkoutSessionsTimeSpan,
@@ -35,6 +34,7 @@ import { WorkoutSessionDisplayCard } from "./WorkoutSessionCard";
 import { readSeedData } from "@/db/drizzle-seed-data";
 import { useDrizzle } from "@/db/drizzle-context";
 import { ThemedText } from "./Themed";
+import { useAppUserId } from "@/context/app-user-id-provider";
 
 const MARGIN_HORIZONTAL = 16;
 
@@ -50,7 +50,11 @@ const dayIndexToLabel = [
 
 export default function GraphPage() {
   const db = useDrizzle();
-  const { data: sessions, isLoading } = useOneYearWorkoutSessions();
+  const appUserId = useAppUserId();
+  const { data: sessions, isLoading } = useOneYearWorkoutSessions({
+    db,
+    appUserId,
+  });
 
   // TODO: handle UI when workoutSessionList is empty
   return (
@@ -130,6 +134,7 @@ const Graph = ({
   >;
   isLoading: boolean;
 }) => {
+  const timeSpanLabels: WorkoutSessionsTimeSpan[] = ["W", "M", "6M", "Y"];
   const font = useFont(require("src/assets/fonts/SpaceMono-Regular.ttf"), 12);
 
   const timeSpanCutoffIndices = useMemo(
@@ -137,7 +142,10 @@ const Graph = ({
     [sessions]
   );
   const [timeSpan, setTimeSpan] = useState<WorkoutSessionsTimeSpan>("Y");
-  const viewportDomain: [number, number] = [0, timeSpanCutoffIndices[timeSpan]];
+  const viewportDomain: [number, number] = [
+    timeSpanCutoffIndices[timeSpan],
+    sessions.length,
+  ];
 
   const { state } = useChartTransformState();
 
@@ -207,7 +215,7 @@ const Graph = ({
       >
         <CartesianChart
           data={sessions}
-          domainPadding={{ left: 8, right: 8 }}
+          // domainPadding={{ left: 1, right: 1 }} // this literally can't be 0 for some reason or else the x-axis labels near the edges will not show up
           xAxis={{
             font,
             lineColor: "grey",
@@ -215,6 +223,12 @@ const Graph = ({
             labelPosition: "outset",
             labelColor: "white",
             labelRotate: 20,
+            tickCount:
+              timeSpan === "Y" ? 12
+              : timeSpan === "6M" ? 24
+              : timeSpan === "M" ? 12 * 4
+              : sessions.length,
+            // tickValues: xAxisTickValues,
           }}
           yAxis={[
             {

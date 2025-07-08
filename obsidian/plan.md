@@ -141,3 +141,12 @@ Finish up seeding all the data for test db
 - Add an "Add Set" button to the template workout page
 - Need to properly add a new set when adding a new exercise to the workout template
 - Implement the "Add Set" button to add a new set to the current workout template
+
+# 7/7/2025
+
+- Handle issues with the graph
+
+  - Graph doesn't show ticks for everything in the x-axis except the time span you select
+  - Also can't scroll the graph any further than the time span you select
+
+- Gonna reverse the ordering of sessions to match apple health app (left to right ordering is from oldest to newest workout session).
