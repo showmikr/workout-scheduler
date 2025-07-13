@@ -150,3 +150,44 @@ Finish up seeding all the data for test db
   - Also can't scroll the graph any further than the time span you select
 
 - Gonna reverse the ordering of sessions to match apple health app (left to right ordering is from oldest to newest workout session).
+
+# App Name Ideas
+
+I want to make it easily apparent that the goal of the app is to help making building your workouts as customizable as possible and as flexible as possible to fit the user's needs. Here are some ideas for the app name:
+
+- FlexiFit
+- Custom Gains
+- Gains To Go
+- Tailored Training
+- TailorFit <- Tailor Your Training>
+  - Really like this one, it has a nice ring to it and conveys the idea of tailoring your workouts to your needs.
+  - Nevermind, app store already has app called _Tailor Fitness_
+- Tailored Gains <- This is the one I chose, got a domain name for it too (tailoredgains.com)
+  - This one is kinda misleading, it sounds like the app makes automatic reccomendations for your workouts, which it doesn't. We need to evoke that the user is in control of their workouts and can customize them to their needs.
+- Tailor Your Gains
+
+# Chose a Domain Name
+
+- tailoredgains.com
+
+# Press Release Points
+
+- Tagline: A muscle growth app that's tailored to your needs
+
+- Customization to the Max
+
+  - Choose from a wide variety of exercises or...
+  - Make your own exercises w/ custom equipment and target muscle groups
+
+- Simplify the numbers
+
+  - Know what weights you need for any exercise and account for missing equipment
+  - integrate progressive overload into your sets w/ auto-calculated weights
+
+- Offline First
+
+  - No Internet, No Problem
+
+- A Schedule that fits your lifestyle
+  - No more rigid calendars
+  - Pick your workout
