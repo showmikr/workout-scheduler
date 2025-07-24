@@ -12,7 +12,7 @@
 
 ### See the designs on [Figma](https://www.figma.com/design/agfI7UZ5xe542eTNCxVpqs/Workout-Scheduler?node-id=594-209&node-type=CANVAS)
 
-![Screenshot](/readme_assets/workout_session.png)
+![Screenshot](/readme_assets/active_workout.png)
 ![Screenshot](/readme_assets/summary_graph.png)
 
 ## DB Schema :scroll:
