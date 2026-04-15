@@ -33,6 +33,7 @@ import {
   TemplateExerciseSet,
 } from "@/components/workout/TemplateExercise";
 import { useQueryClient } from "@tanstack/react-query";
+import { useWorkoutSection } from "@/hooks/workouts/workout-section";
 
 function OverlaySeparator() {
   return <View style={styles.overlaySeparator} />;

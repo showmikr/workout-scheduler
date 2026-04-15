@@ -117,9 +117,10 @@ const TemplateExerciseSet = ({
   );
 };
 
-const MemoizedTemplateExerciseSet = React.memo(TemplateExerciseSet);
+// const MemoizedTemplateExerciseSet = React.memo(TemplateExerciseSet);
 
 export {
   TemplateExerciseHeader,
-  MemoizedTemplateExerciseSet as TemplateExerciseSet,
+  // MemoizedTemplateExerciseSet as TemplateExerciseSet,
+  TemplateExerciseSet,
 };
