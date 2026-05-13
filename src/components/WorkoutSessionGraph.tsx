@@ -199,7 +199,7 @@ const Graph = ({
           scrollOffX.value = lastPanX.value;
           scrollOffX.value = withDecay({
             velocity: event.velocityX,
-            deceleration: 0.97,
+            deceleration: 0.98,
           });
         }),
     [lastPanX, scrollOffX, state]
