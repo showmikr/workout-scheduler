@@ -1,5 +1,6 @@
 import { drizzle } from "drizzle-orm/expo-sqlite";
-import * as FileSystem from "expo-file-system";
+// import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import * as SQLite from "expo-sqlite";
 import { migrate } from "drizzle-orm/expo-sqlite/migrator";
 import { SQLiteDatabase } from "expo-sqlite";
