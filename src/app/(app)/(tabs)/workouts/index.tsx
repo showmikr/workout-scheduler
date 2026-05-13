@@ -48,14 +48,16 @@ export default function TabTwoScreen() {
   }
 
   return (
-    <FlatList
-      style={styles.listView}
-      contentContainerStyle={{ justifyContent: "center" }}
-      data={workouts}
-      renderItem={({ item }) => <WorkoutCardWrapper workout={item} />}
-      keyExtractor={(item) => item.id.toString()}
-      ItemSeparatorComponent={LineSeparator}
-    />
+    <View style={styles.container}>
+      <FlatList
+        style={styles.listView}
+        contentContainerStyle={{ justifyContent: "center" }}
+        data={workouts}
+        renderItem={({ item }) => <WorkoutCardWrapper workout={item} />}
+        keyExtractor={(item) => item.id.toString()}
+        ItemSeparatorComponent={LineSeparator}
+      />
+    </View>
   );
 }
 

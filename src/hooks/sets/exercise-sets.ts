@@ -195,4 +195,4 @@ const useDeleteSet = (workoutId: number, exerciseId: number, setId: number) => {
   });
 };
 
-export { useAddSet, useDeleteSet, useSets };
+export { useAddSet, useDeleteSet, useSets, addResistanceSet };

@@ -3,6 +3,7 @@ import { useWorkoutSection, WorkoutSection } from "../workouts/workout-section";
 import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
 import { ExerciseClass } from "@/utils/exercise-types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { addResistanceSet } from "../sets/exercise-sets";
 
 const useExerciseSections = (workoutId: number) => {
   const selectExercises = useCallback(
@@ -36,6 +37,13 @@ const addExercise = async (
     `,
     [exerciseClass.id, workoutId, exercise_count + 1]
   );
+
+  if (result === null) {
+    throw new Error("Failed to add exercise");
+  }
+
+  const setId = await addResistanceSet({ db, exerciseId: result.exercise_id });
+
   return result;
 };
 
@@ -51,8 +59,11 @@ const useAddExercise = (workoutId: number) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["workout-section", workoutId],
+        queryKey: ["individual-workout", workoutId],
       });
+      // queryClient.invalidateQueries({
+      //   queryKey: ["workout-section", workoutId],
+      // });
     },
   });
 };
